@@ -85,3 +85,16 @@ use Rack::Session::Cookie,
     :key => 'rack.session', # Key for Rack 
     :expire_after => 2592000, # Expiration date
     :secret => ENV['MY_SECRET_KEY'] # Your secret key. 
+```
+
+#### Auto refresh the server for development:
+
+Check it out: https://github.com/alexch/rerun
+
+## Feel free to get the idea, fork, contribute and do whatever you want!
+
+Contact me if you have any issue:
+
+hriqueft@gmail.com
+
+I will be always open for tips, improvements, new ideas and new contributors! 
