@@ -9,7 +9,7 @@ module Rack
       @router = Router.new
     end
 
-    def build(&block)
+    def draw_app(&block)
       instance_eval(&block)
 
       @router
