@@ -1,5 +1,5 @@
 require_relative 'router/route.rb'
-require_relative 'router/request_builder.rb'
+require_relative 'router/build_request.rb'
 
 module Rack
   class Way
@@ -23,7 +23,7 @@ module Rack
 
       def call(env)
         route = match_route(env)
-        request_builder = RequestBuilder.new(env)
+        request_builder = BuildRequest.new(env)
 
         return render_not_found(request_builder.call) if route.nil?
 

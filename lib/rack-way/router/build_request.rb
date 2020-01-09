@@ -1,7 +1,7 @@
 module Rack
   class Way
     class Router
-      class RequestBuilder
+      class BuildRequest
         def initialize(env)
           @env = env
         end

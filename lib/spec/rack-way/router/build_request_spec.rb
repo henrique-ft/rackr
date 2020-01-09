@@ -1,7 +1,7 @@
-require_relative '../../../rack-way/router/request_builder.rb'
+require_relative '../../../rack-way/router/build_request.rb'
 require 'byebug'
 
-RSpec.describe Rack::Way::Router::RequestBuilder do
+RSpec.describe Rack::Way::Router::BuildRequest do
   it 'can build an Rack::Request' do
     request = described_class.new({}).call
     expect(request.class).to eq(Rack::Request)
