@@ -15,7 +15,7 @@ gem install rack-way
 require 'rack-way'
 
 App =
-  Rack::Way.new.draw_app do
+  Rack::Way.new.app do
     # Returns [200, {"Content-Type" => "text/html"}, ["Hello!"]]
     root ->(req) { render '<h1> My pure rack project! </h1>' }
     # Build a namespace /api

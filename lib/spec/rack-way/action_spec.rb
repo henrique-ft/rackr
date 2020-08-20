@@ -1,5 +1,5 @@
-require 'byebug'
 require_relative '../../rack-way/action'
+require 'byebug'
 
 RSpec.describe Rack::Way::Action do
   context 'rendering content' do

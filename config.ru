@@ -1,8 +1,8 @@
-require 'rack-way'
 require_relative 'controllers/my_controller/index'
+require 'rack-way'
 
 App =
-  Rack::Way.new.draw_app do
+  Rack::Way.new.app do
     # Returns [200, {"Content-Type" => "text/html"}, ["Hello!"]]
     root ->(req) { render '<h1> rack way </h1>' }
     # Build a namespace /api
