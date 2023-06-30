@@ -1,5 +1,5 @@
+require_relative 'lib/rack-way'
 require_relative 'controllers/my_controller/index'
-require 'rack-way'
 
 App =
   Rack::Way.new.app do
@@ -10,7 +10,7 @@ App =
       # get /api/hello/somename
       get 'hello/:name', ->(req) do # 'req' is an Rack::Request object
         # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
-        render_json "name" => req.params[:name]
+        render_json({ name: req.params[:name] })
       end
     end
     # The router can also receive a class that responds to call(req)
