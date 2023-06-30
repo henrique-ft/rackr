@@ -10,7 +10,7 @@ module Rack
         @routes = {}
 
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
-          @routes[method] = { indexes: [], route_objects: [] }
+          @routes[method] = []
         end
 
         @namespaces = []
@@ -38,8 +38,7 @@ module Rack
             endpoint
           )
 
-        @routes[method.to_s.upcase][:indexes].push(path)
-        @routes[method.to_s.upcase][:route_objects].push(route)
+        @routes[method.to_s.upcase].push(route)
       end
 
       def add_not_found(endpoint)
@@ -69,10 +68,7 @@ module Rack
       end
 
       def match_route(env)
-        index = @routes[env['REQUEST_METHOD']][:indexes].index(env['REQUEST_PATH'])
-        return @routes[env['REQUEST_METHOD']][:route_objects][index] if index != nil
-
-        @routes[env['REQUEST_METHOD']][:route_objects].detect { |route| route.match?(env) }
+        @routes[env['REQUEST_METHOD']].detect { |route| route.match?(env) }
       end
     end
   end
