@@ -76,12 +76,12 @@ RSpec.describe Rack::Way::Action do
 
     context 'json' do
       it 'can render from hash with success' do
-        result = Rack::Way::Action.render_json("test" => "value")
+        result = Rack::Way::Action.render_json({test: "value"})
         expect(result).to eq([200, {"Content-Type" => "application/json"}, ['{"test":"value"}']])
       end
 
       it 'can render json with other status' do
-        result = Rack::Way::Action.render_json({"test" => "value"}, status: 201)
+        result = Rack::Way::Action.render_json({test: "value"}, status: 201)
         expect(result).to eq([201, {"Content-Type" => "application/json"}, ['{"test":"value"}']])
       end
     end

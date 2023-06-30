@@ -13,6 +13,8 @@ module Rack
             'POST' => [],
             'DELETE' => [],
             'PUT' => [],
+            'TRACE' => [],
+            'OPTIONS' => [],
             'PATCH' => []
           }
 

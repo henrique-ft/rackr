@@ -10,6 +10,8 @@ RSpec.describe Rack::Way::Router do
     router.add :post, 'post', double(call: 'Hey post')
     router.add :delete, 'delete', double(call: 'Hey delete')
     router.add :put, 'put', double(call: 'Hey put')
+    router.add :trace, 'trace', double(call: 'Hey trace')
+    router.add :options, 'options', double(call: 'Hey options')
     router.add :patch, 'patch', double(call: 'Hey patch')
 
     request =
@@ -51,6 +53,22 @@ RSpec.describe Rack::Way::Router do
     }
 
     expect(router.call(request)).to eq('Hey put')
+
+    request =
+      {
+        'REQUEST_METHOD' => 'TRACE',
+        'REQUEST_PATH' => '/trace'
+      }
+
+    expect(router.call(request)).to eq('Hey trace')
+
+    request =
+      {
+        'REQUEST_METHOD' => 'OPTIONS',
+        'REQUEST_PATH' => '/options'
+      }
+
+    expect(router.call(request)).to eq('Hey options')
 
     request =
     {

@@ -46,6 +46,14 @@ module Rack
       @router.add('PUT', path, endpoint)
     end
 
+    def trace(path, endpoint)
+      @router.add('TRACE', path, endpoint)
+    end
+
+    def options(path, endpoint)
+      @router.add('OPTIONS', path, endpoint)
+    end
+
     def patch(path, endpoint)
       @router.add('PATCH', path, endpoint)
     end
