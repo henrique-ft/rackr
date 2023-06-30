@@ -13,6 +13,22 @@ module Rack
       instance_eval(&block)
 
       @router
+    rescue Exception => e
+      lambda do |_req|
+        page = ""
+
+        if ENV["RACK_ENV"] === "development"
+          page = """
+        <div style='background:#fdd;padding: 1em;border-radius: 10px;border: 2px solid #480000;'>
+            <h1 style='margin-top:0'> Error </h1>
+            <h2> #{e.message} </h2>
+            <h4> backtrace: </h4>#{e.backtrace.join("</br>")}
+        </div>
+          """
+        end
+
+        [500, { 'Content-Type' => 'text/html' }, [page]]
+      end
     end
 
     def namespace(name, &block)
