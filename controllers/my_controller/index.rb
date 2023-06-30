@@ -2,8 +2,8 @@ module MyController
   class Index
     include Rack::Way::Action
 
-    def call(req)
-      render "hello"
+    def call(_request)
+      view 'index', locals: { name: "Henrique" }
     end
   end
 end

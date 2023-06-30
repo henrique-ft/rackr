@@ -23,7 +23,7 @@ App =
       # get /api/hello/somename
       get 'hello/:name', ->(req) do # 'req' is an Rack::Request object
         # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
-        render_json "name" => req.params[:name]
+        render_json({ name: req.params[:name] })
       end
     end
     # The router can also receive a class that responds to call(req)
@@ -35,6 +35,8 @@ App =
     # post
     # patch
     # delete
+    # trace
+    # options
   
     # Others action functions examples:
     # render 'something', status: 422

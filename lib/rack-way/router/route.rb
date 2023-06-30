@@ -12,9 +12,7 @@ module Rack
         end
 
         def match?(env)
-          if has_params?
-            return match_with_params?(env)
-          end
+          return match_with_params?(env) if has_params?
 
           env['REQUEST_PATH'] == @path
         end
@@ -36,7 +34,7 @@ module Rack
             return false
           end
 
-          matched =
+          matched_path_pieces =
             @splitted_path
               .map
               .with_index do |segment, i|
@@ -47,7 +45,7 @@ module Rack
                 end
               end
 
-          !matched.include?(false)
+          !matched_path_pieces.include?(false)
         end
       end
     end

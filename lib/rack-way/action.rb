@@ -1,26 +1,24 @@
-require 'erubis'
+require 'erubi'
 require 'json'
 require 'rack'
 
 module Rack
   class Way
     module Action
-      def render(
-        content, headers: { 'Content-Type' => 'text/html' }, status: 200
-      )
-        Rack::Way::Action.render(content, headers: headers, status: status)
+      def html(content, status: 200)
+        Rack::Way::Action.html(content, status: status)
       end
 
-      def render_erb(path, params = {}, status: 200)
-        Rack::Way::Action.render_erb(path, params, status: status)
+      def view(path, locals: {}, status: 200)
+        Rack::Way::Action.view(path, locals: locals, status: status)
       end
 
-      def render_json(content = {}, status: 200)
-        Rack::Way::Action.render_json(content, status: status)
+      def json(content = {}, status: 200)
+        Rack::Way::Action.json(content, status: status)
       end
 
-      def erb(path, params = {})
-        Rack::Way::Action.erb(path, params)
+      def erb(path, locals = {})
+        Rack::Way::Action.erb(path, locals)
       end
 
       def redirect_to(url)
@@ -28,28 +26,27 @@ module Rack
       end
 
       class << self
-        def render(
-          content, headers: { 'Content-Type' => 'text/html' }, status: 200
-        )
-          [status, headers, [content]]
+        def html(content, status: 200)
+          [status, { 'Content-Type' => 'text/html' }, [content]]
         end
 
-        def render_erb(paths, params = {}, status: 200)
+        def view(paths, locals: {}, status: 200)
           if paths.kind_of?(Array)
-            erb = paths.map { |path| erb(path, params) }.join
+            erb = paths.map { |path| erb("views/#{path}", locals) }.join
           else
-            erb = erb(paths, params)
+            erb = erb("views/#{paths}", locals)
           end
 
           [status, { 'Content-Type' => 'text/html' }, [erb]]
         end
 
-        def render_json(content = {}, status: 200)
+        def json(content = {}, status: 200)
           [status, { 'Content-Type' => 'application/json' }, [content.to_json]]
         end
 
-        def erb(path, params = {})
-          Erubis::FastEruby.load_file("#{path}.html.erb").result(params)
+        def erb(path, locals = {})
+          local = OpenStruct.new(locals)
+          eval(Erubi::Engine.new(::File.read("#{path}.html.erb")).src)
         end
 
         def redirect_to(url)

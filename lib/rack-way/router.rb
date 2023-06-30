@@ -7,16 +7,11 @@ module Rack
       attr_writer :not_found
 
       def initialize
-        @routes =
-          {
-            'GET' => [],
-            'POST' => [],
-            'DELETE' => [],
-            'PUT' => [],
-            'TRACE' => [],
-            'OPTIONS' => [],
-            'PATCH' => []
-          }
+        @routes = {}
+
+        %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
+          @routes[method] = { indexes: [], route_objects: [] }
+        end
 
         @namespaces = []
 
@@ -38,9 +33,13 @@ module Rack
 
       def add(method, path, endpoint)
         route =
-          Route.new("/" + @namespaces.join('/') + put_path_slash(path), endpoint)
+          Route.new(
+            '/' + @namespaces.join('/') + put_path_slash(path),
+            endpoint
+          )
 
-        @routes[method.to_s.upcase].push route
+        @routes[method.to_s.upcase][:indexes].push(path)
+        @routes[method.to_s.upcase][:route_objects].push(route)
       end
 
       def add_not_found(endpoint)
@@ -52,8 +51,7 @@ module Rack
       end
 
       def clear_last_namespace
-        @namespaces =
-          @namespaces.first(@namespaces.size - 1)
+        @namespaces = @namespaces.first(@namespaces.size - 1)
       end
 
       private
@@ -71,8 +69,10 @@ module Rack
       end
 
       def match_route(env)
-        @routes[env["REQUEST_METHOD"]]
-          .detect { |route| route.match?(env) }
+        index = @routes[env['REQUEST_METHOD']][:indexes].index(env['REQUEST_PATH'])
+        return @routes[env['REQUEST_METHOD']][:route_objects][index] if index != nil
+
+        @routes[env['REQUEST_METHOD']][:route_objects].detect { |route| route.match?(env) }
       end
     end
   end

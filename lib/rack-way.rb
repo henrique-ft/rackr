@@ -1,5 +1,5 @@
-require 'rack-way/router'
-require 'rack-way/action'
+require_relative 'rack-way/router'
+require_relative 'rack-way/action'
 
 module Rack
   class Way
