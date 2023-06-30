@@ -36,18 +36,15 @@ module Rack
 
         route = Route.new("#{joined_namespaces}#{put_path_slash(path)}", endpoint)
 
-        if first_level_namespace?
-          if @routes[method.to_s.upcase][joined_namespaces] == nil
-            @routes[method.to_s.upcase][joined_namespaces] = { _instances: [] }
+        if @namespaces.size >= 1
+          first_level_namespace = '/' << @namespaces.first
+          if @routes[method.to_s.upcase][first_level_namespace] == nil
+            @routes[method.to_s.upcase][first_level_namespace] = { _instances: [] }
           end
-          @routes[method.to_s.upcase][joined_namespaces][:_instances].push(route)
+          @routes[method.to_s.upcase][first_level_namespace][:_instances].push(route)
         else
           @routes[method.to_s.upcase][:_instances].push(route)
         end
-      end
-
-      def first_level_namespace?
-        @namespaces.size == 1
       end
 
       def add_not_found(endpoint)

@@ -8,6 +8,12 @@ App =
     root ->(_request) { html('<h1> rack way </h1>') }
 
     namespace 'v1' do
+      namespace "oi" do
+        root ->(_request) { html('<h1> rack way </h1>') }
+
+        get "bla", -> (req) { html("oi") }
+      end
+
       (1..1000).to_a.each do |n|
         get "x#{n.to_s}", ->(_request) { json({name: "henrique"}) }
       end
