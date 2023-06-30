@@ -6,8 +6,15 @@ App =
   Rack::Way.new.app do
     # Returns [200, {"Content-Type" => "text/html"}, ["<h1> rack way </h1>"]]
     root ->(_request) { html('<h1> rack way </h1>') }
+
+    namespace 'v1' do
+      (1..1000).to_a.each do |n|
+        get "x#{n.to_s}", ->(_request) { json({name: "henrique"}) }
+      end
+    end
+
     # Build a namespace /api
-    namespace 'api' do
+    namespace 'v2' do
       # get /api/hello/somename
       get 'hello/:name', ->(request) do # 'req' is an Rack::Request object
         # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
@@ -23,15 +30,12 @@ App =
         # res.finish
       end
     end
+
     # The router can also receive a class that responds to call(req)
     get 'my-controller', MyController::Index
 
     get 'my-view', ->(request) do
       view 'index', locals: { name: "Henrique" }
-    end
-
-    (1..1000).to_a.each do |n|
-      get "x#{n.to_s}", ->(_request) { json({name: "henrique"}) }
     end
 
     # post

@@ -10,7 +10,7 @@ module Rack
         @routes = {}
 
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
-          @routes[method] = []
+          @routes[method] = { _instances: [] }
         end
 
         @namespaces = []
@@ -32,13 +32,22 @@ module Rack
       end
 
       def add(method, path, endpoint)
-        route =
-          Route.new(
-            '/' + @namespaces.join('/') + put_path_slash(path),
-            endpoint
-          )
+        joined_namespaces = '/' << @namespaces.join('/')
 
-        @routes[method.to_s.upcase].push(route)
+        route = Route.new("#{joined_namespaces}#{put_path_slash(path)}", endpoint)
+
+        if first_level_namespace?
+          if @routes[method.to_s.upcase][joined_namespaces] == nil
+            @routes[method.to_s.upcase][joined_namespaces] = { _instances: [] }
+          end
+          @routes[method.to_s.upcase][joined_namespaces][:_instances].push(route)
+        else
+          @routes[method.to_s.upcase][:_instances].push(route)
+        end
+      end
+
+      def first_level_namespace?
+        @namespaces.size == 1
       end
 
       def add_not_found(endpoint)
@@ -57,7 +66,8 @@ module Rack
 
       def put_path_slash(path)
         return '' if (path == '/' || path == '') && @namespaces != []
-        return '/' + path if @namespaces != []
+        return '/' << path if @namespaces != []
+
         path
       end
 
@@ -68,7 +78,18 @@ module Rack
       end
 
       def match_route(env)
-        @routes[env['REQUEST_METHOD']].detect { |route| route.match?(env) }
+        routes = @routes[env['REQUEST_METHOD']]
+
+        routes.each do |first_level_namespace, _v|
+          next if first_level_namespace == :_instances
+
+          if env['REQUEST_PATH'].start_with?(first_level_namespace)
+            routes = routes[first_level_namespace]
+            break
+          end
+        end
+
+        routes[:_instances].detect { |route| route.match?(env) }
       end
     end
   end
