@@ -25,6 +25,10 @@ module Rack
         Rack::Way::Action.redirect_to(url)
       end
 
+      def response(body = nil, status = 200, headers = {})
+        Rack::Response.new(body, status, headers)
+      end
+
       class << self
         def html(content, status: 200)
           [status, { 'Content-Type' => 'text/html' }, [content]]
@@ -51,6 +55,10 @@ module Rack
 
         def redirect_to(url)
           [302, { 'Location' => url }, []]
+        end
+
+        def response(body = nil, status = 200, headers = {})
+          Rack::Response.new(body, status, headers)
         end
       end
     end
