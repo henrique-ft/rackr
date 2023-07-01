@@ -2,7 +2,7 @@
 source "https://rubygems.org"
 
 gem 'rack'
-gem 'erubis'
+gem 'erubi'
 
 # for small / medium projects and little memory usage
 gem 'thin'
