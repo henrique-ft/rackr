@@ -22,40 +22,30 @@ module Rack
       @router.clear_last_scope
     end
 
-    def root(endpoint)
-      @router.add('GET', '', endpoint)
+    def root(endpoint = -> {  }, &block)
+      if block_given?
+        @router.add('GET', '', block)
+      else
+        @router.add('GET', '', endpoint)
+      end
     end
 
-    def not_found(endpoint)
-      @router.add_not_found(endpoint)
+    def not_found(endpoint = -> {  }, &block)
+      if block_given?
+        @router.add_not_found(block)
+      else
+        @router.add_not_found(endpoint)
+      end
     end
 
-    def get(path, endpoint)
-      @router.add('GET', path, endpoint)
-    end
-
-    def post(path, endpoint)
-      @router.add('POST', path, endpoint)
-    end
-
-    def delete(path, endpoint)
-      @router.add('DELETE', path, endpoint)
-    end
-
-    def put(path, endpoint)
-      @router.add('PUT', path, endpoint)
-    end
-
-    def trace(path, endpoint)
-      @router.add('TRACE', path, endpoint)
-    end
-
-    def options(path, endpoint)
-      @router.add('OPTIONS', path, endpoint)
-    end
-
-    def patch(path, endpoint)
-      @router.add('PATCH', path, endpoint)
+    %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
+      define_method(http_method.downcase.to_sym) do |path, endpoint = -> {  }, &block|
+        if block.respond_to?(:call)
+          @router.add(http_method, path, block)
+        else
+          @router.add(http_method, path, endpoint)
+        end
+      end
     end
   end
 end

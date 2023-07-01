@@ -2,7 +2,7 @@ module MyController
   class Index
     include Rack::Way::Action
 
-    def call(_req)
+    def call(req)
       view 'index', { name: "henrique" }
     end
   end
