@@ -107,10 +107,10 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq([404, {}, ['Custom not found']])
   end
 
-  it 'can append namespaces' do
+  it 'can append scopes' do
     router = Rack::Way::Router.new
 
-    router.append_namespace 'admin'
+    router.append_scope 'admin'
 
     router.add :get, 'teste', ->(env) {'success'}
 
@@ -123,11 +123,11 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq('success')
   end
 
-  it 'can clear the last namespace' do
+  it 'can clear the last scope' do
     router = Rack::Way::Router.new
 
-    router.append_namespace 'admin'
-    router.clear_last_namespace
+    router.append_scope 'admin'
+    router.clear_last_scope
     router.add :get, 'teste', ->(env) {'success'}
 
     request =
@@ -139,10 +139,10 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq('success')
   end
 
-  it 'dont conflict with root path inside namespaces' do
+  it 'dont conflict with root path inside scopes' do
     router = Rack::Way::Router.new
 
-    router.append_namespace 'admin'
+    router.append_scope 'admin'
     router.add :get, '', ->(env) {'success'}
 
     request =

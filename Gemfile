@@ -3,7 +3,12 @@ source "https://rubygems.org"
 
 gem 'rack'
 gem 'erubis'
-gem 'puma'
+
+# for small / medium projects and little memory usage
+gem 'thin'
+
+# for large projects
+# gem 'puma'
 
 group :development, :test do
   gem "byebug"

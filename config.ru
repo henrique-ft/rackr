@@ -1,4 +1,6 @@
-require 'byebug'
+#require 'memory_profiler'
+
+#report = MemoryProfiler.report do
 require_relative 'lib/rack-way'
 require_relative 'controllers/my_controller/index'
 
@@ -7,20 +9,16 @@ App =
     # Returns [200, {"Content-Type" => "text/html"}, ["<h1> rack way </h1>"]]
     root ->(_req) { html('<h1> rack way </h1>') }
 
-    namespace 'v1' do
-      namespace 'oi' do
+    scope 'v1' do
+      scope 'oi' do
         root ->(_req) { html('<h1> rack way </h1>') }
 
         get 'bla', -> (_req) { html('oi') }
       end
-
-      (1..1000).to_a.each do |n|
-        get "x#{n.to_s}", ->(_req) { json({name: "henrique"}) }
-      end
     end
 
-    # Build a namespace /api
-    namespace 'v2' do
+    # Build a scope /api
+    scope 'v2' do
       # get /api/hello/somename
       get 'hello/:name', ->(req) do # 'req' is an Rack::Request object
         # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
@@ -35,7 +33,13 @@ App =
       view 'index', { name: "Henrique" }
     end
 
-    not_found ->(_req) { html("Are you lost?") }
+    not_found ->(_req) do
+      html do
+        div do
+          h1 "Are you lost?"
+        end
+      end
+    end
 
     # post
     # patch
@@ -44,3 +48,5 @@ App =
   end
 
 run App
+#end
+#report.pretty_print

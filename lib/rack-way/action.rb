@@ -13,12 +13,12 @@ module Rack
         Rack::Way::Action.html_response(content, status: status)
       end
 
-      def view(path, view_params = {}, status: 200, response_instance: false)
-        Rack::Way::Action.view(path, view_params, status: status, response_instance: response_instance)
-      end
-
       def view_response(path, view_params = {}, status: 200)
         Rack::Way::Action.view_response(path, view_params, status: status)
+      end
+
+      def view(path, view_params = {}, status: 200, response_instance: false)
+        Rack::Way::Action.view(path, view_params, status: status, response_instance: response_instance)
       end
 
       def json(content = {}, status: 200)

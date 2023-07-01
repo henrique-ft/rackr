@@ -15,11 +15,11 @@ module Rack
       @router
     end
 
-    def namespace(name, &block)
-      @router.append_namespace(name)
+    def scope(name, &block)
+      @router.append_scope(name)
       instance_eval(&block)
 
-      @router.clear_last_namespace
+      @router.clear_last_scope
     end
 
     def root(endpoint)
