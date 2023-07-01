@@ -1,7 +1,6 @@
 #require 'memory_profiler'
 
 #report = MemoryProfiler.report do
-require 'byebug'
 require_relative 'lib/rack-way'
 require_relative 'controllers/my_controller/index'
 
