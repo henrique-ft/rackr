@@ -38,6 +38,14 @@ module Rack
       end
     end
 
+    def error(endpoint = -> {  }, &block)
+      if block_given?
+        @router.add_error(block)
+      else
+        @router.add_error(endpoint)
+      end
+    end
+
     %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
       define_method(http_method.downcase.to_sym) do |path, endpoint = -> {  }, &block|
         if block.respond_to?(:call)

@@ -107,6 +107,21 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq([404, {}, ['Custom not found']])
   end
 
+  it 'render custom error when exception happen' do
+    router = Rack::Way::Router.new
+
+
+    allow(Rack::Way::Router::BuildRequest).to receive(:new).and_raise(Exception)
+    request =
+      {
+        'REQUEST_METHOD' => 'GET',
+        'REQUEST_PATH' => '/fail'
+      }
+
+    router.add_error proc { |e| [500, {}, ['Custom internal server error']] }
+    expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
+  end
+
   it 'can append scopes' do
     router = Rack::Way::Router.new
 

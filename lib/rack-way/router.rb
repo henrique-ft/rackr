@@ -8,13 +8,11 @@ module Rack
 
       def initialize
         @routes = {}
-
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
           @routes[method] = { _instances: [] }
         end
-
         @scopes = []
-
+        @error = proc { |e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
       end
 
@@ -29,6 +27,8 @@ module Rack
         end
 
         route.endpoint.new.call(request_builder.call(route))
+      rescue Exception => e
+        @error.call(e)
       end
 
       def add(method, path, endpoint)
@@ -49,6 +49,10 @@ module Rack
 
       def add_not_found(endpoint)
         @not_found = endpoint
+      end
+
+      def add_error(endpoint)
+        @error = endpoint
       end
 
       def append_scope(name)
