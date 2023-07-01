@@ -1,6 +1,6 @@
 # rack-way ![](https://img.shields.io/badge/version-0.0.1-blue.svg)
 
-rack-way is a very little framework that encourages ruby developers to build "pure *Rack*" applications when working in projects that need high performance.
+A little web framework that composes well with Rack gems ecossystem
 
 ## Overview
 
@@ -12,39 +12,42 @@ gem install rack-way
 ```ruby
 # config.ru
 
-require 'rack-way'
-
 App =
   Rack::Way.new.app do
-    # Returns [200, {"Content-Type" => "text/html"}, ["Hello!"]]
-    root ->(req) { render '<h1> My pure rack project! </h1>' }
-    # Build a namespace /api
-    namespace 'api' do
-      # get /api/hello/somename
-      get 'hello/:name', ->(req) do # 'req' is an Rack::Request object
-        # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
-        render_json({ name: req.params[:name] })
+    # Returns [200, {"Content-Type" => "text/html"}, ["<h1> rack way </h1>"]]
+    root do html('<h1> rack way </h1>') end
+
+    scope 'v1' do
+      scope 'hi' do
+        root do html('<h1> rack way </h1>') end
       end
     end
+
+    # Build a scope /api
+    scope 'v2' do
+      # get /api/hello/somename
+      get 'hello/:name' do |req| # 'req' is an Rack::Request object
+        # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
+        json({ name: req.params[:name] })
+      end
+    end
+
     # The router can also receive a class that responds to call(req)
     get 'my-controller', MyController::Index
-    # Called when the user try a non existent route
-    not_found ->(req) { render 'not found' }
-    
-    # Others router functions:
+
+    # renders an index erb located in /views
+    get 'my-view' do
+      view 'index', { name: "Henrique" }
+    end
+
+    not_found do
+      html "Are you lost?"
+    end
+
     # post
     # patch
     # delete
-    # trace
     # options
-  
-    # Others action functions examples:
-    # render 'something', status: 422
-    # render 'something', header: {"Content-Type" => "text/html"}, status: 422
-    # redirect_to '/somepath'
-    # render_erb 'path/to/some/file' # render path/to/some/file.html.erb
-    # render_erb 'path/to/some/file', {name: "hello} # render with 'name' param
-    # render_erb 'path/to/some/file', {name: "hello}, status: 404 # render with status 404
   end
 
 run App
@@ -58,7 +61,7 @@ module MyController
     include Rack::Way::Action
 
     def call(req)
-      render "hello"
+      json({say: "hello"})
     end
   end
 end
