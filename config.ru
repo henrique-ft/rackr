@@ -25,15 +25,6 @@ App =
       get 'hello/:name', ->(req) do # 'req' is an Rack::Request object
         # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
         json({ name: req.params[:name] })
-
-        # adicionar o Rack::Response
-        # res = view_response(json('/dawd'), status: 200, headers: "text/html")
-        # res.set_cookie
-        # res.finish
-
-        # res = json_response({ name: req.params[:name] })
-        # res.set_cookie
-        # res.finish
       end
     end
 

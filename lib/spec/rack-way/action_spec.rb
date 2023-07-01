@@ -92,6 +92,17 @@ RSpec.describe Rack::Way::Action do
     end
   end
 
+  context 'response' do
+    it 'can build a rack response' do
+      response = Rack::Way::Action.response
+
+      expect(response).to be_a(Rack::Response)
+      expect(response.status).to eq(200)
+      expect(response.body).to eq([])
+      expect(response.headers).to eq({})
+    end
+  end
+
   context 'redirecting' do
     it 'can redirect' do
       result = Rack::Way::Action.redirect_to('/hey')
