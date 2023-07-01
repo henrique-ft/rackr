@@ -111,14 +111,15 @@ RSpec.describe Rack::Way::Router do
     router = Rack::Way::Router.new
 
 
-    allow(Rack::Way::Router::BuildRequest).to receive(:new).and_raise(Exception)
+    allow_any_instance_of(Rack::Way::Router::Route).to receive(:match?).and_raise(Exception)
+
     request =
       {
         'REQUEST_METHOD' => 'GET',
-        'REQUEST_PATH' => '/fail'
+        'REQUEST_PATH' => '/teste'
       }
-
-    router.add_error proc { |e| [500, {}, ['Custom internal server error']] }
+    router.add :get, 'teste', double(call: 'Hey test')
+    router.add_error proc { |req, e| [500, {}, ['Custom internal server error']] }
     expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
   end
 

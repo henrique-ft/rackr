@@ -12,13 +12,13 @@ module Rack
           @routes[method] = { _instances: [] }
         end
         @scopes = []
-        @error = proc { |e| raise e }
+        @error = proc { |req, e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
       end
 
       def call(env)
-        route = match_route(env)
         request_builder = BuildRequest.new(env)
+        route = match_route(env)
 
         return render_not_found(request_builder.call) if route.nil?
 
@@ -28,7 +28,7 @@ module Rack
 
         route.endpoint.new.call(request_builder.call(route))
       rescue Exception => e
-        @error.call(e)
+        @error.call(request_builder.call, e)
       end
 
       def add(method, path, endpoint)
