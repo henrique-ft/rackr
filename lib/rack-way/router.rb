@@ -75,18 +75,22 @@ module Rack
       end
 
       def match_route(env)
-        routes = @routes[env['REQUEST_METHOD']]
+        matched_first_level_namespace = nil
 
-        routes.each do |first_level_namespace, _v|
+        @routes[env['REQUEST_METHOD']].each do |first_level_namespace, _v|
           next if first_level_namespace == :_instances
 
           if env['REQUEST_PATH'].start_with?(first_level_namespace)
-            routes = routes[first_level_namespace]
+            matched_first_level_namespace = first_level_namespace
             break
           end
         end
 
-        routes[:_instances].detect { |route| route.match?(env) }
+        if matched_first_level_namespace
+          return @routes[env['REQUEST_METHOD']][matched_first_level_namespace][:_instances].detect { |route| route.match?(env) }
+        end
+
+        @routes[env['REQUEST_METHOD']][:_instances].detect { |route| route.match?(env) }
       end
     end
   end
