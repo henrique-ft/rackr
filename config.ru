@@ -41,8 +41,10 @@ App =
     get 'my-controller', MyController::Index
 
     get 'my-view', ->(_req) do
-      view 'index', locals: { name: "Henrique" }
+      view 'index', { name: "Henrique" }
     end
+
+    not_found ->(_req) { html("Are you lost?") }
 
     # post
     # patch

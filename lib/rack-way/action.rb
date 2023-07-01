@@ -9,16 +9,16 @@ module Rack
         Rack::Way::Action.html(content, status: status)
       end
 
-      def view(path, locals: {}, status: 200)
-        Rack::Way::Action.view(path, locals: locals, status: status)
+      def view(path, local = {}, status: 200)
+        Rack::Way::Action.view(path, local, status: status)
       end
 
       def json(content = {}, status: 200)
         Rack::Way::Action.json(content, status: status)
       end
 
-      def erb(path, locals = {})
-        Rack::Way::Action.erb(path, locals)
+      def erb(path, local = {})
+        Rack::Way::Action.erb(path, local)
       end
 
       def redirect_to(url)
@@ -30,11 +30,11 @@ module Rack
           [status, { 'Content-Type' => 'text/html' }, [content]]
         end
 
-        def view(paths, locals: {}, status: 200)
+        def view(paths, local = {}, status: 200)
           if paths.kind_of?(Array)
-            erb = paths.map { |path| erb("views/#{path}", locals) }.join
+            erb = paths.map { |path| erb("views/#{path}", local) }.join
           else
-            erb = erb("views/#{paths}", locals)
+            erb = erb("views/#{paths}", local)
           end
 
           [status, { 'Content-Type' => 'text/html' }, [erb]]
@@ -44,8 +44,8 @@ module Rack
           [status, { 'Content-Type' => 'application/json' }, [content.to_json]]
         end
 
-        def erb(path, locals = {})
-          local = OpenStruct.new(locals)
+        def erb(path, view_params = {})
+          @view = OpenStruct.new(view_params)
           eval(Erubi::Engine.new(::File.read("#{path}.html.erb")).src)
         end
 
