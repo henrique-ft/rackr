@@ -80,7 +80,7 @@ module Rack
         @routes[env['REQUEST_METHOD']].each do |first_level_scope, _v|
           next if first_level_scope == :_instances
 
-          if env['REQUEST_PATH'].start_with?(first_level_scope)
+          if env['REQUEST_PATH'].start_with?(first_level_scope) || first_level_scope.start_with?('/:')
             matched_first_level_scope = first_level_scope
             break
           end
