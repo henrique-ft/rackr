@@ -27,6 +27,30 @@ RSpec.describe Rack::Way::Action do
       end
     end
 
+    context 'html_response' do
+      it 'can render from string with success' do
+        response = Rack::Way::Action.html_response('test')
+        expect(response.finish).to eq(
+          [
+            200,
+            { 'content-type' => 'text/html' },
+            %w[test]
+          ]
+        )
+      end
+
+      it 'can render html with other status' do
+        response = Rack::Way::Action.html_response('test', status: 201)
+        expect(response.finish).to eq(
+          [
+            201,
+            { 'content-type' => 'text/html' },
+            %w[test]
+          ]
+        )
+      end
+    end
+
     context 'view' do
       before do
         allow(::File).to receive(:read).and_return("hey")
@@ -38,6 +62,14 @@ RSpec.describe Rack::Way::Action do
         result = Rack::Way::Action.view path
 
         expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[hey]])
+      end
+
+      it 'can render with success with response_instance' do
+        path = 'test'
+
+        response = Rack::Way::Action.view path, response_instance: true
+
+        expect(response.finish).to eq([200, { 'content-type' => 'text/html' }, %w[hey]])
       end
 
       it 'reads the views/* folder' do
@@ -67,6 +99,19 @@ RSpec.describe Rack::Way::Action do
       end
     end
 
+    context 'view_response' do
+      before do
+        allow(::File).to receive(:read).and_return("hey")
+      end
+
+      it 'can render with success with response_instance' do
+        path = 'test'
+
+        response = Rack::Way::Action.view_response path
+        expect(response.finish).to eq([200, { 'content-type' => 'text/html' }, %w[hey]])
+      end
+    end
+
     context 'json' do
       it 'can render from hash with success' do
         result = Rack::Way::Action.json({ test: 'value' })
@@ -88,6 +133,30 @@ RSpec.describe Rack::Way::Action do
                 %w[{"test":"value"}]
               ]
             )
+      end
+    end
+
+    context 'json_response' do
+      it 'can render from hash with success' do
+        response = Rack::Way::Action.json_response({ test: 'value' })
+        expect(response.finish).to eq(
+          [
+            200,
+            { 'content-type' => 'application/json' },
+            %w[{"test":"value"}]
+          ]
+        )
+      end
+
+      it 'can render json with other status' do
+        response = Rack::Way::Action.json_response({ test: 'value' }, status: 201)
+        expect(response.finish).to eq(
+          [
+            201,
+            { 'content-type' => 'application/json' },
+            %w[{"test":"value"}]
+          ]
+        )
       end
     end
   end
