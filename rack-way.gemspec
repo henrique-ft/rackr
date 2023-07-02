@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
      "lib/rack-way/action.rb",
      "lib/rack-way/router.rb",
      "lib/rack-way/router/route.rb",
-     "lib/rack-way/router/request_builder.rb"]
+     "lib/rack-way/router/build_request.rb"]
   s.homepage    =
     'https://github.com/henriquefernandez/rack-way'
   s.license       = 'MIT'
