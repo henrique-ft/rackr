@@ -3,6 +3,54 @@ require 'byebug'
 
 RSpec.describe Rack::Way::Action do
   context 'rendering content' do
+    context 'text' do
+      it 'can render from string with success' do
+        result = Rack::Way::Action.text('test')
+        expect(result).to eq(
+          [
+            200,
+            { 'Content-Type' => 'text/plain' },
+            %w[test]
+          ]
+        )
+      end
+
+      it 'can render text with other status' do
+        result = Rack::Way::Action.text('test', status: 201)
+        expect(result).to eq(
+          [
+            201,
+            { 'Content-Type' => 'text/plain' },
+            %w[test]
+          ]
+        )
+      end
+    end
+
+    context 'html_response' do
+      it 'can render from string with success' do
+        response = Rack::Way::Action.text_response('test')
+        expect(response.finish).to eq(
+          [
+            200,
+            { 'content-type' => 'text/plain' },
+            %w[test]
+          ]
+        )
+      end
+
+      it 'can render text with other status' do
+        response = Rack::Way::Action.text_response('test', status: 201)
+        expect(response.finish).to eq(
+          [
+            201,
+            { 'content-type' => 'text/plain' },
+            %w[test]
+          ]
+        )
+      end
+    end
+
     context 'html' do
       it 'can render from string with success' do
         result = Rack::Way::Action.html('test')

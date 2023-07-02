@@ -29,6 +29,14 @@ module Rack
         Rack::Way::Action.json_response(content, status: status)
       end
 
+      def text(content, status: 200)
+        Rack::Way::Action.text(content, status: status)
+      end
+
+      def text_response(content, status: 200)
+        Rack::Way::Action.text_response(content, status: status)
+      end
+
       def erb(path, view_params = {})
         Rack::Way::Action.erb(path, view_params)
       end
@@ -81,6 +89,18 @@ module Rack
             content.to_json,
             status,
             { 'Content-Type' => 'application/json' }
+          )
+        end
+
+        def text(content, status: 200)
+          [status, { 'Content-Type' => 'text/plain' }, [content]]
+        end
+
+        def text_response(content, status: 200)
+          Rack::Response.new(
+            content,
+            status,
+            { 'Content-Type' => 'text/plain' }
           )
         end
 
