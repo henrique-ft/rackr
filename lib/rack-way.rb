@@ -5,8 +5,8 @@ module Rack
   class Way
     include Action
 
-    def initialize
-      @router = Router.new
+    def initialize(router: Router.new)
+      @router = router
     end
 
     def app(&block)

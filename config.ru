@@ -36,7 +36,7 @@ App =
     end
 
     not_found do
-      html "Are you lost?"
+      text "Are you lost?"
     end
 
     # post
