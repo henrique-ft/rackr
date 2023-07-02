@@ -1,17 +1,14 @@
-#require 'memory_profiler'
-
-#report = MemoryProfiler.report do
+require 'byebug'
 require_relative 'lib/rack-way'
 require_relative 'controllers/my_controller/index'
 
 App =
   Rack::Way.new.app do
-    # Returns [200, {"Content-Type" => "text/html"}, ["<h1> rack way </h1>"]]
-    root do html('<h1> rack way </h1>') end
+    root { html('<h1> rack way </h1>') }
 
     scope 'v1' do
       scope 'oi' do
-        root do html('<h1> rack way </h1>') end
+        root { html('<h1> rack way </h1>') }
 
         get 'bla' do
           html('oi')
@@ -19,32 +16,19 @@ App =
       end
     end
 
-    # Build a scope /api
     scope 'v2' do
-      # get /api/hello/somename
-      get 'hello/:name' do |req| # 'req' is an Rack::Request object
-        # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
+      get 'hello/:name' do |req|
         json({ name: req.params[:name] })
       end
     end
 
-    # The router can also receive a class that responds to call(req)
     get 'my-controller', MyController::Index
 
     get 'my-view' do
-      view 'index', { name: "Henrique" }
+      view 'index', { name: 'Henrique' }
     end
 
-    not_found do
-      text "Are you lost?"
-    end
-
-    # post
-    # patch
-    # delete
-    # options
+    not_found { text 'Are you lost?' }
   end
 
 run App
-#end
-#report.pretty_print

@@ -9,7 +9,7 @@ module Rack
       def initialize
         @routes = {}
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
-          @routes[method] = { _instances: [] }
+          @routes[method] = { __instances: [] }
         end
         @scopes = []
         @error = proc { |req, e| raise e }
@@ -32,19 +32,22 @@ module Rack
       end
 
       def add(method, path, endpoint)
-        joined_scopes = '/' << @scopes.join('/')
+        path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
+        route = Route.new(path_with_scopes, endpoint)
 
-        route = Route.new("#{joined_scopes}#{put_path_slash(path)}", endpoint)
+        return create_l1_scope(method.to_s.upcase, route) if @scopes.size >= 1
 
-        if @scopes.size >= 1
-          first_level_scope = '/' << @scopes.first
-          if @routes[method.to_s.upcase][first_level_scope] == nil
-            @routes[method.to_s.upcase][first_level_scope] = { _instances: [] }
-          end
-          @routes[method.to_s.upcase][first_level_scope][:_instances].push(route)
-        else
-          @routes[method.to_s.upcase][:_instances].push(route)
+        @routes[method.to_s.upcase][:__instances].push(route)
+      end
+
+      def create_l1_scope(method, route)
+        scope = '/' << @scopes.first
+
+        if @routes[method][scope] == nil
+          @routes[method][scope] = { __instances: [] }
         end
+
+        return @routes[method][scope][:__instances].push(route)
       end
 
       def add_not_found(endpoint)
@@ -79,22 +82,32 @@ module Rack
       end
 
       def match_route(env)
-        matched_first_level_scope = nil
+        matched_l1_scope = try_match_l1_scope(env)
 
-        @routes[env['REQUEST_METHOD']].each do |first_level_scope, _v|
-          next if first_level_scope == :_instances
+        if matched_l1_scope
+          return @routes[env['REQUEST_METHOD']][matched_l1_scope][:__instances]
+            .detect { |route| route.match?(env) }
+        end
 
-          if env['REQUEST_PATH'].start_with?(first_level_scope) || first_level_scope.start_with?('/:')
-            matched_first_level_scope = first_level_scope
+        @routes[env['REQUEST_METHOD']][:__instances].detect do |route|
+          route.match?(env)
+        end
+      end
+
+      def try_match_l1_scope(env)
+        matched = nil
+
+        @routes[env['REQUEST_METHOD']].each do |l1_scope, _v|
+          next if l1_scope == :__instances
+
+          if env['REQUEST_PATH'].start_with?(l1_scope) ||
+             l1_scope.start_with?('/:')
+            matched = l1_scope
             break
           end
         end
 
-        if matched_first_level_scope
-          return @routes[env['REQUEST_METHOD']][matched_first_level_scope][:_instances].detect { |route| route.match?(env) }
-        end
-
-        @routes[env['REQUEST_METHOD']][:_instances].detect { |route| route.match?(env) }
+        matched
       end
     end
   end
