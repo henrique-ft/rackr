@@ -1,12 +1,12 @@
-require 'rack-way/router'
-require 'rack-way/action'
+require_relative 'rack-way/router'
+require_relative 'rack-way/action'
 
 module Rack
   class Way
     include Action
 
-    def initialize
-      @router = Router.new
+    def initialize(router: Router.new)
+      @router = router
     end
 
     def app(&block)
@@ -15,39 +15,45 @@ module Rack
       @router
     end
 
-    def namespace(name, &block)
-      @router.append_namespace(name)
+    def scope(name, &block)
+      @router.append_scope(name)
       instance_eval(&block)
 
-      @router.clear_last_namespace
+      @router.clear_last_scope
     end
 
-    def root(endpoint)
-      @router.add('GET', '', endpoint)
+    def root(endpoint = -> {  }, &block)
+      if block_given?
+        @router.add('GET', '', block)
+      else
+        @router.add('GET', '', endpoint)
+      end
     end
 
-    def not_found(endpoint)
-      @router.add_not_found(endpoint)
+    def not_found(endpoint = -> {  }, &block)
+      if block_given?
+        @router.add_not_found(block)
+      else
+        @router.add_not_found(endpoint)
+      end
     end
 
-    def get(path, endpoint)
-      @router.add('GET', path, endpoint)
+    def error(endpoint = -> {  }, &block)
+      if block_given?
+        @router.add_error(block)
+      else
+        @router.add_error(endpoint)
+      end
     end
 
-    def post(path, endpoint)
-      @router.add('POST', path, endpoint)
-    end
-
-    def delete(path, endpoint)
-      @router.add('DELETE', path, endpoint)
-    end
-
-    def put(path, endpoint)
-      @router.add('PUT', path, endpoint)
-    end
-
-    def patch(path, endpoint)
-      @router.add('PATCH', path, endpoint)
+    %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
+      define_method(http_method.downcase.to_sym) do |path, endpoint = -> {  }, &block|
+        if block.respond_to?(:call)
+          @router.add(http_method, path, block)
+        else
+          @router.add(http_method, path, endpoint)
+        end
+      end
     end
   end
 end

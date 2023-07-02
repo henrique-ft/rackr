@@ -3,7 +3,7 @@ module MyController
     include Rack::Way::Action
 
     def call(req)
-      render "hello"
+      view 'index', { name: "henrique" }
     end
   end
 end

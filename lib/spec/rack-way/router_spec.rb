@@ -10,6 +10,8 @@ RSpec.describe Rack::Way::Router do
     router.add :post, 'post', double(call: 'Hey post')
     router.add :delete, 'delete', double(call: 'Hey delete')
     router.add :put, 'put', double(call: 'Hey put')
+    router.add :trace, 'trace', double(call: 'Hey trace')
+    router.add :options, 'options', double(call: 'Hey options')
     router.add :patch, 'patch', double(call: 'Hey patch')
 
     request =
@@ -53,6 +55,22 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq('Hey put')
 
     request =
+      {
+        'REQUEST_METHOD' => 'TRACE',
+        'REQUEST_PATH' => '/trace'
+      }
+
+    expect(router.call(request)).to eq('Hey trace')
+
+    request =
+      {
+        'REQUEST_METHOD' => 'OPTIONS',
+        'REQUEST_PATH' => '/options'
+      }
+
+    expect(router.call(request)).to eq('Hey options')
+
+    request =
     {
       'REQUEST_METHOD' => 'PATCH',
       'REQUEST_PATH' => '/patch'
@@ -89,10 +107,26 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq([404, {}, ['Custom not found']])
   end
 
-  it 'can append namespaces' do
+  it 'render custom error when exception happen' do
     router = Rack::Way::Router.new
 
-    router.append_namespace 'admin'
+
+    allow_any_instance_of(Rack::Way::Router::Route).to receive(:match?).and_raise(Exception)
+
+    request =
+      {
+        'REQUEST_METHOD' => 'GET',
+        'REQUEST_PATH' => '/teste'
+      }
+    router.add :get, 'teste', double(call: 'Hey test')
+    router.add_error proc { |req, e| [500, {}, ['Custom internal server error']] }
+    expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
+  end
+
+  it 'can append scopes' do
+    router = Rack::Way::Router.new
+
+    router.append_scope 'admin'
 
     router.add :get, 'teste', ->(env) {'success'}
 
@@ -105,11 +139,11 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq('success')
   end
 
-  it 'can clear the last namespace' do
+  it 'can clear the last scope' do
     router = Rack::Way::Router.new
 
-    router.append_namespace 'admin'
-    router.clear_last_namespace
+    router.append_scope 'admin'
+    router.clear_last_scope
     router.add :get, 'teste', ->(env) {'success'}
 
     request =
@@ -121,10 +155,10 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq('success')
   end
 
-  it 'dont conflict with root path inside namespaces' do
+  it 'dont conflict with root path inside scopes' do
     router = Rack::Way::Router.new
 
-    router.append_namespace 'admin'
+    router.append_scope 'admin'
     router.add :get, '', ->(env) {'success'}
 
     request =
