@@ -36,18 +36,29 @@ module Rack
         route = Route.new(path_with_scopes, endpoint)
 
         return create_l1_scope(method.to_s.upcase, route) if @scopes.size >= 1
+        return create_l2_scope(method.to_s.upcase, route) if @scopes.size >= 2
 
         @routes[method.to_s.upcase][:__instances].push(route)
       end
 
       def create_l1_scope(method, route)
-        scope = '/' << @scopes.first
+        scope = '/' << @scopes[0]
 
         if @routes[method][scope] == nil
           @routes[method][scope] = { __instances: [] }
         end
 
         return @routes[method][scope][:__instances].push(route)
+      end
+
+      def create_l2_scope(method, route)
+        scope = '/' << @scopes[1]
+
+        if @routes[method][l1_scope][scope] == nil
+          @routes[method][l1_scope][scope] = { __instances: [] }
+        end
+
+        return @routes[method][l1_scope][scope][:__instances].push(route)
       end
 
       def add_not_found(endpoint)
@@ -85,6 +96,13 @@ module Rack
         matched_l1_scope = try_match_l1_scope(env)
 
         if matched_l1_scope
+          matched_l2_scope = try_match_l2_scope(matched_l1_scope, env)
+
+          if matched_l2_scope
+            return @routes[env['REQUEST_METHOD']][matched_l1_scope][matched_l2_scope][:__instances]
+              .detect { |route| route.match?(env) }
+          end
+
           return @routes[env['REQUEST_METHOD']][matched_l1_scope][:__instances]
             .detect { |route| route.match?(env) }
         end
@@ -103,6 +121,22 @@ module Rack
           if env['REQUEST_PATH'].start_with?(l1_scope) ||
              l1_scope.start_with?('/:')
             matched = l1_scope
+            break
+          end
+        end
+
+        matched
+      end
+
+      def try_match_l2_scope(l1_scope, env)
+        matched = nil
+
+        @routes[env['REQUEST_METHOD']][l1_scope].each do |l2_scope, _v|
+          next if l2_scope == :__instances
+
+          if env['REQUEST_PATH'].start_with?(l1_scope << l2_scope) ||
+              l2_scope.start_with?('/:')
+            matched = l2_scope
             break
           end
         end
