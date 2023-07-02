@@ -23,9 +23,9 @@ App =
       end
     end
 
-    # Build a scope /api
+    # Build a scope /v2
     scope 'v2' do
-      # get /api/hello/somename
+      # get /v2/hello/somename
       get 'hello/:name' do |req| # 'req' is an Rack::Request object
         # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
         json({ name: req.params[:name] })
