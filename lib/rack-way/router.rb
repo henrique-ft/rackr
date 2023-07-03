@@ -51,11 +51,11 @@ module Rack
 
           if @scopes.size == scope_i
             routes[scope_with_slash][:__instances].push(route)
+
+            routes
           else
             routes[scope_with_slash]
           end
-
-          routes
         end
       end
 
