@@ -34,49 +34,25 @@ module Rack
       def add(method, path, endpoint)
         path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
         route = Route.new(path_with_scopes, endpoint)
-        method = method.to_s.upcase
 
-        if @scopes.size == 0
-          return @routes[method][:__instances].push(route)
-        end
+        return push_to_scope(method.to_s.upcase, route) if @scopes.size >= 1
+        #return create_l2_scope(method.to_s.upcase, route) if @scopes.size >= 2
 
-        scope_i = 0
-        @routes[method] = @scopes.reduce(@routes[method]) do |routes, scope|
-          scope_i += 1
-          scope_with_slash = '/' << scope
-
-          if routes[scope_with_slash] == nil
-            routes[scope_with_slash] = { __instances: [] }
-          end
-
-          if @scopes.size == scope_i
-            routes[scope_with_slash][:__instances].push(route)
-
-            routes
-          else
-            routes[scope_with_slash]
-          end
-        end
+        @routes[method.to_s.upcase][:__instances].push(route)
       end
 
-      def create_scopes(routes, route, pos)
-        scope = '/' << @scopes[pos]
-
-        if routes[scope] == nil
-          routes[scope] = { __instances: [] }
-        end
-
-        return routes[scope][:__instances].push(route)
+      def push_to_scope(method, route)
+        scopes_with_slash = @scopes.map {|s| '/' << s } << :__instances
+        stuff_it(@routes[method], *scopes_with_slash, route)
       end
 
-      def create_l1_scope(method, route)
-        scope = '/' << @scopes[0]
-
-        if @routes[method][scope] == nil
-          @routes[method][scope] = { __instances: [] }
+      def stuff_it(h, first_key, *rest_keys, val)
+        if rest_keys.empty?
+          (h[first_key] ||= []) << val
+        else
+          h[first_key] = stuff_it(h[first_key] ||= {}, *rest_keys, val)
         end
-
-        return @routes[method][scope][:__instances].push(route)
+        h
       end
 
       def create_l2_scope(method, route)
@@ -162,7 +138,7 @@ module Rack
         @routes[env['REQUEST_METHOD']][l1_scope].each do |l2_scope, _v|
           next if l2_scope == :__instances
 
-          if env['REQUEST_PATH'].start_with?(l1_scope << l2_scope) ||
+          if env['REQUEST_PATH'].start_with?(l1_scope + l2_scope) ||
               l2_scope.start_with?('/:')
             matched = l2_scope
             break
