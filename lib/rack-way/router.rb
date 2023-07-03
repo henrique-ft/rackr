@@ -36,33 +36,8 @@ module Rack
         route = Route.new(path_with_scopes, endpoint)
 
         return push_to_scope(method.to_s.upcase, route) if @scopes.size >= 1
-        #return create_l2_scope(method.to_s.upcase, route) if @scopes.size >= 2
 
         @routes[method.to_s.upcase][:__instances].push(route)
-      end
-
-      def push_to_scope(method, route)
-        scopes_with_slash = @scopes.map {|s| '/' << s } << :__instances
-        stuff_it(@routes[method], *scopes_with_slash, route)
-      end
-
-      def stuff_it(h, first_key, *rest_keys, val)
-        if rest_keys.empty?
-          (h[first_key] ||= []) << val
-        else
-          h[first_key] = stuff_it(h[first_key] ||= {}, *rest_keys, val)
-        end
-        h
-      end
-
-      def create_l2_scope(method, route)
-        scope = '/' << @scopes[1]
-
-        if @routes[method][l1_scope][scope] == nil
-          @routes[method][l1_scope][scope] = { __instances: [] }
-        end
-
-        return @routes[method][l1_scope][scope][:__instances].push(route)
       end
 
       def add_not_found(endpoint)
@@ -82,6 +57,20 @@ module Rack
       end
 
       private
+
+      def push_to_scope(method, route)
+        scopes_with_slash = @scopes.map {|s| '/' << s } << :__instances
+        stuff_it(@routes[method], *scopes_with_slash, route)
+      end
+
+      def stuff_it(h, first_key, *rest_keys, val)
+        if rest_keys.empty?
+          (h[first_key] ||= []) << val
+        else
+          h[first_key] = stuff_it(h[first_key] ||= {}, *rest_keys, val)
+        end
+        h
+      end
 
       def put_path_slash(path)
         return '' if (path == '/' || path == '') && @scopes != []
