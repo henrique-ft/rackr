@@ -60,14 +60,14 @@ module Rack
 
       def push_to_scope(method, route)
         scopes_with_slash = @scopes.map {|s| '/' << s } << :__instances
-        stuff_it(@routes[method], *scopes_with_slash, route)
+        push_it(@routes[method], *scopes_with_slash, route)
       end
 
-      def stuff_it(h, first_key, *rest_keys, val)
+      def push_it(h, first_key, *rest_keys, val)
         if rest_keys.empty?
           (h[first_key] ||= []) << val
         else
-          h[first_key] = stuff_it(h[first_key] ||= {}, *rest_keys, val)
+          h[first_key] = push_it(h[first_key] ||= {}, *rest_keys, val)
         end
         h
       end
