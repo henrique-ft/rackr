@@ -34,11 +34,39 @@ module Rack
       def add(method, path, endpoint)
         path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
         route = Route.new(path_with_scopes, endpoint)
+        method = method.to_s.upcase
 
-        return create_l1_scope(method.to_s.upcase, route) if @scopes.size >= 1
-        return create_l2_scope(method.to_s.upcase, route) if @scopes.size >= 2
+        if @scopes.size == 0
+          return @routes[method][:__instances].push(route)
+        end
 
-        @routes[method.to_s.upcase][:__instances].push(route)
+        scope_i = 0
+        @routes[method] = @scopes.reduce(@routes[method]) do |routes, scope|
+          scope_i += 1
+          scope_with_slash = '/' << scope
+
+          if routes[scope_with_slash] == nil
+            routes[scope_with_slash] = { __instances: [] }
+          end
+
+          if @scopes.size == scope_i
+            routes[scope_with_slash][:__instances].push(route)
+          else
+            routes[scope_with_slash]
+          end
+
+          routes
+        end
+      end
+
+      def create_scopes(routes, route, pos)
+        scope = '/' << @scopes[pos]
+
+        if routes[scope] == nil
+          routes[scope] = { __instances: [] }
+        end
+
+        return routes[scope][:__instances].push(route)
       end
 
       def create_l1_scope(method, route)
