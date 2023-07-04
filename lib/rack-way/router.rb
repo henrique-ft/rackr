@@ -18,7 +18,7 @@ module Rack
 
       def call(env)
         request_builder = BuildRequest.new(env)
-        route = match_route(env)
+        route = match_route2(env)
 
         return render_not_found(request_builder.call) if route.nil?
 
@@ -105,20 +105,50 @@ module Rack
         end
       end
 
+      def match_route2(env, last_tail = nil, found_scopes = [])
+        routes =
+          if last_tail.nil?
+            @routes[env['REQUEST_METHOD']]
+          else
+            @routes[env['REQUEST_METHOD']].dig(*found_scopes)
+          end
+
+        last_tail ||= env['REQUEST_PATH'].split('/').drop(1).map { |v| '/' << v }
+        segment, *tail = last_tail
+
+        routes.each do |scope, _v|
+          next if scope == :__instances
+
+          if segment == scope || scope.start_with?('/:')
+            found_scopes.push(scope)
+            break
+          end
+        end
+
+        if tail.length == 1 || found_scopes == []
+          #debugger
+          return @routes[env['REQUEST_METHOD']].dig(*(found_scopes << :__instances)).detect do |route|
+            route.match?(env)
+          end
+        end
+
+        match_route2(env, tail, found_scopes)
+      end
+
       def try_match_l1_scope(env)
-        matched = nil
+        found_scope = nil
 
         @routes[env['REQUEST_METHOD']].each do |l1_scope, _v|
           next if l1_scope == :__instances
 
           if env['REQUEST_PATH'].start_with?(l1_scope) ||
              l1_scope.start_with?('/:')
-            matched = l1_scope
+            found_scope = l1_scope
             break
           end
         end
 
-        matched
+        found_scope
       end
 
       def try_match_l2_scope(l1_scope, env)
