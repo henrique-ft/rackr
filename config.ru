@@ -4,11 +4,11 @@ require_relative 'controllers/my_controller/index'
 
 App =
   Rack::Way.new.app do
-    root { html('<h1> rack way </h1>') }
+    get { html('<h1> rack way </h1>') }
 
     scope 'v1' do
       scope 'oi' do
-        root { html('<h1> rack way </h1>') }
+        get { html('<h1> rack way </h1>') }
 
         get 'bla' do
           html('oi')

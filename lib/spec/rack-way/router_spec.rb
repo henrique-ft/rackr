@@ -5,7 +5,6 @@ RSpec.describe Rack::Way::Router do
   it 'can add routes' do
     router = Rack::Way::Router.new
 
-    router.add :get, 'teste', double(call: 'Hey test')
     router.add :get, 'get', double(call: 'Hey get')
     router.add :post, 'post', double(call: 'Hey post')
     router.add :delete, 'delete', double(call: 'Hey delete')
@@ -13,14 +12,6 @@ RSpec.describe Rack::Way::Router do
     router.add :trace, 'trace', double(call: 'Hey trace')
     router.add :options, 'options', double(call: 'Hey options')
     router.add :patch, 'patch', double(call: 'Hey patch')
-
-    request =
-      {
-        'REQUEST_METHOD' => 'GET',
-        'REQUEST_PATH' => '/teste'
-      }
-
-    expect(router.call(request)).to eq('Hey test')
 
     request =
     {
