@@ -12,7 +12,7 @@ module Rack
           @routes[method] = { __instances: [] }
         end
         @scopes = []
-        @error = proc { |req, e| raise e }
+        @error = proc { |_req, e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
       end
 
