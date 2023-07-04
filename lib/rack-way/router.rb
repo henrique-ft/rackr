@@ -18,7 +18,7 @@ module Rack
 
       def call(env)
         request_builder = BuildRequest.new(env)
-        route = match_route2(env)
+        route = match_route(env)
 
         return render_not_found(request_builder.call) if route.nil?
 
@@ -85,35 +85,16 @@ module Rack
         @not_found.new.call(env)
       end
 
-      def match_route(env)
-        matched_l1_scope = try_match_l1_scope(env)
-
-        if matched_l1_scope
-          matched_l2_scope = try_match_l2_scope(matched_l1_scope, env)
-
-          if matched_l2_scope
-            return @routes[env['REQUEST_METHOD']][matched_l1_scope][matched_l2_scope][:__instances]
-              .detect { |route| route.match?(env) }
-          end
-
-          return @routes[env['REQUEST_METHOD']][matched_l1_scope][:__instances]
-            .detect { |route| route.match?(env) }
-        end
-
-        @routes[env['REQUEST_METHOD']][:__instances].detect do |route|
-          route.match?(env)
-        end
-      end
-
-      def match_route2(env, last_tail = nil, found_scopes = [])
+      def match_route(env, last_tail = nil, found_scopes = [])
         routes =
           if last_tail.nil?
+            last_tail = env['REQUEST_PATH'].split('/').drop(1).map { |v| '/' << v }
+
             @routes[env['REQUEST_METHOD']]
           else
             @routes[env['REQUEST_METHOD']].dig(*found_scopes)
           end
 
-        last_tail ||= env['REQUEST_PATH'].split('/').drop(1).map { |v| '/' << v }
         segment, *tail = last_tail
 
         routes.each do |scope, _v|
@@ -125,46 +106,13 @@ module Rack
           end
         end
 
-        if tail.length == 1 || found_scopes == []
-          #debugger
+        if tail.length == 0 || found_scopes == []
           return @routes[env['REQUEST_METHOD']].dig(*(found_scopes << :__instances)).detect do |route|
             route.match?(env)
           end
         end
 
-        match_route2(env, tail, found_scopes)
-      end
-
-      def try_match_l1_scope(env)
-        found_scope = nil
-
-        @routes[env['REQUEST_METHOD']].each do |l1_scope, _v|
-          next if l1_scope == :__instances
-
-          if env['REQUEST_PATH'].start_with?(l1_scope) ||
-             l1_scope.start_with?('/:')
-            found_scope = l1_scope
-            break
-          end
-        end
-
-        found_scope
-      end
-
-      def try_match_l2_scope(l1_scope, env)
-        matched = nil
-
-        @routes[env['REQUEST_METHOD']][l1_scope].each do |l2_scope, _v|
-          next if l2_scope == :__instances
-
-          if env['REQUEST_PATH'].start_with?(l1_scope + l2_scope) ||
-              l2_scope.start_with?('/:')
-            matched = l2_scope
-            break
-          end
-        end
-
-        matched
+        match_route(env, tail, found_scopes)
       end
     end
   end
