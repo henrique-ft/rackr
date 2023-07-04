@@ -59,7 +59,7 @@ module Rack
       private
 
       def push_to_scope(method, route)
-        scopes_with_slash = @scopes.map {|s| '/' << s } << :__instances
+        scopes_with_slash = @scopes + [:__instances]
         push_it(@routes[method], *scopes_with_slash, route)
       end
 
@@ -88,7 +88,7 @@ module Rack
       def match_route(env, last_tail = nil, found_scopes = [])
         routes =
           if last_tail.nil?
-            last_tail = env['REQUEST_PATH'].split('/').drop(1).map { |v| '/' << v }
+            last_tail = env['REQUEST_PATH'].split('/').drop(1)
 
             @routes[env['REQUEST_METHOD']]
           else
@@ -100,7 +100,7 @@ module Rack
         routes.each do |scope, _v|
           next if scope == :__instances
 
-          if segment == scope || scope.start_with?('/:')
+          if segment == scope || scope.start_with?(':')
             found_scopes.push(scope)
             break
           end
