@@ -9,7 +9,7 @@ module Rack
       @router = router
     end
 
-    def app(&block)
+    def http_router(&block)
       instance_eval(&block)
 
       @router

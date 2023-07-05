@@ -18,6 +18,8 @@ module Rack
 
       def call(env)
         request_builder = BuildRequest.new(env)
+        env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
+
         route = match_route(env)
 
         return render_not_found(request_builder.call) if route.nil?

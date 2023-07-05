@@ -15,11 +15,11 @@ gem install rack-way
 App =
   Rack::Way.new.app do
     # Returns [200, {"Content-Type" => "text/html"}, ["<h1> rack way </h1>"]]
-    root do html('<h1> rack way </h1>') end
+    get { html('<h1> rack way </h1>') }
 
     scope 'v1' do
       scope 'hi' do
-        root do html('<h1> rack way </h1>') end
+        get { html('<h1> rack way </h1>') }
       end
     end
 

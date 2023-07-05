@@ -3,7 +3,7 @@ require_relative 'lib/rack-way'
 require_relative 'controllers/my_controller/index'
 
 App =
-  Rack::Way.new.app do
+  Rack::Way.new.http_router do
     get { html('<h1> rack way </h1>') }
 
     scope 'v1' do
