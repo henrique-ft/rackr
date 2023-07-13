@@ -1,3 +1,5 @@
+require 'byebug'
+
 require_relative 'router/route.rb'
 require_relative 'router/build_request.rb'
 
@@ -34,6 +36,8 @@ module Rack
       end
 
       def add(method, path, endpoint)
+        method = :get if method == :head
+
         path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
         route = Route.new(path_with_scopes, endpoint)
 

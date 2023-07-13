@@ -6,6 +6,7 @@ RSpec.describe Rack::Way::Router do
     router = Rack::Way::Router.new
 
     router.add :get, 'get', double(call: 'Hey get')
+    router.add :head, 'head', double(call: 'Hey head')
     router.add :post, 'post', double(call: 'Hey post')
     router.add :delete, 'delete', double(call: 'Hey delete')
     router.add :put, 'put', double(call: 'Hey put')
@@ -20,6 +21,14 @@ RSpec.describe Rack::Way::Router do
     }
 
     expect(router.call(request)).to eq('Hey get')
+
+    request =
+      {
+        'REQUEST_METHOD' => 'HEAD',
+        'REQUEST_PATH' => '/head'
+      }
+
+    expect(router.call(request)).to eq('Hey head')
 
     request =
     {
