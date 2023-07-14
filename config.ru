@@ -4,13 +4,13 @@ require_relative 'controllers/my_controller/index'
 
 App =
   Rack::Way.new.http_router do
-    get { html('<h1> rack way </h1>') }
+    get { html("<h1> #{route[:some_name]} </h1>") }
 
     scope 'v1' do
       scope 'oi' do
         get { html('<h1> rack way </h1>') }
 
-        get 'bla' do
+        get 'bla', as: :some_name do
           html('oi')
         end
       end

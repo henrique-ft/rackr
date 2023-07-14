@@ -79,6 +79,14 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq('Hey patch')
   end
 
+  it 'can add named routes' do
+    router = Rack::Way::Router.new
+
+    router.add :get, 'some_name', double(call: 'Hey get'), :some_name
+
+    expect(router.named_routes[:some_name]).to eq('/some_name')
+  end
+
   it 'render 404 when fails' do
     router = Rack::Way::Router.new
 

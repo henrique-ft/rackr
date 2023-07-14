@@ -15,6 +15,10 @@ module Rack
       @router
     end
 
+    def route
+      @router.named_routes
+    end
+
     def scope(name, &block)
       @router.append_scope(name)
       instance_eval(&block)
@@ -39,11 +43,11 @@ module Rack
     end
 
     %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
-      define_method(http_method.downcase.to_sym) do |path = '', endpoint = -> {  }, &block|
+      define_method(http_method.downcase.to_sym) do |path = '', endpoint = -> {}, as: nil, &block|
         if block.respond_to?(:call)
-          @router.add(http_method, path, block)
+          @router.add(http_method, path, block, as)
         else
-          @router.add(http_method, path, endpoint)
+          @router.add(http_method, path, endpoint, as)
         end
       end
     end

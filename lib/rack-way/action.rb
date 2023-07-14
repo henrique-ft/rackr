@@ -5,6 +5,16 @@ require 'rack'
 module Rack
   class Way
     module Action
+      def self.included(base)
+        base.class_eval do
+          attr_reader :route if self != Rack::Way
+
+          def initialize(route)
+            @route = route
+          end
+        end
+      end
+
       def html(content, status: 200)
         Rack::Way::Action.html(content, status: status)
       end

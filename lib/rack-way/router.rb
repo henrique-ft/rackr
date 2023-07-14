@@ -7,12 +7,14 @@ module Rack
   class Way
     class Router
       attr_writer :not_found
+      attr_reader :named_routes
 
       def initialize
         @routes = {}
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
           @routes[method] = { __instances: [] }
         end
+        @named_routes = {}
         @scopes = []
         @error = proc { |_req, e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
@@ -30,15 +32,21 @@ module Rack
           return route.endpoint.call(request_builder.call(route))
         end
 
+        if route.endpoint.include?(Rack::Way::Action)
+          return route.endpoint.new(@named_routes).call(request_builder.call(route))
+        end
+
         route.endpoint.new.call(request_builder.call(route))
       rescue Exception => e
         @error.call(request_builder.call, e)
       end
 
-      def add(method, path, endpoint)
+      def add(method, path, endpoint, as = nil)
         method = :get if method == :head
 
         path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
+        @named_routes[as] = path_with_scopes if as
+
         route = Route.new(path_with_scopes, endpoint)
 
         return push_to_scope(method.to_s.upcase, route) if @scopes.size >= 1
