@@ -16,7 +16,7 @@ module Rack
     end
 
     def route
-      @router.named_routes
+      @router.route
     end
 
     def scope(name, &block)

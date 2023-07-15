@@ -6,15 +6,19 @@ require_relative 'router/build_request.rb'
 module Rack
   class Way
     class Router
+      class UndefinedNamedRoute < StandardError; end
+
       attr_writer :not_found
-      attr_reader :named_routes
+      attr_reader :route
 
       def initialize
         @routes = {}
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
           @routes[method] = { __instances: [] }
         end
-        @named_routes = {}
+        @route = Hash.new do |hash, key|
+          raise(UndefinedNamedRoute, "Undefined named route: '#{ key }'")
+        end
         @scopes = []
         @error = proc { |_req, e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
@@ -24,19 +28,19 @@ module Rack
         request_builder = BuildRequest.new(env)
         env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
-        route = match_route(env)
+        route_instance = match_route(env)
 
-        return render_not_found(request_builder.call) if route.nil?
+        return render_not_found(request_builder.call) if route_instance.nil?
 
-        if route.endpoint.respond_to?(:call)
-          return route.endpoint.call(request_builder.call(route))
+        if route_instance.endpoint.respond_to?(:call)
+          return route_instance.endpoint.call(request_builder.call(route_instance))
         end
 
-        if route.endpoint.include?(Rack::Way::Action)
-          return route.endpoint.new(@named_routes).call(request_builder.call(route))
+        if route_instance.endpoint.include?(Rack::Way::Action)
+          return route_instance.endpoint.new(@route).call(request_builder.call(route_instance))
         end
 
-        route.endpoint.new.call(request_builder.call(route))
+        route_instance.endpoint.new.call(request_builder.call(route_instance))
       rescue Exception => e
         @error.call(request_builder.call, e)
       end
@@ -45,13 +49,13 @@ module Rack
         method = :get if method == :head
 
         path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
-        @named_routes[as] = path_with_scopes if as
+        @route[as] = path_with_scopes if as
 
-        route = Route.new(path_with_scopes, endpoint)
+        route_instance = Route.new(path_with_scopes, endpoint)
 
-        return push_to_scope(method.to_s.upcase, route) if @scopes.size >= 1
+        return push_to_scope(method.to_s.upcase, route_instance) if @scopes.size >= 1
 
-        @routes[method.to_s.upcase][:__instances].push(route)
+        @routes[method.to_s.upcase][:__instances].push(route_instance)
       end
 
       def add_not_found(endpoint)
@@ -72,9 +76,9 @@ module Rack
 
       private
 
-      def push_to_scope(method, route)
+      def push_to_scope(method, route_instance)
         scopes_with_slash = @scopes + [:__instances]
-        push_it(@routes[method], *scopes_with_slash, route)
+        push_it(@routes[method], *scopes_with_slash, route_instance)
       end
 
       def push_it(h, first_key, *rest_keys, val)
@@ -121,8 +125,8 @@ module Rack
         end
 
         if tail.length == 0 || found_scopes == []
-          return @routes[env['REQUEST_METHOD']].dig(*(found_scopes << :__instances)).detect do |route|
-            route.match?(env)
+          return @routes[env['REQUEST_METHOD']].dig(*(found_scopes << :__instances)).detect do |route_instance|
+            route_instance.match?(env)
           end
         end
 

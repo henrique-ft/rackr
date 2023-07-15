@@ -84,7 +84,7 @@ RSpec.describe Rack::Way::Router do
 
     router.add :get, 'some_name', double(call: 'Hey get'), :some_name
 
-    expect(router.named_routes[:some_name]).to eq('/some_name')
+    expect(router.route[:some_name]).to eq('/some_name')
   end
 
   it 'render 404 when fails' do
