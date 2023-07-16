@@ -1,50 +1,61 @@
-require_relative 'router/route.rb'
-require_relative 'router/build_request.rb'
+# frozen_string_literal: true
+
+require_relative 'router/route'
+require_relative 'router/build_request'
 
 module Rack
   class Way
     class Router
+      class UndefinedNamedRoute < StandardError; end
+
       attr_writer :not_found
+      attr_reader :route
 
       def initialize
         @routes = {}
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
-          @routes[method] = { _instances: [] }
+          @routes[method] = { __instances: [] }
+        end
+        @route = Hash.new do |_hash, key|
+          raise(UndefinedNamedRoute, "Undefined named route: '#{key}'")
         end
         @scopes = []
-        @error = proc { |req, e| raise e }
+        @error = proc { |_req, e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
       end
 
       def call(env)
         request_builder = BuildRequest.new(env)
-        route = match_route(env)
+        env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
-        return render_not_found(request_builder.call) if route.nil?
+        route_instance = match_route(env)
 
-        if route.endpoint.respond_to?(:call)
-          return route.endpoint.call(request_builder.call(route))
+        return render_not_found(request_builder.call) if route_instance.nil?
+
+        if route_instance.endpoint.respond_to?(:call)
+          return route_instance.endpoint.call(request_builder.call(route_instance))
         end
 
-        route.endpoint.new.call(request_builder.call(route))
+        if route_instance.endpoint.include?(Rack::Way::Action)
+          return route_instance.endpoint.new(@route).call(request_builder.call(route_instance))
+        end
+
+        route_instance.endpoint.new.call(request_builder.call(route_instance))
       rescue Exception => e
         @error.call(request_builder.call, e)
       end
 
-      def add(method, path, endpoint)
-        joined_scopes = '/' << @scopes.join('/')
+      def add(method, path, endpoint, as = nil)
+        method = :get if method == :head
 
-        route = Route.new("#{joined_scopes}#{put_path_slash(path)}", endpoint)
+        path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
+        @route[as] = path_with_scopes if as
 
-        if @scopes.size >= 1
-          first_level_scope = '/' << @scopes.first
-          if @routes[method.to_s.upcase][first_level_scope] == nil
-            @routes[method.to_s.upcase][first_level_scope] = { _instances: [] }
-          end
-          @routes[method.to_s.upcase][first_level_scope][:_instances].push(route)
-        else
-          @routes[method.to_s.upcase][:_instances].push(route)
-        end
+        route_instance = Route.new(path_with_scopes, endpoint)
+
+        return push_to_scope(method.to_s.upcase, route_instance) if @scopes.size >= 1
+
+        @routes[method.to_s.upcase][:__instances].push(route_instance)
       end
 
       def add_not_found(endpoint)
@@ -65,9 +76,23 @@ module Rack
 
       private
 
+      def push_to_scope(method, route_instance)
+        scopes_with_slash = @scopes + [:__instances]
+        push_it(@routes[method], *scopes_with_slash, route_instance)
+      end
+
+      def push_it(h, first_key, *rest_keys, val)
+        if rest_keys.empty?
+          (h[first_key] ||= []) << val
+        else
+          h[first_key] = push_it(h[first_key] ||= {}, *rest_keys, val)
+        end
+        h
+      end
+
       def put_path_slash(path)
-        return '' if (path == '/' || path == '') && @scopes != []
-        return '/' << path if @scopes != []
+        return '' if ['/', ''].include?(path) && @scopes != []
+        return "/#{path}" if @scopes != []
 
         path
       end
@@ -78,23 +103,34 @@ module Rack
         @not_found.new.call(env)
       end
 
-      def match_route(env)
-        matched_first_level_scope = nil
+      def match_route(env, last_tail = nil, found_scopes = [])
+        routes =
+          if last_tail.nil?
+            last_tail = env['REQUEST_PATH'].split('/').drop(1)
 
-        @routes[env['REQUEST_METHOD']].each do |first_level_scope, _v|
-          next if first_level_scope == :_instances
+            @routes[env['REQUEST_METHOD']]
+          else
+            @routes[env['REQUEST_METHOD']].dig(*found_scopes)
+          end
 
-          if env['REQUEST_PATH'].start_with?(first_level_scope) || first_level_scope.start_with?('/:')
-            matched_first_level_scope = first_level_scope
+        segment, *tail = last_tail
+
+        routes.each do |scope, _v|
+          next if scope == :__instances
+
+          if segment == scope || scope.start_with?(':')
+            found_scopes.push(scope)
             break
           end
         end
 
-        if matched_first_level_scope
-          return @routes[env['REQUEST_METHOD']][matched_first_level_scope][:_instances].detect { |route| route.match?(env) }
+        if tail.empty? || found_scopes == []
+          return @routes[env['REQUEST_METHOD']].dig(*(found_scopes << :__instances)).detect do |route_instance|
+            route_instance.match?(env)
+          end
         end
 
-        @routes[env['REQUEST_METHOD']][:_instances].detect { |route| route.match?(env) }
+        match_route(env, tail, found_scopes)
       end
     end
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'erubi'
 require 'json'
 require 'rack'
@@ -5,20 +7,40 @@ require 'rack'
 module Rack
   class Way
     module Action
+      def self.included(base)
+        base.class_eval do
+          attr_reader :route if self != Rack::Way
+
+          def initialize(route)
+            @route = route
+          end
+
+          def view_response(a_path, a_view_params = {}, status: 200)
+            Rack::Way::Action.view_response(
+              a_path,
+              a_view_params,
+              status: status, route: route
+            )
+          end
+
+          def view(
+            a_path, a_view_params = {}, status: 200, response_instance: false
+          )
+            Rack::Way::Action.view(
+              a_path,
+              a_view_params,
+              status: status, response_instance: response_instance, route: route
+            )
+          end
+        end
+      end
+
       def html(content, status: 200)
         Rack::Way::Action.html(content, status: status)
       end
 
       def html_response(content, status: 200)
         Rack::Way::Action.html_response(content, status: status)
-      end
-
-      def view_response(path, view_params = {}, status: 200)
-        Rack::Way::Action.view_response(path, view_params, status: status)
-      end
-
-      def view(path, view_params = {}, status: 200, response_instance: false)
-        Rack::Way::Action.view(path, view_params, status: status, response_instance: response_instance)
       end
 
       def json(content = {}, status: 200)
@@ -58,16 +80,27 @@ module Rack
           Rack::Response.new(content, status, { 'Content-Type' => 'text/html' })
         end
 
-        def view_response(paths, view_params = {}, status: 200)
-          view(paths, view_params, status: status, response_instance: true)
+        def view_response(paths, view_params = {}, status: 200, route: nil)
+          view(
+            paths,
+            view_params,
+            status: status, response_instance: true,
+            route: route
+          )
         end
 
-        def view(paths, view_params = {}, status: 200, response_instance: false)
-          if paths.kind_of?(Array)
-            erb = paths.map { |path| erb("views/#{path}", view_params) }.join
-          else
-            erb = erb("views/#{paths}", view_params)
-          end
+        def view(
+          paths,
+          view_params = {},
+          status: 200,
+          response_instance: false,
+          route: nil
+        )
+          erb = if paths.is_a?(Array)
+                  paths.map { |path| erb("views/#{path}", route, view_params) }.join
+                else
+                  erb("views/#{paths}", route, view_params)
+                end
 
           if response_instance
             return Rack::Response.new(
@@ -104,7 +137,7 @@ module Rack
           )
         end
 
-        def erb(path, view_params = {})
+        def erb(path, _route, view_params = {})
           @view = OpenStruct.new(view_params)
 
           eval(Erubi::Engine.new(::File.read("#{path}.html.erb")).src)

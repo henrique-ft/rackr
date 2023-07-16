@@ -1,4 +1,6 @@
-require_relative '../../../rack-way/router/build_request.rb'
+# frozen_string_literal: true
+
+require_relative '../../../rack-way/router/build_request'
 require 'byebug'
 
 RSpec.describe Rack::Way::Router::BuildRequest do
@@ -18,7 +20,7 @@ RSpec.describe Rack::Way::Router::BuildRequest do
     it 'it can match the route params' do
       route =
         Rack::Way::Router::Route
-          .new '/test/:param1/test/:param2', double(call: 'Hey test')
+        .new '/test/:param1/test/:param2', double(call: 'Hey test')
 
       allow(Rack::Request)
         .to(

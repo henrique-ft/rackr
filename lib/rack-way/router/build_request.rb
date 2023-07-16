@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Rack
   class Way
     class Router
@@ -10,7 +12,7 @@ module Rack
           request = Rack::Request.new(@env)
 
           return request if route.nil?
-          return request unless route.has_params?
+          return request unless route.has_params
 
           update_request_params(request, route)
         end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../../rack-way/action'
 require 'byebug'
 
@@ -58,7 +60,7 @@ RSpec.describe Rack::Way::Action do
           [
             200,
             { 'Content-Type' => 'text/html' },
-           %w[test]
+            %w[test]
           ]
         )
       end
@@ -101,7 +103,7 @@ RSpec.describe Rack::Way::Action do
 
     context 'view' do
       before do
-        allow(::File).to receive(:read).and_return("hey")
+        allow(::File).to receive(:read).and_return('hey')
       end
 
       it 'can render with success' do
@@ -142,14 +144,14 @@ RSpec.describe Rack::Way::Action do
         result = Rack::Way::Action.view [path, path, path], status: 404
 
         expect(result).to eq(
-              [404, { 'Content-Type' => 'text/html' }, %w[heyheyhey]]
-            )
+          [404, { 'Content-Type' => 'text/html' }, %w[heyheyhey]]
+        )
       end
     end
 
     context 'view_response' do
       before do
-        allow(::File).to receive(:read).and_return("hey")
+        allow(::File).to receive(:read).and_return('hey')
       end
 
       it 'can render with success with response_instance' do
@@ -164,23 +166,23 @@ RSpec.describe Rack::Way::Action do
       it 'can render from hash with success' do
         result = Rack::Way::Action.json({ test: 'value' })
         expect(result).to eq(
-              [
-                200,
-                { 'Content-Type' => 'application/json' },
-                %w[{"test":"value"}]
-              ]
-            )
+          [
+            200,
+            { 'Content-Type' => 'application/json' },
+            %w[{"test":"value"}]
+          ]
+        )
       end
 
       it 'can render json with other status' do
         result = Rack::Way::Action.json({ test: 'value' }, status: 201)
         expect(result).to eq(
-              [
-                201,
-                { 'Content-Type' => 'application/json' },
-                %w[{"test":"value"}]
-              ]
-            )
+          [
+            201,
+            { 'Content-Type' => 'application/json' },
+            %w[{"test":"value"}]
+          ]
+        )
       end
     end
 

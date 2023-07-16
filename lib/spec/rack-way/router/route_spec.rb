@@ -1,4 +1,6 @@
-require_relative '../../../rack-way/router/route.rb'
+# frozen_string_literal: true
+
+require_relative '../../../rack-way/router/route'
 require 'byebug'
 
 RSpec.describe Rack::Way::Router::Route do
