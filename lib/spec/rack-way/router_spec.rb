@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../../rack-way/router'
 require 'byebug'
 
@@ -15,10 +17,10 @@ RSpec.describe Rack::Way::Router do
     router.add :patch, 'patch', double(call: 'Hey patch')
 
     request =
-    {
-      'REQUEST_METHOD' => 'GET',
-      'REQUEST_PATH' => '/get'
-    }
+      {
+        'REQUEST_METHOD' => 'GET',
+        'REQUEST_PATH' => '/get'
+      }
 
     expect(router.call(request)).to eq('Hey get')
 
@@ -31,26 +33,26 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq('Hey head')
 
     request =
-    {
-      'REQUEST_METHOD' => 'POST',
-      'REQUEST_PATH' => '/post'
-    }
+      {
+        'REQUEST_METHOD' => 'POST',
+        'REQUEST_PATH' => '/post'
+      }
 
     expect(router.call(request)).to eq('Hey post')
 
     request =
-    {
-      'REQUEST_METHOD' => 'DELETE',
-      'REQUEST_PATH' => '/delete'
-    }
+      {
+        'REQUEST_METHOD' => 'DELETE',
+        'REQUEST_PATH' => '/delete'
+      }
 
     expect(router.call(request)).to eq('Hey delete')
 
     request =
-    {
-      'REQUEST_METHOD' => 'PUT',
-      'REQUEST_PATH' => '/put'
-    }
+      {
+        'REQUEST_METHOD' => 'PUT',
+        'REQUEST_PATH' => '/put'
+      }
 
     expect(router.call(request)).to eq('Hey put')
 
@@ -71,10 +73,10 @@ RSpec.describe Rack::Way::Router do
     expect(router.call(request)).to eq('Hey options')
 
     request =
-    {
-      'REQUEST_METHOD' => 'PATCH',
-      'REQUEST_PATH' => '/patch'
-    }
+      {
+        'REQUEST_METHOD' => 'PATCH',
+        'REQUEST_PATH' => '/patch'
+      }
 
     expect(router.call(request)).to eq('Hey patch')
   end
@@ -118,7 +120,6 @@ RSpec.describe Rack::Way::Router do
   it 'render custom error when exception happen' do
     router = Rack::Way::Router.new
 
-
     allow_any_instance_of(Rack::Way::Router::Route).to receive(:match?).and_raise(Exception)
 
     request =
@@ -127,7 +128,7 @@ RSpec.describe Rack::Way::Router do
         'REQUEST_PATH' => '/teste'
       }
     router.add :get, 'teste', double(call: 'Hey test')
-    router.add_error proc { |req, e| [500, {}, ['Custom internal server error']] }
+    router.add_error proc { |_req, _e| [500, {}, ['Custom internal server error']] }
     expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
   end
 
@@ -136,7 +137,7 @@ RSpec.describe Rack::Way::Router do
 
     router.append_scope 'admin'
 
-    router.add :get, 'teste', ->(env) {'success'}
+    router.add :get, 'teste', ->(_env) { 'success' }
 
     request =
       {
@@ -152,7 +153,7 @@ RSpec.describe Rack::Way::Router do
 
     router.append_scope 'admin'
     router.clear_last_scope
-    router.add :get, 'teste', ->(env) {'success'}
+    router.add :get, 'teste', ->(_env) { 'success' }
 
     request =
       {
@@ -167,7 +168,7 @@ RSpec.describe Rack::Way::Router do
     router = Rack::Way::Router.new
 
     router.append_scope 'admin'
-    router.add :get, '', ->(env) {'success'}
+    router.add :get, '', ->(_env) { 'success' }
 
     request =
       {

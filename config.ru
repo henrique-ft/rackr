@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'byebug'
 require_relative 'lib/rack-way'
 require_relative 'controllers/my_controller/index'

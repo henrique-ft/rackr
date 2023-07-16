@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'rack-way/router'
 require_relative 'rack-way/action'
 
@@ -26,7 +28,7 @@ module Rack
       @router.clear_last_scope
     end
 
-    def not_found(endpoint = -> {  }, &block)
+    def not_found(endpoint = -> {}, &block)
       if block_given?
         @router.add_not_found(block)
       else
@@ -34,7 +36,7 @@ module Rack
       end
     end
 
-    def error(endpoint = -> {  }, &block)
+    def error(endpoint = -> {}, &block)
       if block_given?
         @router.add_error(block)
       else

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'erubi'
 require 'json'
 require 'rack'
@@ -82,7 +84,7 @@ module Rack
           view(
             paths,
             view_params,
-            status: status, response_instance: true, route: nil,
+            status: status, response_instance: true,
             route: route
           )
         end
@@ -94,11 +96,11 @@ module Rack
           response_instance: false,
           route: nil
         )
-          if paths.kind_of?(Array)
-            erb = paths.map { |path| erb("views/#{path}", route, view_params) }.join
-          else
-            erb = erb("views/#{paths}", route, view_params)
-          end
+          erb = if paths.is_a?(Array)
+                  paths.map { |path| erb("views/#{path}", route, view_params) }.join
+                else
+                  erb("views/#{paths}", route, view_params)
+                end
 
           if response_instance
             return Rack::Response.new(
@@ -135,7 +137,7 @@ module Rack
           )
         end
 
-        def erb(path, route, view_params = {})
+        def erb(path, _route, view_params = {})
           @view = OpenStruct.new(view_params)
 
           eval(Erubi::Engine.new(::File.read("#{path}.html.erb")).src)

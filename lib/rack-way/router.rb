@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'byebug'
 
-require_relative 'router/route.rb'
-require_relative 'router/build_request.rb'
+require_relative 'router/route'
+require_relative 'router/build_request'
 
 module Rack
   class Way
@@ -16,8 +18,8 @@ module Rack
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
           @routes[method] = { __instances: [] }
         end
-        @route = Hash.new do |hash, key|
-          raise(UndefinedNamedRoute, "Undefined named route: '#{ key }'")
+        @route = Hash.new do |_hash, key|
+          raise(UndefinedNamedRoute, "Undefined named route: '#{key}'")
         end
         @scopes = []
         @error = proc { |_req, e| raise e }
@@ -91,8 +93,8 @@ module Rack
       end
 
       def put_path_slash(path)
-        return '' if (path == '/' || path == '') && @scopes != []
-        return '/' << path if @scopes != []
+        return '' if ['/', ''].include?(path) && @scopes != []
+        return "/#{path}" if @scopes != []
 
         path
       end
@@ -124,7 +126,7 @@ module Rack
           end
         end
 
-        if tail.length == 0 || found_scopes == []
+        if tail.empty? || found_scopes == []
           return @routes[env['REQUEST_METHOD']].dig(*(found_scopes << :__instances)).detect do |route_instance|
             route_instance.match?(env)
           end
