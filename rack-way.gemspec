@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'rack-way'
-  s.version     = '0.0.3'
+  s.version     = '0.0.31'
   s.summary     = '"rack-way" come with a router and helper functions to build pure Rack projects.'
   s.description = 'A router and helper functions to build pure Rack projects.'
   s.authors     = ['Henrique F. Teixeira']
@@ -17,5 +17,5 @@ Gem::Specification.new do |s|
     'https://github.com/henriquefernandez/rack-way'
   s.license = 'MIT'
   s.add_runtime_dependency 'erubi', '~> 1.12'
-  s.add_runtime_dependency 'rack', '~> 3.0'
+  s.add_runtime_dependency 'rack', '>= 2.0', '< 4.0'
 end
