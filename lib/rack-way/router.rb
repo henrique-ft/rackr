@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'byebug'
-
 require_relative 'router/route'
 require_relative 'router/build_request'
 
