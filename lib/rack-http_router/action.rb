@@ -143,6 +143,14 @@ module Rack
           eval(Erubi::Engine.new(::File.read("#{path}.html.erb")).src)
         end
 
+        def redirect_response(url)
+          Rack::Response.new(
+            nil,
+            302,
+            { 'Location' => url }
+          )
+        end
+
         def redirect_to(url)
           [302, { 'Location' => url }, []]
         end
