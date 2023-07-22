@@ -63,6 +63,10 @@ module Rack
         Rack::HttpRouter::Action.erb(path, view_params)
       end
 
+      def redirect_response(url)
+        Rack::HttpRouter::Action.redirect_response(url)
+      end
+
       def redirect_to(url)
         Rack::HttpRouter::Action.redirect_to(url)
       end
