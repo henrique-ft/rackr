@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
 require 'byebug'
-require_relative 'lib/rack-way'
+require_relative 'lib/rack-http_router'
 require_relative 'controllers/my_controller/index'
 
 App =
-  Rack::Way.new.http_router do
-    get { html("<h1> #{route[:some_name]} </h1>") }
+  Rack::HttpRouter.new.call do
+    get { html("<h1> / </h1>") }
 
     scope 'v1' do
       scope 'oi' do
-        get { html('<h1> rack way </h1>') }
+        get { html('<h1> rack http_router </h1>') }
 
         get 'bla', as: :some_name do
-          html('oi')
+          html("<h1> #{route[:some_name]} </h1>")
         end
       end
     end

@@ -1,0 +1,21 @@
+# frozen_string_literal: true
+
+Gem::Specification.new do |s|
+  s.name        = 'rack-http_router'
+  s.version     = '0.0.1'
+  s.summary     = '"rack-http_router" come with a router and helper functions to build pure Rack projects.'
+  s.description = 'A complete http router solution that fit well with pure rack apps'
+  s.authors     = ['Henrique F. Teixeira']
+  s.email       = 'hriqueft@gmail.com'
+  s.files       =
+    ['lib/rack-http_router.rb',
+     'lib/rack-http_router/action.rb',
+     'lib/rack-http_router/router.rb',
+     'lib/rack-http_router/router/route.rb',
+     'lib/rack-http_router/router/build_request.rb']
+  s.homepage    =
+    'https://github.com/henriquefernandez/rack-http_router'
+  s.license = 'MIT'
+  s.add_runtime_dependency 'erubi', '~> 1.12'
+  s.add_runtime_dependency 'rack', '>= 2.0', '< 4.0'
+end

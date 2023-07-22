@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Rack
-  class Way
+  class HttpRouter
     class Router
       class BuildRequest
         def initialize(env)

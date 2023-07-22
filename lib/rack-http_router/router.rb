@@ -4,7 +4,7 @@ require_relative 'router/route'
 require_relative 'router/build_request'
 
 module Rack
-  class Way
+  class HttpRouter
     class Router
       class UndefinedNamedRoute < StandardError; end
 
@@ -36,7 +36,7 @@ module Rack
           return route_instance.endpoint.call(request_builder.call(route_instance))
         end
 
-        if route_instance.endpoint.include?(Rack::Way::Action)
+        if route_instance.endpoint.include?(Rack::HttpRouter::Action)
           return route_instance.endpoint.new(@route).call(request_builder.call(route_instance))
         end
 

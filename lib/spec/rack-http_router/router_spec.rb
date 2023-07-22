@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative '../../rack-way/router'
+require_relative '../../rack-http_router/router'
 require 'byebug'
 
-RSpec.describe Rack::Way::Router do
+RSpec.describe Rack::HttpRouter::Router do
   it 'can add routes' do
-    router = Rack::Way::Router.new
+    router = Rack::HttpRouter::Router.new
 
     router.add :get, 'get', double(call: 'Hey get')
     router.add :head, 'head', double(call: 'Hey head')
@@ -82,7 +82,7 @@ RSpec.describe Rack::Way::Router do
   end
 
   it 'can add named routes' do
-    router = Rack::Way::Router.new
+    router = Rack::HttpRouter::Router.new
 
     router.add :get, 'some_name', double(call: 'Hey get'), :some_name
 
@@ -90,7 +90,7 @@ RSpec.describe Rack::Way::Router do
   end
 
   it 'render 404 when fails' do
-    router = Rack::Way::Router.new
+    router = Rack::HttpRouter::Router.new
 
     router.add :get, 'teste', double(call: 'Hey test')
 
@@ -104,7 +104,7 @@ RSpec.describe Rack::Way::Router do
   end
 
   it 'render custom 404 when fails' do
-    router = Rack::Way::Router.new
+    router = Rack::HttpRouter::Router.new
 
     router.add_not_found proc { [404, {}, ['Custom not found']] }
 
@@ -118,9 +118,9 @@ RSpec.describe Rack::Way::Router do
   end
 
   it 'render custom error when exception happen' do
-    router = Rack::Way::Router.new
+    router = Rack::HttpRouter::Router.new
 
-    allow_any_instance_of(Rack::Way::Router::Route).to receive(:match?).and_raise(Exception)
+    allow_any_instance_of(Rack::HttpRouter::Router::Route).to receive(:match?).and_raise(Exception)
 
     request =
       {
@@ -133,7 +133,7 @@ RSpec.describe Rack::Way::Router do
   end
 
   it 'can append scopes' do
-    router = Rack::Way::Router.new
+    router = Rack::HttpRouter::Router.new
 
     router.append_scope 'admin'
 
@@ -149,7 +149,7 @@ RSpec.describe Rack::Way::Router do
   end
 
   it 'can clear the last scope' do
-    router = Rack::Way::Router.new
+    router = Rack::HttpRouter::Router.new
 
     router.append_scope 'admin'
     router.clear_last_scope
@@ -165,7 +165,7 @@ RSpec.describe Rack::Way::Router do
   end
 
   it 'dont conflict with root path inside scopes' do
-    router = Rack::Way::Router.new
+    router = Rack::HttpRouter::Router.new
 
     router.append_scope 'admin'
     router.add :get, '', ->(_env) { 'success' }
