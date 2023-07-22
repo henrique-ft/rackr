@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-require_relative 'rack-way/router'
-require_relative 'rack-way/action'
+require_relative 'rack-http_router/router'
+require_relative 'rack-http_router/action'
 
 module Rack
-  class Way
+  class HttpRouter
     include Action
 
     def initialize(router: Router.new)
       @router = router
     end
 
-    def http_router(&block)
+    def call(&block)
       instance_eval(&block)
 
       @router

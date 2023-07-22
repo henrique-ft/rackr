@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require_relative '../../rack-way/action'
+require_relative '../../rack-http_router/action'
 require 'byebug'
 
-RSpec.describe Rack::Way::Action do
+RSpec.describe Rack::HttpRouter::Action do
   context 'rendering content' do
     context 'text' do
       it 'can render from string with success' do
-        result = Rack::Way::Action.text('test')
+        result = Rack::HttpRouter::Action.text('test')
         expect(result).to eq(
           [
             200,
@@ -18,7 +18,7 @@ RSpec.describe Rack::Way::Action do
       end
 
       it 'can render text with other status' do
-        result = Rack::Way::Action.text('test', status: 201)
+        result = Rack::HttpRouter::Action.text('test', status: 201)
         expect(result).to eq(
           [
             201,
@@ -31,7 +31,7 @@ RSpec.describe Rack::Way::Action do
 
     context 'html_response' do
       it 'can render from string with success' do
-        response = Rack::Way::Action.text_response('test')
+        response = Rack::HttpRouter::Action.text_response('test')
         expect(response.finish).to eq(
           [
             200,
@@ -42,7 +42,7 @@ RSpec.describe Rack::Way::Action do
       end
 
       it 'can render text with other status' do
-        response = Rack::Way::Action.text_response('test', status: 201)
+        response = Rack::HttpRouter::Action.text_response('test', status: 201)
         expect(response.finish).to eq(
           [
             201,
@@ -55,7 +55,7 @@ RSpec.describe Rack::Way::Action do
 
     context 'html' do
       it 'can render from string with success' do
-        result = Rack::Way::Action.html('test')
+        result = Rack::HttpRouter::Action.html('test')
         expect(result).to eq(
           [
             200,
@@ -66,7 +66,7 @@ RSpec.describe Rack::Way::Action do
       end
 
       it 'can render html with other status' do
-        result = Rack::Way::Action.html('test', status: 201)
+        result = Rack::HttpRouter::Action.html('test', status: 201)
         expect(result).to eq(
           [
             201,
@@ -79,7 +79,7 @@ RSpec.describe Rack::Way::Action do
 
     context 'html_response' do
       it 'can render from string with success' do
-        response = Rack::Way::Action.html_response('test')
+        response = Rack::HttpRouter::Action.html_response('test')
         expect(response.finish).to eq(
           [
             200,
@@ -90,7 +90,7 @@ RSpec.describe Rack::Way::Action do
       end
 
       it 'can render html with other status' do
-        response = Rack::Way::Action.html_response('test', status: 201)
+        response = Rack::HttpRouter::Action.html_response('test', status: 201)
         expect(response.finish).to eq(
           [
             201,
@@ -109,7 +109,7 @@ RSpec.describe Rack::Way::Action do
       it 'can render with success' do
         path = 'test'
 
-        result = Rack::Way::Action.view path
+        result = Rack::HttpRouter::Action.view path
 
         expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[hey]])
       end
@@ -117,7 +117,7 @@ RSpec.describe Rack::Way::Action do
       it 'can render with success with response_instance' do
         path = 'test'
 
-        response = Rack::Way::Action.view path, response_instance: true
+        response = Rack::HttpRouter::Action.view path, response_instance: true
 
         expect(response.finish).to eq([200, { 'content-type' => 'text/html' }, %w[hey]])
       end
@@ -125,7 +125,7 @@ RSpec.describe Rack::Way::Action do
       it 'reads the views/* folder' do
         path = 'test'
 
-        Rack::Way::Action.view path
+        Rack::HttpRouter::Action.view path
 
         expect(::File).to have_received(:read).with('views/test.html.erb')
       end
@@ -133,7 +133,7 @@ RSpec.describe Rack::Way::Action do
       it 'can render with different status' do
         path = 'test'
 
-        result = Rack::Way::Action.view path, status: 404
+        result = Rack::HttpRouter::Action.view path, status: 404
 
         expect(result).to eq([404, { 'Content-Type' => 'text/html' }, %w[hey]])
       end
@@ -141,7 +141,7 @@ RSpec.describe Rack::Way::Action do
       it 'can render multiple erbs' do
         path = 'test'
 
-        result = Rack::Way::Action.view [path, path, path], status: 404
+        result = Rack::HttpRouter::Action.view [path, path, path], status: 404
 
         expect(result).to eq(
           [404, { 'Content-Type' => 'text/html' }, %w[heyheyhey]]
@@ -157,14 +157,14 @@ RSpec.describe Rack::Way::Action do
       it 'can render with success with response_instance' do
         path = 'test'
 
-        response = Rack::Way::Action.view_response path
+        response = Rack::HttpRouter::Action.view_response path
         expect(response.finish).to eq([200, { 'content-type' => 'text/html' }, %w[hey]])
       end
     end
 
     context 'json' do
       it 'can render from hash with success' do
-        result = Rack::Way::Action.json({ test: 'value' })
+        result = Rack::HttpRouter::Action.json({ test: 'value' })
         expect(result).to eq(
           [
             200,
@@ -175,7 +175,7 @@ RSpec.describe Rack::Way::Action do
       end
 
       it 'can render json with other status' do
-        result = Rack::Way::Action.json({ test: 'value' }, status: 201)
+        result = Rack::HttpRouter::Action.json({ test: 'value' }, status: 201)
         expect(result).to eq(
           [
             201,
@@ -188,7 +188,7 @@ RSpec.describe Rack::Way::Action do
 
     context 'json_response' do
       it 'can render from hash with success' do
-        response = Rack::Way::Action.json_response({ test: 'value' })
+        response = Rack::HttpRouter::Action.json_response({ test: 'value' })
         expect(response.finish).to eq(
           [
             200,
@@ -199,7 +199,7 @@ RSpec.describe Rack::Way::Action do
       end
 
       it 'can render json with other status' do
-        response = Rack::Way::Action.json_response({ test: 'value' }, status: 201)
+        response = Rack::HttpRouter::Action.json_response({ test: 'value' }, status: 201)
         expect(response.finish).to eq(
           [
             201,
@@ -213,7 +213,7 @@ RSpec.describe Rack::Way::Action do
 
   context 'response' do
     it 'can build a rack response' do
-      response = Rack::Way::Action.response
+      response = Rack::HttpRouter::Action.response
 
       expect(response).to be_a(Rack::Response)
       expect(response.status).to eq(200)
@@ -224,7 +224,7 @@ RSpec.describe Rack::Way::Action do
 
   context 'redirecting' do
     it 'can redirect' do
-      result = Rack::Way::Action.redirect_to('/hey')
+      result = Rack::HttpRouter::Action.redirect_to('/hey')
       expect(result).to eq([302, { 'Location' => '/hey' }, []])
     end
   end

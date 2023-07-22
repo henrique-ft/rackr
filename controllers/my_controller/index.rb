@@ -2,7 +2,7 @@
 
 module MyController
   class Index
-    include Rack::Way::Action
+    include Rack::HttpRouter::Action
 
     def call(_req)
       view 'index', { name: route[:some_name] }

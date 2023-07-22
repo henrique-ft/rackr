@@ -1,4 +1,4 @@
-# rack-way ![](https://img.shields.io/badge/version-0.0.2-blue.svg)
+# rack-http_router ![](https://img.shields.io/badge/version-0.0.2-blue.svg)
 
 A little web framework that composes well with Rack gems ecossystem
 
@@ -6,20 +6,20 @@ A little web framework that composes well with Rack gems ecossystem
 
 #### Installation:
 ```bash
-gem install rack-way
+gem install rack-http_router
 ```
 #### Use example:
 ```ruby
 # config.ru
 
 App =
-  Rack::Way.new.app do
-    # Returns [200, {"Content-Type" => "text/html"}, ["<h1> rack way </h1>"]]
-    get { html('<h1> rack way </h1>') }
+  Rack::HttpRouter.new.call do
+    # Returns [200, {"Content-Type" => "text/html"}, ["<h1> rack http_router </h1>"]]
+    get { html('<h1> rack http_router </h1>') }
 
     scope 'v1' do
       scope 'hi' do
-        get { html('<h1> rack way </h1>') }
+        get { html('<h1> rack http_router </h1>') }
       end
     end
 
@@ -53,12 +53,12 @@ App =
 run App
 ```
 
-We can also transform a class in a *"rack-way action"* including *Rack::Way::Action* module:
+We can also transform a class in a *"rack-http_router action"* including *Rack::HttpRouter::Action* module:
 
 ```ruby
 module MyController
   class Index
-    include Rack::Way::Action
+    include Rack::HttpRouter::Action
 
     def call(req)
       json({say: "hello"})
@@ -103,3 +103,4 @@ Contact me if you have any issue:
 hriqueft@gmail.com
 
 I will be always open for tips, improvements, new ideas and new contributors! 
+

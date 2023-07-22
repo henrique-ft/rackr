@@ -5,18 +5,18 @@ require 'json'
 require 'rack'
 
 module Rack
-  class Way
+  class HttpRouter
     module Action
       def self.included(base)
         base.class_eval do
-          attr_reader :route if self != Rack::Way
+          attr_reader :route if self != Rack::HttpRouter
 
           def initialize(route)
             @route = route
           end
 
           def view_response(a_path, a_view_params = {}, status: 200)
-            Rack::Way::Action.view_response(
+            Rack::HttpRouter::Action.view_response(
               a_path,
               a_view_params,
               status: status, route: route
@@ -26,7 +26,7 @@ module Rack
           def view(
             a_path, a_view_params = {}, status: 200, response_instance: false
           )
-            Rack::Way::Action.view(
+            Rack::HttpRouter::Action.view(
               a_path,
               a_view_params,
               status: status, response_instance: response_instance, route: route
@@ -36,35 +36,35 @@ module Rack
       end
 
       def html(content, status: 200)
-        Rack::Way::Action.html(content, status: status)
+        Rack::HttpRouter::Action.html(content, status: status)
       end
 
       def html_response(content, status: 200)
-        Rack::Way::Action.html_response(content, status: status)
+        Rack::HttpRouter::Action.html_response(content, status: status)
       end
 
       def json(content = {}, status: 200)
-        Rack::Way::Action.json(content, status: status)
+        Rack::HttpRouter::Action.json(content, status: status)
       end
 
       def json_response(content = {}, status: 200)
-        Rack::Way::Action.json_response(content, status: status)
+        Rack::HttpRouter::Action.json_response(content, status: status)
       end
 
       def text(content, status: 200)
-        Rack::Way::Action.text(content, status: status)
+        Rack::HttpRouter::Action.text(content, status: status)
       end
 
       def text_response(content, status: 200)
-        Rack::Way::Action.text_response(content, status: status)
+        Rack::HttpRouter::Action.text_response(content, status: status)
       end
 
       def erb(path, view_params = {})
-        Rack::Way::Action.erb(path, view_params)
+        Rack::HttpRouter::Action.erb(path, view_params)
       end
 
       def redirect_to(url)
-        Rack::Way::Action.redirect_to(url)
+        Rack::HttpRouter::Action.redirect_to(url)
       end
 
       def response(body = nil, status = 200, headers = {})
