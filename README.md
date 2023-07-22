@@ -1,6 +1,6 @@
 # rack-http_router ![](https://img.shields.io/badge/version-0.0.2-blue.svg)
 
-A little web framework that composes well with Rack gems ecossystem
+A complete http router solution that fit well with pure Rack apps
 
 ## Overview
 
