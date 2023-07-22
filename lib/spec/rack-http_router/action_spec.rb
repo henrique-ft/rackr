@@ -227,5 +227,10 @@ RSpec.describe Rack::HttpRouter::Action do
       result = Rack::HttpRouter::Action.redirect_to('/hey')
       expect(result).to eq([302, { 'Location' => '/hey' }, []])
     end
+
+    it 'can redirect with rack response' do
+      res = Rack::HttpRouter::Action.redirect_response('/hey')
+      expect(res.finish).to eq([302, { 'location' => '/hey' }, []])
+    end
   end
 end
