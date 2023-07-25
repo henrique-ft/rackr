@@ -1,13 +1,12 @@
-# frozen_string_literal: true
-
 require 'byebug'
-#require_relative '../lib/rack-http_router'
 require 'rack-http_router'
 require_relative 'controllers/my_controller/index'
 
+config = { db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db") }
+
 App =
-  Rack::HttpRouter.new({ test: "some test" }).call do
-    get { html("<h1> #{config[:test]} </h1>") }
+  Rack::HttpRouter.new(config).call do
+    get { html("<h1> / </h1>") }
 
     scope 'v1' do
       scope 'oi' do
