@@ -1,5 +1,7 @@
 require 'byebug'
-require 'rack-http_router'
+require 'sequel'
+#require 'rack-http_router'
+require_relative '../lib/rack-http_router'
 require_relative 'controllers/my_controller/index'
 
 config = { db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db") }

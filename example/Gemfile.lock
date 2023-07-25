@@ -63,6 +63,7 @@ GEM
       parser (>= 3.2.1.0)
     ruby-progressbar (1.13.0)
     sequel (5.70.0)
+    sqlite3 (1.6.3-x86_64-linux)
     thin (1.8.2)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
@@ -80,6 +81,7 @@ DEPENDENCIES
   rspec
   rubocop
   sequel
+  sqlite3
   thin
 
 BUNDLED WITH
