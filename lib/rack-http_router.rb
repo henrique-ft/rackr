@@ -7,8 +7,9 @@ module Rack
   class HttpRouter
     include Action
 
-    def initialize(router: Router.new)
-      @router = router
+    def initialize(config = {})
+      p "oi"
+      @router = Router.new(config)
     end
 
     def call(&block)
@@ -19,6 +20,10 @@ module Rack
 
     def route
       @router.route
+    end
+
+    def config
+      @router.config
     end
 
     def scope(name, &block)
