@@ -3,6 +3,10 @@
 require_relative '../../rack-http_router/action'
 require 'byebug'
 
+class SomeClass
+  include Rack::HttpRouter::Action
+end
+
 RSpec.describe Rack::HttpRouter::Action do
   context 'rendering content' do
     context 'text' do
@@ -232,5 +236,15 @@ RSpec.describe Rack::HttpRouter::Action do
       res = Rack::HttpRouter::Action.redirect_response('/hey')
       expect(res.finish).to eq([302, { 'location' => '/hey' }, []])
     end
+  end
+
+  context 'including' do
+    let(:route) { 'route' }
+    let(:config) { { some_config: 'a', db: 'db' } }
+    let(:included) { SomeClass.new(route: route, config: config)}
+
+    it { expect(included.route).to eq(route) }
+    it { expect(included.config).to eq(config) }
+    it { expect(included.db).to eq(config[:db]) }
   end
 end

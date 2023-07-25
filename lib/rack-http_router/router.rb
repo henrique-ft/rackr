@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require_relative 'router/route'
 require_relative 'router/build_request'
 
@@ -16,9 +14,10 @@ module Rack
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
           @routes[method] = { __instances: [] }
         end
-        @route = Hash.new do |_hash, key|
-          raise(UndefinedNamedRoute, "Undefined named route: '#{key}'")
-        end
+        @route =
+          Hash.new do |_hash, key|
+            raise(UndefinedNamedRoute, "Undefined named route: '#{key}'")
+          end
         @config = config
         @scopes = []
         @error = proc { |_req, e| raise e }
@@ -34,11 +33,14 @@ module Rack
         return render_not_found(request_builder.call) if route_instance.nil?
 
         if route_instance.endpoint.respond_to?(:call)
-          return route_instance.endpoint.call(request_builder.call(route_instance))
+          return route_instance.endpoint.call(
+            request_builder.call(route_instance)
+          )
         end
 
         if route_instance.endpoint.include?(Rack::HttpRouter::Action)
-          return route_instance.endpoint.new(@route, @config).call(request_builder.call(route_instance))
+          return route_instance.endpoint.new(route: @route, config: @config)
+            .call(request_builder.call(route_instance))
         end
 
         route_instance.endpoint.new.call(request_builder.call(route_instance))
@@ -54,7 +56,9 @@ module Rack
 
         route_instance = Route.new(path_with_scopes, endpoint)
 
-        return push_to_scope(method.to_s.upcase, route_instance) if @scopes.size >= 1
+        if @scopes.size >= 1
+          return push_to_scope(method.to_s.upcase, route_instance)
+        end
 
         @routes[method.to_s.upcase][:__instances].push(route_instance)
       end
@@ -78,7 +82,7 @@ module Rack
       private
 
       def push_to_scope(method, route_instance)
-        scopes_with_slash = @scopes + [:__instances]
+        scopes_with_slash = @scopes + %i[__instances]
         push_it(@routes[method], *scopes_with_slash, route_instance)
       end
 
@@ -126,9 +130,10 @@ module Rack
         end
 
         if tail.empty? || found_scopes == []
-          return @routes[env['REQUEST_METHOD']].dig(*(found_scopes << :__instances)).detect do |route_instance|
-            route_instance.match?(env)
-          end
+          return @routes[env['REQUEST_METHOD']].dig(
+            *(found_scopes << :__instances)
+          )
+            .detect { |route_instance| route_instance.match?(env) }
         end
 
         match_route(env, tail, found_scopes)

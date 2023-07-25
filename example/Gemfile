@@ -7,6 +7,7 @@ gem 'rack-http_router'
 gem 'thin'
 # database
 gem 'sequel'
+gem 'sqlite3'
 
 # for large projects
 # gem 'puma'

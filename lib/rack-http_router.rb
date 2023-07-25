@@ -8,7 +8,6 @@ module Rack
     include Action
 
     def initialize(config = {})
-      p "oi"
       @router = Router.new(config)
     end
 
@@ -24,6 +23,10 @@ module Rack
 
     def config
       @router.config
+    end
+
+    def db
+      @router.config[:db]
     end
 
     def scope(name, &block)
