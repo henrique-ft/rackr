@@ -9,10 +9,11 @@ module Rack
     module Action
       def self.included(base)
         base.class_eval do
-          attr_reader :route if self != Rack::HttpRouter
+          attr_reader :route, :config if self != Rack::HttpRouter
 
-          def initialize(route)
+          def initialize(route, config)
             @route = route
+            @config = config
           end
 
           def view_response(a_path, a_view_params = {}, status: 200)

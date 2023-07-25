@@ -9,9 +9,9 @@ module Rack
       class UndefinedNamedRoute < StandardError; end
 
       attr_writer :not_found
-      attr_reader :route
+      attr_reader :route, :config
 
-      def initialize
+      def initialize(config = {})
         @routes = {}
         %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
           @routes[method] = { __instances: [] }
@@ -19,6 +19,7 @@ module Rack
         @route = Hash.new do |_hash, key|
           raise(UndefinedNamedRoute, "Undefined named route: '#{key}'")
         end
+        @config = config
         @scopes = []
         @error = proc { |_req, e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
@@ -37,7 +38,7 @@ module Rack
         end
 
         if route_instance.endpoint.include?(Rack::HttpRouter::Action)
-          return route_instance.endpoint.new(@route).call(request_builder.call(route_instance))
+          return route_instance.endpoint.new(@route, @config).call(request_builder.call(route_instance))
         end
 
         route_instance.endpoint.new.call(request_builder.call(route_instance))

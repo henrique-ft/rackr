@@ -178,4 +178,10 @@ RSpec.describe Rack::HttpRouter::Router do
 
     expect(router.call(request)).to eq('success')
   end
+
+  it 'receives a config' do
+    router = Rack::HttpRouter::Router.new({ something: 'x' })
+
+    expect(router.config[:something]).to eq('x')
+  end
 end

@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 require 'byebug'
-require_relative 'lib/rack-http_router'
+#require_relative '../lib/rack-http_router'
+require 'rack-http_router'
 require_relative 'controllers/my_controller/index'
 
 App =
-  Rack::HttpRouter.new.call do
-    get { html("<h1> / </h1>") }
+  Rack::HttpRouter.new({ test: "some test" }).call do
+    get { html("<h1> #{config[:test]} </h1>") }
 
     scope 'v1' do
       scope 'oi' do
