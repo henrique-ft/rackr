@@ -1,0 +1,11 @@
+#!/bin/ruby
+
+require 'sequel'
+
+DB = Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db")
+
+DB.create_table :items do
+  primary_key :id
+  String :name
+  Float :price
+end
