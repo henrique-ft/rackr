@@ -6,6 +6,9 @@ require_relative 'controllers/my_controller/index'
 
 config = { db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db") }
 
+BigJson = JSON.parse(File.read('./foods.json'))
+BigJson2 = JSON.parse(File.read('./magic.json'))
+
 App =
   Rack::HttpRouter.new(config).call do
     get { html("<h1> / </h1>") }
@@ -23,6 +26,14 @@ App =
     scope 'v2' do
       get ':name/hello' do |req|
         json({ name: req.params[:name] })
+      end
+
+      get 'big_json' do
+        json BigJson
+      end
+
+      get 'big_json2' do
+        json BigJson2
       end
     end
 
