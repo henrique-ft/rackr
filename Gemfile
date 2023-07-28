@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 gem 'erubi'
 gem 'rack'
+gem 'oj'
 
 # for small / medium projects and little memory usage
 gem 'thin'

@@ -17,5 +17,6 @@ Gem::Specification.new do |s|
     'https://github.com/henrique-ft/rack-http_router'
   s.license = 'MIT'
   s.add_runtime_dependency 'erubi', '~> 1.12'
+  s.add_runtime_dependency 'oj', '~> 3.15'
   s.add_runtime_dependency 'rack', '>= 2.0', '< 4.0'
 end

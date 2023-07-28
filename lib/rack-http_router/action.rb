@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'erubi'
-require 'json'
+require 'oj'
 require 'rack'
 
 module Rack
@@ -139,12 +139,12 @@ module Rack
         end
 
         def json(content = {}, status: 200)
-          [status, { 'Content-Type' => 'application/json' }, [content.to_json]]
+          [status, { 'Content-Type' => 'application/json' }, [Oj.dump(content, mode: :compat)]]
         end
 
         def json_response(content = {}, status: 200)
           Rack::Response.new(
-            content.to_json,
+            Oj.dump(content, mode: :compat),
             status,
             { 'Content-Type' => 'application/json' }
           )
