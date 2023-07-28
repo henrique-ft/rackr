@@ -21,7 +21,10 @@ module Rack
             Rack::HttpRouter::Action.view_response(
               a_path,
               a_view_params,
-              status: status, route: route
+              status: status,
+              config: config,
+              route: route,
+              db: db
             )
           end
 
@@ -31,7 +34,11 @@ module Rack
             Rack::HttpRouter::Action.view(
               a_path,
               a_view_params,
-              status: status, response_instance: response_instance, route: route
+              status: status,
+              config: config,
+              route: route,
+              db: db,
+              response_instance: response_instance
             )
           end
         end
@@ -86,12 +93,22 @@ module Rack
           Rack::Response.new(content, status, { 'Content-Type' => 'text/html' })
         end
 
-        def view_response(paths, view_params = {}, status: 200, route: nil)
+        def view_response(
+          paths,
+          view_params = {},
+          status: 200,
+          config: {},
+          route: nil,
+          db: nil
+        )
           view(
             paths,
             view_params,
-            status: status, response_instance: true,
-            route: route
+            status: status,
+            config: config,
+            route: route,
+            db: db,
+            response_instance: true
           )
         end
 
@@ -99,13 +116,15 @@ module Rack
           paths,
           view_params = {},
           status: 200,
-          response_instance: false,
-          route: nil
+          config: {},
+          route: nil,
+          db: nil,
+          response_instance: false
         )
           erb = if paths.is_a?(Array)
-                  paths.map { |path| erb("views/#{path}", route, view_params) }.join
+                  paths.map { |path| erb("views/#{path}", config, route, db, view_params) }.join
                 else
-                  erb("views/#{paths}", route, view_params)
+                  erb("views/#{paths}", config, route, db, view_params)
                 end
 
           if response_instance
@@ -143,11 +162,13 @@ module Rack
           )
         end
 
-        def erb(path, _route, view_params = {})
+        #rubocop:disable Lint/UnusedMethodArgument
+        def erb(path, config, route, db, view_params = {})
           @view = OpenStruct.new(view_params)
 
           eval(Erubi::Engine.new(::File.read("#{path}.html.erb")).src)
         end
+        #rubocop:enable Lint/UnusedMethodArgument
 
         def redirect_response(url)
           Rack::Response.new(
