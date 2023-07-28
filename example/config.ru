@@ -2,7 +2,7 @@ require 'byebug'
 require 'sequel'
 #require 'rack-http_router'
 require_relative '../lib/rack-http_router'
-require_relative 'controllers/my_controller/index'
+require_relative 'actions/home/index'
 
 config = { db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db") }
 
@@ -37,7 +37,7 @@ App =
       end
     end
 
-    get 'my-controller', MyController::Index
+    get 'my-action', Actions::Home::Index
 
     get 'my-view' do
       view 'index', { name: 'Henrique' }
