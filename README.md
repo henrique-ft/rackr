@@ -94,7 +94,11 @@ use Rack::Session::Cookie,
 
 #### Auto refresh the server for development:
 
-Check it out: https://github.com/alexch/rerun
+use https://github.com/alexch/rerun
+
+#### CRSF protection:
+
+use https://github.com/baldowl/rack_csrf
 
 ## Feel free to get the idea, fork, contribute and do whatever you want!
 
