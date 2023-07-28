@@ -162,13 +162,13 @@ module Rack
           )
         end
 
-        #rubocop:disable Lint/UnusedMethodArgument
+        # rubocop:disable Lint/UnusedMethodArgument
         def erb(path, config, route, db, view_params = {})
           @view = OpenStruct.new(view_params)
 
           eval(Erubi::Engine.new(::File.read("#{path}.html.erb")).src)
         end
-        #rubocop:enable Lint/UnusedMethodArgument
+        # rubocop:enable Lint/UnusedMethodArgument
 
         def redirect_response(url)
           Rack::Response.new(
