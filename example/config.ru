@@ -42,27 +42,27 @@ App =
       end
     end
 
-    #scope 'v2', before: ->(req) { p req } do
-      #get ':name/hello' do |req|
-        #json({ name: req.params[:name] })
-      #end
+    scope 'v2', before: ->(req) { p req } do
+      get ':name/hello' do |req|
+        json({ name: req.params[:name] })
+      end
 
-      #get 'big_json' do
-        #json BigJson
-      #end
+      get 'big_json' do
+        json BigJson
+      end
 
-      #get 'big_json2' do
-        #json BigJson2
-      #end
-    #end
+      get 'big_json2' do
+        json BigJson2
+      end
+    end
 
-    #get 'my-action', Actions::Home::Index
+    get 'my-action', Actions::Home::Index
 
-    #get 'my-view' do
-      #view 'index', { name: 'Henrique' }
-    #end
+    get 'my-view' do
+      view 'index', { name: 'Henrique' }
+    end
 
-    #not_found { text 'Are you lost?' }
+    not_found { text 'Are you lost?' }
   end
 
 run App
