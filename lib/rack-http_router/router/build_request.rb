@@ -22,17 +22,19 @@ module Rack
         def update_request_params(request, route)
           splitted_request_path = request.path.split('/')
 
-          route
-            .splitted_path
-            .each
-            .with_index do |route_word, route_word_position|
-              if route_word.start_with?(':')
-                param = splitted_request_path[route_word_position]
-                param = param.to_i if is_a_integer_string?(param)
+          i = 0
 
-                update_request_param(request, route_word, param)
-              end
+          while i < route.splitted_path.size
+            route_word = route.splitted_path[i]
+            if route_word.start_with?(':')
+              param = splitted_request_path[i]
+              param = param.to_i if is_a_integer_string?(param)
+
+              update_request_param(request, route_word, param)
             end
+
+            i += 1
+          end
 
           request
         end
