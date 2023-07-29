@@ -4,14 +4,16 @@ module Rack
   class HttpRouter
     class Router
       class Route
-        attr_reader :endpoint, :splitted_path, :has_params
+        attr_reader :endpoint, :splitted_path, :has_params, :has_befores, :befores
 
-        def initialize(path, endpoint)
+        def initialize(path, endpoint, befores = [])
           @path = path
           @splitted_path = @path.split('/')
           @endpoint = endpoint
           @params = fetch_params
           @has_params = @params != []
+          @befores = befores
+          @has_befores = befores != []
         end
 
         def match?(env)

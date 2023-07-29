@@ -20,6 +20,8 @@ module Rack
           end
         @config = config
         @scopes = []
+        @befores = []
+        @scopes_befores = {}
         @error = proc { |_req, e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
       end
@@ -32,20 +34,31 @@ module Rack
 
         return render_not_found(request_builder.call) if route_instance.nil?
 
-        if route_instance.endpoint.respond_to?(:call)
-          return route_instance.endpoint.call(
-            request_builder.call(route_instance)
-          )
+        rack_request = request_builder.call(route_instance)
+
+        befores = route_instance.befores
+        before_result = nil
+        i = 0
+        while i < befores.size
+          before_result = call_endpoint(befores[i], rack_request)
+          return before_result unless before_result.is_a?(Rack::Request)
+
+          i += 1
         end
 
-        if route_instance.endpoint.include?(Rack::HttpRouter::Action)
-          return route_instance.endpoint.new(route: @route, config: @config)
-            .call(request_builder.call(route_instance))
-        end
-
-        route_instance.endpoint.new.call(request_builder.call(route_instance))
+        call_endpoint(route_instance.endpoint, before_result || rack_request)
       rescue Exception => e
         @error.call(request_builder.call, e)
+      end
+
+      def call_endpoint(endpoint, rack_request)
+        return endpoint.call(rack_request) if endpoint.respond_to?(:call)
+
+        if endpoint.include?(Rack::HttpRouter::Action)
+          return endpoint.new(route: @route, config: @config).call(rack_request)
+        end
+
+        endpoint.new.call(rack_request)
       end
 
       def add(method, path, endpoint, as = nil)
@@ -54,7 +67,7 @@ module Rack
         path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
         @route[as] = path_with_scopes if as
 
-        route_instance = Route.new(path_with_scopes, endpoint)
+        route_instance = Route.new(path_with_scopes, endpoint, @befores)
 
         if @scopes.size >= 1
           return push_to_scope(method.to_s.upcase, route_instance)
@@ -71,11 +84,15 @@ module Rack
         @error = endpoint
       end
 
-      def append_scope(name)
+      def append_scope(name, befores = [])
         @scopes.push(name)
+        befores = [befores] unless befores.is_a?(Array)
+        @befores.concat(befores)
+        @scopes_befores[name] = befores
       end
 
       def clear_last_scope
+        @befores -= @scopes_befores[@scopes.last]
         @scopes = @scopes.first(@scopes.size - 1)
       end
 
@@ -133,7 +150,7 @@ module Rack
           return @routes[env['REQUEST_METHOD']].dig(
             *(found_scopes << :__instances)
           )
-            .detect { |route_instance| route_instance.match?(env) }
+            &.detect { |route_instance| route_instance.match?(env) }
         end
 
         match_route(env, tail, found_scopes)
