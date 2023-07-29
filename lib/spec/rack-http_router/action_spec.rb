@@ -7,6 +7,9 @@ class SomeClass
   include Rack::HttpRouter::Action
 end
 
+class SomeClass2
+end
+
 RSpec.describe Rack::HttpRouter::Action do
   context 'rendering content' do
     context 'text' do
@@ -30,6 +33,16 @@ RSpec.describe Rack::HttpRouter::Action do
             %w[test]
           ]
         )
+      end
+    end
+
+    context 'assign' do
+      it 'can assign methods to objects' do
+        x = SomeClass2.new
+        Rack::HttpRouter::Action.assign(x, { method1: 1, method2: 2 })
+
+        expect(x.method1).to eq(1)
+        expect(x.method2).to eq(2)
       end
     end
 
