@@ -23,8 +23,8 @@ end
 class SayHeyHo
   include Rack::HttpRouter::Action
 
-  def call(req)
-    json({hey: "ho"})
+  def call(_req)
+    json({ hey: "ho" })
   end
 end
 

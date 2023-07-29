@@ -132,51 +132,114 @@ RSpec.describe Rack::HttpRouter::Router do
     expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
   end
 
-  it 'can append scopes' do
-    router = Rack::HttpRouter::Router.new
+  context 'scopes' do
+    it 'can append scopes' do
+      router = Rack::HttpRouter::Router.new
 
-    router.append_scope 'admin'
+      router.append_scope 'admin'
+      router.add :get, 'teste', ->(_env) { 'success' }
 
-    router.add :get, 'teste', ->(_env) { 'success' }
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'REQUEST_PATH' => '/admin/teste'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'GET',
-        'REQUEST_PATH' => '/admin/teste'
-      }
+      expect(router.call(request)).to eq('success')
+    end
 
-    expect(router.call(request)).to eq('success')
-  end
+    it 'can clear the last scope' do
+      router = Rack::HttpRouter::Router.new
 
-  it 'can clear the last scope' do
-    router = Rack::HttpRouter::Router.new
+      router.append_scope 'admin'
+      router.clear_last_scope
+      router.add :get, 'teste', ->(_env) { 'success' }
 
-    router.append_scope 'admin'
-    router.clear_last_scope
-    router.add :get, 'teste', ->(_env) { 'success' }
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'REQUEST_PATH' => '/teste'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'GET',
-        'REQUEST_PATH' => '/teste'
-      }
+      expect(router.call(request)).to eq('success')
+    end
 
-    expect(router.call(request)).to eq('success')
-  end
+    it 'dont conflict with root path inside scopes' do
+      router = Rack::HttpRouter::Router.new
 
-  it 'dont conflict with root path inside scopes' do
-    router = Rack::HttpRouter::Router.new
+      router.append_scope 'admin'
+      router.add :get, '', ->(_env) { 'success' }
 
-    router.append_scope 'admin'
-    router.add :get, '', ->(_env) { 'success' }
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'REQUEST_PATH' => '/admin'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'GET',
-        'REQUEST_PATH' => '/admin'
-      }
+      expect(router.call(request)).to eq('success')
+    end
 
-    expect(router.call(request)).to eq('success')
+    context 'before:' do
+      it 'can receive scopes befores' do
+        router = Rack::HttpRouter::Router.new
+        before_action = ->(_req) { 'inside before' }
+
+        router.append_scope 'admin', before_action
+        router.add :get, 'teste', ->(_env) { 'success' }
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'REQUEST_PATH' => '/admin/teste'
+          }
+
+        expect(router.call(request)).to eq('inside before')
+      end
+
+      it 'can append more than 1 scopes befores' do
+        router = Rack::HttpRouter::Router.new
+        befores_called = 0
+        before_action = ->(req) do
+          befores_called +=1
+          req
+        end
+        before_action2 = ->(req) do
+          befores_called +=1
+          req
+        end
+
+        router.append_scope 'admin', before_action
+        router.append_scope 'v1', before_action2
+        router.add :get, 'teste', ->(_env) { 'success' }
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'REQUEST_PATH' => '/admin/v1/teste'
+          }
+
+        expect(router.call(request)).to eq('success')
+        expect(befores_called).to eq(2)
+      end
+
+      it 'break befores pipeline when not returning req' do
+        router = Rack::HttpRouter::Router.new
+        before_action = ->(req) { req }
+        before_action2 = ->(req) { 'hey' }
+
+        router.append_scope 'admin', before_action
+        router.append_scope 'v1', before_action2
+        router.add :get, 'teste', ->(_env) { 'success' }
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'REQUEST_PATH' => '/admin/v1/teste'
+          }
+
+        expect(router.call(request)).to eq('hey')
+      end
+    end
   end
 
   it 'receives a config' do
