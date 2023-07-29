@@ -134,6 +134,14 @@ RSpec.describe Rack::HttpRouter::Action do
         expect(::File).to have_received(:read).with('views/test.html.erb')
       end
 
+      it 'reads the config views folder' do
+        path = 'test'
+
+        Rack::HttpRouter::Action.view path, config: { views: { path: 'some/path' }}
+
+        expect(::File).to have_received(:read).with('some/path/test.html.erb')
+      end
+
       it 'can render with different status' do
         path = 'test'
 

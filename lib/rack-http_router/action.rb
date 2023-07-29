@@ -122,9 +122,9 @@ module Rack
           response_instance: false
         )
           erb = if paths.is_a?(Array)
-                  paths.map { |path| erb("views/#{path}", config, route, db, view_params) }.join
+                  paths.map { |path| erb("#{config.dig(:views, :path) || "views"}/#{path}", config, route, db, view_params) }.join
                 else
-                  erb("views/#{paths}", config, route, db, view_params)
+                  erb("#{config.dig(:views, :path) || "views"}/#{paths}", config, route, db, view_params)
                 end
 
           if response_instance
