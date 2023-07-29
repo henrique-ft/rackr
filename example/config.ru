@@ -3,9 +3,12 @@ require 'sequel'
 require 'json'
 #require 'rack-http_router'
 require_relative '../lib/rack-http_router'
-require_relative 'actions/home/index'
+require_relative 'app/actions/home/index'
 
-config = { db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db") }
+config = {
+  db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
+  views: { path: 'app/views' }
+}
 
 BigJson = JSON.parse(File.read('./foods.json'))
 BigJson2 = JSON.parse(File.read('./magic.json'))
