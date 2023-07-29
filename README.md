@@ -27,7 +27,7 @@ App =
     scope 'v2' do
       # get /v2/hello/somename
       get 'hello/:name' do |req| # 'req' is an Rack::Request object
-        # Returns [200, {"Content-Type" => "application/json"}, [{name: 'somename'}.to_json]]
+        # Returns [200, {"Content-Type" => "application/json"}, [Oj.dump({name: 'somename'}, compat: true)]]
         json({ name: req.params[:name] })
       end
     end
