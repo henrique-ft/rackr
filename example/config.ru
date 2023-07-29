@@ -1,5 +1,6 @@
 require 'byebug'
 require 'sequel'
+require 'json'
 #require 'rack-http_router'
 require_relative '../lib/rack-http_router'
 require_relative 'actions/home/index'
@@ -9,12 +10,30 @@ config = { db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db") }
 BigJson = JSON.parse(File.read('./foods.json'))
 BigJson2 = JSON.parse(File.read('./magic.json'))
 
+class PutsRequest
+  include Rack::HttpRouter::Action
+
+  def call(req)
+    p req.class
+
+    req
+  end
+end
+
+class SayHeyHo
+  include Rack::HttpRouter::Action
+
+  def call(req)
+    json({hey: "ho"})
+  end
+end
+
 App =
   Rack::HttpRouter.new(config).call do
     get { html("<h1> / </h1>") }
 
-    scope 'v1' do
-      scope 'oi' do
+    scope 'v1', before: [PutsRequest, PutsRequest] do
+      scope 'oi', before: SayHeyHo do
         get { html('<h1> rack http_router </h1>') }
 
         get 'bla', as: :some_name do

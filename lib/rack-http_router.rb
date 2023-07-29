@@ -29,8 +29,8 @@ module Rack
       @router.config[:db]
     end
 
-    def scope(name, &block)
-      @router.append_scope(name)
+    def scope(name, before: [], &block)
+      @router.append_scope(name, before)
       instance_eval(&block)
 
       @router.clear_last_scope
