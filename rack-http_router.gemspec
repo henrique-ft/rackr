@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'rack-http_router'
-  s.version     = '0.0.33'
+  s.version     = '0.0.4'
   s.summary     = '"rack-http_router" come with a router and helper functions to build pure Rack projects.'
   s.description = 'A complete http router solution that fit well with pure rack apps'
   s.authors     = ['Henrique F. Teixeira']

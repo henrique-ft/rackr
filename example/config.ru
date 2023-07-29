@@ -42,7 +42,7 @@ App =
       end
     end
 
-    scope 'v2' do
+    scope 'v2', before: ->(req) { p req } do
       get ':name/hello' do |req|
         json({ name: req.params[:name] })
       end
