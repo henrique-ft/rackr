@@ -120,7 +120,7 @@ RSpec.describe Rack::HttpRouter::Action do
 
     context 'view' do
       before do
-        allow(::File).to receive(:read).and_return('hey')
+        allow(::File).to receive(:read).and_return('file.')
       end
 
       it 'can render with success' do
@@ -128,7 +128,7 @@ RSpec.describe Rack::HttpRouter::Action do
 
         result = Rack::HttpRouter::Action.view path
 
-        expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[hey]])
+        expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.file.file.]])
       end
 
       it 'can render with success with response_instance' do
@@ -136,7 +136,7 @@ RSpec.describe Rack::HttpRouter::Action do
 
         response = Rack::HttpRouter::Action.view path, response_instance: true
 
-        expect(response.finish).to eq([200, { 'content-type' => 'text/html' }, %w[hey]])
+        expect(response.finish).to eq([200, { 'content-type' => 'text/html' }, %w[file.file.file.]])
       end
 
       it 'reads the views/* folder' do
@@ -155,12 +155,32 @@ RSpec.describe Rack::HttpRouter::Action do
         expect(::File).to have_received(:read).with('some/path/test.html.erb')
       end
 
+      it 'reads the layout in views folder' do
+        path = 'test'
+
+        Rack::HttpRouter::Action.view path, config: { views: { path: 'some/path' }}
+
+        expect(::File).to have_received(:read).with('some/path/layout/_header.html.erb')
+        expect(::File).to have_received(:read).with('some/path/layout/_footer.html.erb')
+      end
+
+      it 'ignores the layout if not exists in views folder' do
+        path = 'test'
+
+        allow(::File).to receive(:read).with('some/path/layout/_header.html.erb').and_raise(Errno::ENOENT)
+        allow(::File).to receive(:read).with('some/path/layout/_footer.html.erb').and_raise(Errno::ENOENT)
+
+        result = Rack::HttpRouter::Action.view path, config: { views: { path: 'some/path' }}
+
+        expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.]])
+      end
+
       it 'can render with different status' do
         path = 'test'
 
         result = Rack::HttpRouter::Action.view path, status: 404
 
-        expect(result).to eq([404, { 'Content-Type' => 'text/html' }, %w[hey]])
+        expect(result).to eq([404, { 'Content-Type' => 'text/html' }, %w[file.file.file.]])
       end
 
       it 'can render multiple erbs' do
@@ -169,21 +189,27 @@ RSpec.describe Rack::HttpRouter::Action do
         result = Rack::HttpRouter::Action.view [path, path, path], status: 404
 
         expect(result).to eq(
-          [404, { 'Content-Type' => 'text/html' }, %w[heyheyhey]]
+          [404, { 'Content-Type' => 'text/html' }, %w[file.file.file.file.file.]]
         )
+      end
+    end
+
+    context 'layout' do
+      it 'returns an layout array' do
+        expect(Rack::HttpRouter::Action.layout(:admin, 'index')).to eq(["layout/admin/_header", "index", "layout/admin/_footer"])
       end
     end
 
     context 'view_response' do
       before do
-        allow(::File).to receive(:read).and_return('hey')
+        allow(::File).to receive(:read).and_return('file.')
       end
 
       it 'can render with success with response_instance' do
         path = 'test'
 
         response = Rack::HttpRouter::Action.view_response path
-        expect(response.finish).to eq([200, { 'content-type' => 'text/html' }, %w[hey]])
+        expect(response.finish).to eq([200, { 'content-type' => 'text/html' }, %w[file.file.file.]])
       end
     end
 

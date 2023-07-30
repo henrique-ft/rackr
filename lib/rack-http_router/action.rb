@@ -44,6 +44,10 @@ module Rack
         end
       end
 
+      def layout(layout_path, file_path)
+        Rack::HttpRouter::Action.layout(layout_path, file_path)
+      end
+
       def assign(obj, hash)
         Rack::HttpRouter::Action.assign(obj, hash)
       end
@@ -89,22 +93,6 @@ module Rack
       end
 
       class << self
-        def assign(obj, hash)
-          hash.each do |k, v|
-            obj.define_singleton_method(k) { v }
-          end
-
-          obj
-        end
-
-        def html(content, status: 200)
-          [status, { 'Content-Type' => 'text/html' }, [content]]
-        end
-
-        def html_response(content, status: 200)
-          Rack::Response.new(content, status, { 'Content-Type' => 'text/html' })
-        end
-
         def view_response(
           paths,
           view_params = {},
@@ -133,11 +121,31 @@ module Rack
           db: nil,
           response_instance: false
         )
-          erb = if paths.is_a?(Array)
-                  paths.map { |path| erb("#{config.dig(:views, :path) || "views"}/#{path}", config, route, db, view_params) }.join
-                else
-                  erb("#{config.dig(:views, :path) || "views"}/#{paths}", config, route, db, view_params)
-                end
+          base_path = config.dig(:views, :path) || "views"
+
+          file_or_nil = lambda do |path|
+            ::File.read(path)
+          rescue Errno::ENOENT
+            nil
+          end
+
+          file_content = if paths.is_a?(Array)
+                           paths.map { |path| ::File.read("#{base_path}/#{path}.html.erb") }.join
+                         else
+                           ::File.read("#{base_path}/#{paths}.html.erb")
+                         end
+
+          erb = erb(
+            [
+              file_or_nil.call("#{base_path}/layout/_header.html.erb"),
+              file_content,
+              file_or_nil.call("#{base_path}/layout/_footer.html.erb")
+            ].join,
+            config,
+            route,
+            db,
+            view_params
+          )
 
           if response_instance
             return Rack::Response.new(
@@ -148,6 +156,30 @@ module Rack
           end
 
           [status, { 'Content-Type' => 'text/html' }, [erb]]
+        end
+
+        def layout(layout_path, file_path)
+          [
+            "layout/#{layout_path}/_header",
+            file_path,
+            "layout/#{layout_path}/_footer"
+          ]
+        end
+
+        def assign(obj, hash)
+          hash.each do |k, v|
+            obj.define_singleton_method(k) { v }
+          end
+
+          obj
+        end
+
+        def html(content, status: 200)
+          [status, { 'Content-Type' => 'text/html' }, [content]]
+        end
+
+        def html_response(content, status: 200)
+          Rack::Response.new(content, status, { 'Content-Type' => 'text/html' })
         end
 
         def json(content = {}, status: 200)
@@ -175,10 +207,10 @@ module Rack
         end
 
         # rubocop:disable Lint/UnusedMethodArgument
-        def erb(path, config, route, db, view_params = {})
+        def erb(content, config, route, db, view_params = {})
           @view = OpenStruct.new(view_params)
 
-          eval(Erubi::Engine.new(::File.read("#{path}.html.erb")).src)
+          eval(Erubi::Engine.new(content).src)
         end
         # rubocop:enable Lint/UnusedMethodArgument
 
