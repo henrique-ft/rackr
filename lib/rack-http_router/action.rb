@@ -48,10 +48,6 @@ module Rack
         Rack::HttpRouter::Action.layout(layout_path, file_path)
       end
 
-      def assign(obj, hash)
-        Rack::HttpRouter::Action.assign(obj, hash)
-      end
-
       def html(content, status: 200)
         Rack::HttpRouter::Action.html(content, status: status)
       end
@@ -164,14 +160,6 @@ module Rack
             file_path,
             "layout/#{layout_path}/_footer"
           ]
-        end
-
-        def assign(obj, hash)
-          hash.each do |k, v|
-            obj.define_singleton_method(k) { v }
-          end
-
-          obj
         end
 
         def html(content, status: 200)
