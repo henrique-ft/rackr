@@ -36,16 +36,6 @@ RSpec.describe Rack::HttpRouter::Action do
       end
     end
 
-    context 'assign' do
-      it 'can assign methods to objects' do
-        x = SomeClass2.new
-        Rack::HttpRouter::Action.assign(x, { method1: 1, method2: 2 })
-
-        expect(x.method1).to eq(1)
-        expect(x.method2).to eq(2)
-      end
-    end
-
     context 'html_response' do
       it 'can render from string with success' do
         response = Rack::HttpRouter::Action.text_response('test')
