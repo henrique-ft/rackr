@@ -4,6 +4,7 @@ require 'json'
 #require 'rack-http_router'
 require_relative '../lib/rack-http_router'
 require_relative 'app/actions/home/index'
+require_relative 'app/middlewares/some_assign'
 
 config = {
   db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
@@ -35,7 +36,7 @@ App =
   Rack::HttpRouter.new(config).call do
     get { html("<h1> / </h1>") }
 
-    scope 'v1', before: [PutsRequest, PutsRequest] do
+    scope 'v1', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
       scope 'oi', before: SayHeyHo do
         get { html('<h1> rack http_router </h1>') }
 
