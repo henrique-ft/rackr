@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'rack-http_router'
-  s.version     = '0.0.37'
+  s.version     = '0.0.38'
   s.summary     = 'A complete http router solution that fit well with pure rack apps.'
   s.description = 'A complete http router solution that fit well with pure rack apps.'
   s.authors     = ['Henrique F. Teixeira']
@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.files       =
     ['lib/rack-http_router.rb',
      'lib/rack-http_router/action.rb',
+     'lib/rack-http_router/middleware.rb',
      'lib/rack-http_router/router.rb',
      'lib/rack-http_router/router/route.rb',
      'lib/rack-http_router/router/build_request.rb']
