@@ -19,9 +19,9 @@ module Rack
             raise(UndefinedNamedRoute, "Undefined named route: '#{key}'")
           end
         @config = config
-        @scopes = []
+        @branches = []
         @befores = []
-        @scopes_befores = {}
+        @branches_befores = {}
         @error = proc { |_req, e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
       end
@@ -64,13 +64,13 @@ module Rack
       def add(method, path, endpoint, as = nil)
         method = :get if method == :head
 
-        path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
-        @route[as] = path_with_scopes if as
+        path_with_branches = "/#{@branches.join('/')}#{put_path_slash(path)}"
+        @route[as] = path_with_branches if as
 
-        route_instance = Route.new(path_with_scopes, endpoint, @befores)
+        route_instance = Route.new(path_with_branches, endpoint, @befores)
 
-        if @scopes.size >= 1
-          return push_to_scope(method.to_s.upcase, route_instance)
+        if @branches.size >= 1
+          return push_to_branch(method.to_s.upcase, route_instance)
         end
 
         @routes[method.to_s.upcase][:__instances].push(route_instance)
@@ -85,22 +85,22 @@ module Rack
       end
 
       def append_branch(name, befores = [])
-        @scopes.push(name)
+        @branches.push(name)
         befores = [befores] unless befores.is_a?(Array)
         @befores.concat(befores)
-        @scopes_befores[name] = befores
+        @branches_befores[name] = befores
       end
 
       def clear_last_scope
-        @befores -= @scopes_befores[@scopes.last]
-        @scopes = @scopes.first(@scopes.size - 1)
+        @befores -= @branches_befores[@branches.last]
+        @branches = @branches.first(@branches.size - 1)
       end
 
       private
 
-      def push_to_scope(method, route_instance)
-        scopes_with_slash = @scopes + %i[__instances]
-        push_it(@routes[method], *scopes_with_slash, route_instance)
+      def push_to_branch(method, route_instance)
+        branches_with_slash = @branches + %i[__instances]
+        push_it(@routes[method], *branches_with_slash, route_instance)
       end
 
       def push_it(h, first_key, *rest_keys, val)
@@ -113,8 +113,8 @@ module Rack
       end
 
       def put_path_slash(path)
-        return '' if ['/', ''].include?(path) && @scopes != []
-        return "/#{path}" if @scopes != []
+        return '' if ['/', ''].include?(path) && @branches != []
+        return "/#{path}" if @branches != []
 
         path
       end
@@ -125,35 +125,35 @@ module Rack
         @not_found.new.call(env)
       end
 
-      def match_route(env, last_tail = nil, found_scopes = [])
+      def match_route(env, last_tail = nil, found_branches = [])
         routes =
           if last_tail.nil?
             last_tail = env['REQUEST_PATH'].split('/').drop(1)
 
             @routes[env['REQUEST_METHOD']]
           else
-            @routes[env['REQUEST_METHOD']].dig(*found_scopes)
+            @routes[env['REQUEST_METHOD']].dig(*found_branches)
           end
 
         segment, *tail = last_tail
 
-        routes.each do |scope, _v|
-          next if scope == :__instances
+        routes.each do |branch, _v|
+          next if branch == :__instances
 
-          if segment == scope || scope.start_with?(':')
-            found_scopes.push(scope)
+          if segment == branch || branch.start_with?(':')
+            found_branches.push(branch)
             break
           end
         end
 
-        if tail.empty? || found_scopes == []
+        if tail.empty? || found_branches == []
           return @routes[env['REQUEST_METHOD']].dig(
-            *(found_scopes << :__instances)
+            *(found_branches << :__instances)
           )
             &.detect { |route_instance| route_instance.match?(env) }
         end
 
-        match_route(env, tail, found_scopes)
+        match_route(env, tail, found_branches)
       end
     end
   end
