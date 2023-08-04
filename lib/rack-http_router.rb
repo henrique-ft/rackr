@@ -30,8 +30,8 @@ module Rack
       @router.config[:db]
     end
 
-    def scope(name, before: [], &block)
-      @router.append_scope(name, before)
+    def r(name, before: [], &block)
+      @router.append_branch(name, before)
       instance_eval(&block)
 
       @router.clear_last_scope

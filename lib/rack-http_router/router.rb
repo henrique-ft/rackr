@@ -84,7 +84,7 @@ module Rack
         @error = endpoint
       end
 
-      def append_scope(name, befores = [])
+      def append_branch(name, befores = [])
         @scopes.push(name)
         befores = [befores] unless befores.is_a?(Array)
         @befores.concat(befores)

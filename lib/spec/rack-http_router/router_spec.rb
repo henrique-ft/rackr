@@ -136,7 +136,7 @@ RSpec.describe Rack::HttpRouter::Router do
     it 'can append scopes' do
       router = Rack::HttpRouter::Router.new
 
-      router.append_scope 'admin'
+      router.append_branch 'admin'
       router.add :get, 'teste', ->(_env) { 'success' }
 
       request =
@@ -151,7 +151,7 @@ RSpec.describe Rack::HttpRouter::Router do
     it 'can clear the last scope' do
       router = Rack::HttpRouter::Router.new
 
-      router.append_scope 'admin'
+      router.append_branch 'admin'
       router.clear_last_scope
       router.add :get, 'teste', ->(_env) { 'success' }
 
@@ -167,7 +167,7 @@ RSpec.describe Rack::HttpRouter::Router do
     it 'dont conflict with root path inside scopes' do
       router = Rack::HttpRouter::Router.new
 
-      router.append_scope 'admin'
+      router.append_branch 'admin'
       router.add :get, '', ->(_env) { 'success' }
 
       request =
@@ -184,7 +184,7 @@ RSpec.describe Rack::HttpRouter::Router do
         router = Rack::HttpRouter::Router.new
         before_action = ->(_req) { 'inside before' }
 
-        router.append_scope 'admin', before_action
+        router.append_branch 'admin', before_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -208,8 +208,8 @@ RSpec.describe Rack::HttpRouter::Router do
           req
         end
 
-        router.append_scope 'admin', before_action
-        router.append_scope 'v1', before_action2
+        router.append_branch 'admin', before_action
+        router.append_branch 'v1', before_action2
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -227,8 +227,8 @@ RSpec.describe Rack::HttpRouter::Router do
         before_action = ->(req) { req }
         before_action2 = ->(req) { 'hey' }
 
-        router.append_scope 'admin', before_action
-        router.append_scope 'v1', before_action2
+        router.append_branch 'admin', before_action
+        router.append_branch 'v1', before_action2
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =

@@ -36,8 +36,8 @@ App =
   Rack::HttpRouter.new(config).call do
     get { html("<h1> / </h1>") }
 
-    scope 'v1', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
-      scope 'oi', before: SayHeyHo do
+    r 'v1', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
+      r 'oi', before: SayHeyHo do
         get { html('<h1> rack http_router </h1>') }
 
         get 'bla', as: :some_name do
@@ -46,7 +46,7 @@ App =
       end
     end
 
-    scope 'v2', before: ->(req) { p req } do
+    r 'v2', before: ->(req) { p req } do
       get ':name/hello' do |req|
         json({ name: req.params[:name] })
       end
