@@ -196,9 +196,7 @@ module Rack
 
         # rubocop:disable Lint/UnusedMethodArgument
         def erb(content, config, route, db, view_params = {})
-          @view = OpenStruct.new(view_params)
-
-          eval(Erubi::Engine.new(content).src)
+          eval("#{view_params.map { |k, v| "#{k}=#{v.inspect}\;" }.join}#{Erubi::Engine.new(content).src}")
         end
         # rubocop:enable Lint/UnusedMethodArgument
 

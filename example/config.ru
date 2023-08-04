@@ -63,7 +63,7 @@ App =
     get 'my-action', Actions::Home::Index
 
     get 'my-view' do
-      view 'index', { name: 'Henrique' }
+      view 'index', { name: 'Henrique', object: { ma: Actions::Home::Index }}
     end
 
     not_found { text 'Are you lost?' }
