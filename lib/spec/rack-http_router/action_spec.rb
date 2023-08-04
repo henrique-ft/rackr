@@ -203,6 +203,16 @@ RSpec.describe Rack::HttpRouter::Action do
       end
     end
 
+    context 'erb' do
+      it 'can render view_params with success' do
+        content = """
+          <%= @view.hash[:name] %>
+        """
+        result = Rack::HttpRouter::Action.erb(content, { hash: { name: "something" }})
+        expect(result).to eq("\n          something\n        ")
+      end
+    end
+
     context 'json' do
       it 'can render from hash with success' do
         result = Rack::HttpRouter::Action.json({ test: 'value' })

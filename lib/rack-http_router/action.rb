@@ -72,8 +72,8 @@ module Rack
         Rack::HttpRouter::Action.text_response(content, status: status)
       end
 
-      def erb(path, view_params = {})
-        Rack::HttpRouter::Action.erb(path, view_params)
+      def erb(content, view_params = {})
+        Rack::HttpRouter::Action.erb(content, view_params)
       end
 
       def redirect_response(url)
@@ -137,10 +137,10 @@ module Rack
               file_content,
               file_or_nil.call("#{base_path}/layout/_footer.html.erb")
             ].join,
-            config,
-            route,
-            db,
-            view_params
+            view_params,
+            config: config,
+            route: route,
+            db: db
           )
 
           if response_instance
@@ -195,8 +195,10 @@ module Rack
         end
 
         # rubocop:disable Lint/UnusedMethodArgument
-        def erb(content, config, route, db, view_params = {})
-          eval("#{view_params.map { |k, v| "#{k}=#{v.inspect}\;" }.join}#{Erubi::Engine.new(content).src}")
+        def erb(content, view_params = {}, config: nil, route: nil, db: nil)
+          @view = OpenStruct.new(view_params)
+
+          eval(Erubi::Engine.new(content).src)
         end
         # rubocop:enable Lint/UnusedMethodArgument
 
