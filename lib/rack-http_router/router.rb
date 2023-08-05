@@ -63,6 +63,7 @@ module Rack
       end
 
       def add(method, path, endpoint, as = nil, route_befores = [])
+        Errors.check_endpoint(endpoint, path)
         Errors.check_as(as, path)
 
         method = :get if method == :head
