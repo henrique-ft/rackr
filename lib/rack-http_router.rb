@@ -54,11 +54,11 @@ module Rack
     end
 
     %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
-      define_method(http_method.downcase.to_sym) do |path = '', endpoint = -> {}, as: nil, &block|
+      define_method(http_method.downcase.to_sym) do |path = '', endpoint = -> {}, as: nil, before: nil, &block|
         if block.respond_to?(:call)
-          @router.add(http_method, path, block, as)
+          @router.add(http_method, path, block, as, before)
         else
-          @router.add(http_method, path, endpoint, as)
+          @router.add(http_method, path, endpoint, as, before)
         end
       end
     end

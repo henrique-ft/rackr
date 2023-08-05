@@ -61,13 +61,14 @@ module Rack
         endpoint.new.call(rack_request)
       end
 
-      def add(method, path, endpoint, as = nil)
+      def add(method, path, endpoint, as = nil, route_befores = [])
         method = :get if method == :head
 
         path_with_branches = "/#{@branches.join('/')}#{put_path_slash(path)}"
         @route[as] = path_with_branches if as
 
-        route_instance = Route.new(path_with_branches, endpoint, @befores)
+        route_instance =
+          Route.new(path_with_branches, endpoint, @befores + ensure_array(route_befores))
 
         if @branches.size >= 1
           return push_to_branch(method.to_s.upcase, route_instance)
@@ -84,11 +85,18 @@ module Rack
         @error = endpoint
       end
 
-      def append_branch(name, befores = [])
+      def append_branch(name, branch_befores = [])
         @branches.push(name)
-        befores = [befores] unless befores.is_a?(Array)
-        @befores.concat(befores)
-        @branches_befores[name] = befores
+        branch_befores = ensure_array(branch_befores)
+        @befores.concat(branch_befores)
+        @branches_befores[name] = branch_befores
+      end
+
+      def ensure_array(list)
+        return [] if list.nil?
+        return list if list.is_a?(Array)
+
+        [list]
       end
 
       def clear_last_scope
