@@ -52,17 +52,8 @@ module Rack
         @error.call(request_builder.call, e)
       end
 
-      def call_endpoint(endpoint, rack_request)
-        return endpoint.call(rack_request) if endpoint.respond_to?(:call)
-
-        if endpoint.include?(Rack::HttpRouter::Action)
-          return endpoint.new(route: @route, config: @config).call(rack_request)
-        end
-
-        endpoint.new.call(rack_request)
-      end
-
       def add(method, path, endpoint, as = nil, route_befores = [])
+        Errors.check_path(path)
         Errors.check_endpoint(endpoint, path)
         Errors.check_as(as, path)
 
@@ -79,13 +70,6 @@ module Rack
         end
 
         @routes[method.to_s.upcase][:__instances].push(route_instance)
-      end
-
-      def add_named_route(path_with_branches, as)
-        nameds_as = [@nameds_as.last].push(as).compact
-        return if nameds_as.empty?
-
-        @route[nameds_as.join('_').to_sym] = path_with_branches
       end
 
       def add_not_found(endpoint)
@@ -108,14 +92,7 @@ module Rack
         @branches_named_as[name] = as
       end
 
-      def ensure_array(list)
-        return [] if list.nil?
-        return list if list.is_a?(Array)
-
-        [list]
-      end
-
-      def clear_last_scope
+      def clear_last_branch
         @befores -= @branches_befores[@branches.last]
         @nameds_as -= [@branches_named_as[@branches.last]]
         @branches = @branches.first(@branches.size - 1)
@@ -123,18 +100,42 @@ module Rack
 
       private
 
+      def call_endpoint(endpoint, rack_request)
+        return endpoint.call(rack_request) if endpoint.respond_to?(:call)
+
+        if endpoint.include?(Rack::HttpRouter::Action)
+          return endpoint.new(route: @route, config: @config).call(rack_request)
+        end
+
+        endpoint.new.call(rack_request)
+      end
+
+      def ensure_array(list)
+        return [] if list.nil?
+        return list if list.is_a?(Array)
+
+        [list]
+      end
+
+      def add_named_route(path_with_branches, as)
+        nameds_as = [@nameds_as.last].push(as).compact
+        return if nameds_as.empty?
+
+        @route[nameds_as.join('_').to_sym] = path_with_branches
+      end
+
       def push_to_branch(method, route_instance)
         branches_with_slash = @branches + %i[__instances]
         push_it(@routes[method], *branches_with_slash, route_instance)
       end
 
-      def push_it(h, first_key, *rest_keys, val)
+      def push_it(hash, first_key, *rest_keys, val)
         if rest_keys.empty?
-          (h[first_key] ||= []) << val
+          (hash[first_key] ||= []) << val
         else
-          h[first_key] = push_it(h[first_key] ||= {}, *rest_keys, val)
+          hash[first_key] = push_it(h[first_key] ||= {}, *rest_keys, val)
         end
-        h
+        hash
       end
 
       def put_path_slash(path)

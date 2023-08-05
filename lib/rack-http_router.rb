@@ -34,7 +34,7 @@ module Rack
       @router.append_branch(name, before, as)
       instance_eval(&block)
 
-      @router.clear_last_scope
+      @router.clear_last_branch
     end
 
     def not_found(endpoint = -> {}, &block)
