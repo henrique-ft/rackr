@@ -73,16 +73,22 @@ module Rack
       end
 
       def add_not_found(endpoint)
+        Errors.check_endpoint(endpoint, 'not_found')
+
         @not_found = endpoint
       end
 
       def add_error(endpoint)
+        Errors.check_endpoint(endpoint, 'error')
+
         @error = endpoint
       end
 
       def append_branch(name, branch_befores = [], as = nil)
-        @branches.push(name)
+        Errors.check_branch_name(name)
         Errors.check_as(as, @branches.join('/'))
+
+        @branches.push(name)
 
         branch_befores = ensure_array(branch_befores)
         @befores.concat(branch_befores)

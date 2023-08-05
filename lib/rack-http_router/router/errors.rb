@@ -7,18 +7,25 @@ module Rack
         class UndefinedNamedRouteError < Error; end
         class InvalidEndpointError < Error; end
         class InvalidPathError < Error; end
+        class InvalidBranchNameError < Error; end
 
         class << self
+          def check_branch_name(path)
+            return if path.is_a?(String) || path.is_a?(Symbol)
+
+            raise(InvalidBranchNameError, "Route branch name must be a `string` or a `symbol`, got: '#{path}'")
+          end
+
           def check_path(path)
             return if path.is_a?(String) || path.is_a?(Symbol) || path.nil?
 
-            raise(InvalidPathError, "Path must be a `symbol`, `string` or `nil`, got: '#{path}'")
+            raise(InvalidPathError, "Path must be a `string`, `symbol` or `nil`, got: '#{path}'")
           end
 
           def check_as(as, path)
             return if as.is_a?(String) || as.is_a?(Symbol) || as.nil?
 
-            raise(InvalidNamedRouteError, "Named route must be a `symbol` or `string`, got: '#{as}' for path '#{path}'")
+            raise(InvalidNamedRouteError, "as: argument in routes and branches must be a `string` or a `symbol`, got: '#{as}' for '#{path}'")
           end
 
           def check_endpoint(endpoint, path)
@@ -26,7 +33,7 @@ module Rack
               return
             end
 
-            raise(InvalidEndpointError, "Endpoints must respond to a `call` method or be a class with a `call` instance method got: '#{endpoint.inspect}' for path '#{path}'")
+            raise(InvalidEndpointError, "Endpoints must respond to a `call` method or be a class with a `call` instance method got: '#{endpoint.inspect}' for '#{path}'")
           end
         end
       end

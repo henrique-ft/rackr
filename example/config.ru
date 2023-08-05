@@ -34,8 +34,6 @@ end
 
 App =
   Rack::HttpRouter.new(config).call do
-    get [], 3
-
     get 'where-i-go', before: [SayHeyHo] do
       text('?')
     end
