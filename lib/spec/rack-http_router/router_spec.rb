@@ -132,8 +132,8 @@ RSpec.describe Rack::HttpRouter::Router do
     expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
   end
 
-  context 'scopes' do
-    it 'can append scopes' do
+  context 'branches' do
+    it 'can append branches' do
       router = Rack::HttpRouter::Router.new
 
       router.append_branch 'admin'
@@ -164,7 +164,7 @@ RSpec.describe Rack::HttpRouter::Router do
       expect(router.call(request)).to eq('success')
     end
 
-    it 'dont conflict with root path inside scopes' do
+    it 'dont conflict with root path inside branches' do
       router = Rack::HttpRouter::Router.new
 
       router.append_branch 'admin'
@@ -179,8 +179,42 @@ RSpec.describe Rack::HttpRouter::Router do
       expect(router.call(request)).to eq('success')
     end
 
+    context 'as:' do
+      it 'can receive branches named_routes' do
+        router = Rack::HttpRouter::Router.new
+        before_action = ->(_req) { req }
+
+        router.append_branch 'admin', before_action, :some_name
+        router.add :get, 'teste', ->(_env) { 'success' }
+
+        expect(router.route[:some_name]).to eq('/admin/teste')
+      end
+
+      it 'is indepentent from other branchs named route' do
+        router = Rack::HttpRouter::Router.new
+        before_action = ->(_req) { req }
+
+        router.append_branch 'admin', before_action, :some_name
+        router.append_branch 'independent', before_action, :independent
+        router.add :get, 'teste', ->(_env) { 'success' }
+
+        expect(router.route[:independent]).to eq('/admin/independent/teste')
+      end
+
+      it 'concat with route named route' do
+        router = Rack::HttpRouter::Router.new
+        before_action = ->(_req) { req }
+
+        router.append_branch 'admin', before_action, :some_name
+        router.append_branch 'independent', before_action, :independent
+        router.add :get, 'teste', ->(_env) { 'success' }, :something
+
+        expect(router.route[:independent_something]).to eq('/admin/independent/teste')
+      end
+    end
+
     context 'before:' do
-      it 'can receive scopes befores' do
+      it 'can receive branches befores' do
         router = Rack::HttpRouter::Router.new
         before_action = ->(_req) { 'inside before' }
 
@@ -196,7 +230,7 @@ RSpec.describe Rack::HttpRouter::Router do
         expect(router.call(request)).to eq('inside before')
       end
 
-      it 'can append more than 1 scopes befores' do
+      it 'can append more than 1 branches befores' do
         router = Rack::HttpRouter::Router.new
         befores_called = 0
         before_action = ->(req) do
