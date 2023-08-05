@@ -36,19 +36,23 @@ App =
   Rack::HttpRouter.new(config).call do
     get { html("<h1> / </h1>") }
 
-    r 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
-      r 'oi', before: SayHeyHo do
-        get { html('<h1> rack http_router </h1>') }
+    get 'where-i-go', before: [SayHeyHo] do
+      text('?')
+    end
 
-        get 'bla', as: :some_name do
-          html("<h1> #{route[:some_name]} </h1>")
+    r 'v2', as: :v2, before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
+      r 'oi', as: :v2_oi do
+        get { html('<h1> rack http_router </h1>') } # routes[:v2_oi] # routes só pode ser setado quando tiver inserindo uma rota, não uma branch
+
+        get 'bla', as: :bla do
+          html("<h1> #{route[:v2_oi_bla]} </h1>")
         end
       end
     end
 
-    r 'v2', before: ->(req) { p "before"; req } do
-      get ':name/hello', before: ->(req) { p "ROUTE BEFORE"; req } do |req|
-        json({ name: req.params[:name] })
+    r 'v2', as: :v2, before: ->(req) { p "before"; req } do
+      get ':name/hello', as: :hello, before: ->(req) { p "ROUTE BEFORE"; req } do |req|
+        json({ name: req.params[:name] }) # routes[:v2_hello]
       end
 
       get 'big_json' do

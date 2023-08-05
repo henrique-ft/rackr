@@ -22,6 +22,8 @@ module Rack
         @branches = []
         @befores = []
         @branches_befores = {}
+        @nameds_as = []
+        @branches_named_as = {}
         @error = proc { |_req, e| raise e }
         @not_found = proc { [404, {}, ['Not found']] }
       end
@@ -65,7 +67,7 @@ module Rack
         method = :get if method == :head
 
         path_with_branches = "/#{@branches.join('/')}#{put_path_slash(path)}"
-        @route[as] = path_with_branches if as
+        add_named_route(path_with_branches, as)
 
         route_instance =
           Route.new(path_with_branches, endpoint, @befores + ensure_array(route_befores))
@@ -77,6 +79,13 @@ module Rack
         @routes[method.to_s.upcase][:__instances].push(route_instance)
       end
 
+      def add_named_route(path_with_branches, as)
+        nameds_as = [@nameds_as.last].push(as).compact
+        return if nameds_as.empty?
+
+        @route[nameds_as.join('_').to_sym] = path_with_branches
+      end
+
       def add_not_found(endpoint)
         @not_found = endpoint
       end
@@ -85,11 +94,15 @@ module Rack
         @error = endpoint
       end
 
-      def append_branch(name, branch_befores = [])
+      def append_branch(name, branch_befores = [], as = nil)
         @branches.push(name)
+
         branch_befores = ensure_array(branch_befores)
         @befores.concat(branch_befores)
         @branches_befores[name] = branch_befores
+
+        @nameds_as.push(as)
+        @branches_named_as[name] = as
       end
 
       def ensure_array(list)
@@ -101,6 +114,7 @@ module Rack
 
       def clear_last_scope
         @befores -= @branches_befores[@branches.last]
+        @nameds_as -= [@branches_named_as[@branches.last]]
         @branches = @branches.first(@branches.size - 1)
       end
 
