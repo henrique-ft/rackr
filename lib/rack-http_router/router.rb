@@ -1,11 +1,10 @@
+require_relative 'router/errors'
 require_relative 'router/route'
 require_relative 'router/build_request'
 
 module Rack
   class HttpRouter
     class Router
-      class UndefinedNamedRoute < StandardError; end
-
       attr_writer :not_found
       attr_reader :route, :config
 
@@ -16,7 +15,7 @@ module Rack
         end
         @route =
           Hash.new do |_hash, key|
-            raise(UndefinedNamedRoute, "Undefined named route: '#{key}'")
+            raise(Errors::UndefinedNamedRouteError, "Undefined named route: '#{key}'")
           end
         @config = config
         @branches = []
@@ -64,6 +63,8 @@ module Rack
       end
 
       def add(method, path, endpoint, as = nil, route_befores = [])
+        Errors.check_as(as, path)
+
         method = :get if method == :head
 
         path_with_branches = "/#{@branches.join('/')}#{put_path_slash(path)}"
@@ -96,6 +97,7 @@ module Rack
 
       def append_branch(name, branch_befores = [], as = nil)
         @branches.push(name)
+        Errors.check_as(as, @branches.join('/'))
 
         branch_befores = ensure_array(branch_befores)
         @befores.concat(branch_befores)
