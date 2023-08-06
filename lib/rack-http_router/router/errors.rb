@@ -30,12 +30,12 @@ module Rack
 
           def check_callbacks(callbacks, path)
             check = lambda { |callback|
-              unless callback.respond_to?(:call) || (callback.respond_to?(:new) && callback.instance_methods.include?(:call))
+              unless callback.nil? || callback.respond_to?(:call) || (callback.respond_to?(:new) && callback.instance_methods.include?(:call))
                 raise(InvalidEndpointError, "Callbacks must respond to a `call` method or be a class with a `call` instance method, got: '#{callback.inspect}' for '#{path}'")
               end
             }
 
-            callbacks.is_a?(Array) ? callbacks.each(&check) : check.call(callbacks)
+            callbacks.is_a?(Array) ? callbacks.compact.each(&check) : check.call(callbacks)
           end
 
           def check_endpoint(endpoint, path)

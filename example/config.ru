@@ -4,7 +4,7 @@ require 'json'
 #require 'rack-http_router'
 require_relative '../lib/rack-http_router'
 require_relative 'app/actions/home/index'
-require_relative 'app/middlewares/some_assign'
+require_relative 'app/callbacks/some_assign'
 
 config = {
   db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
@@ -15,7 +15,7 @@ BigJson = JSON.parse(File.read('./foods.json'))
 BigJson2 = JSON.parse(File.read('./magic.json'))
 
 class PutsRequest
-  include Rack::HttpRouter::Action
+  include Rack::HttpRouter::Callback
 
   def call(req)
     p req.class
@@ -25,7 +25,7 @@ class PutsRequest
 end
 
 class SayHeyHo
-  include Rack::HttpRouter::Action
+  include Rack::HttpRouter::Callback
 
   def call(_req)
     json({ hey: "ho" })
