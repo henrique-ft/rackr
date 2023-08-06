@@ -56,6 +56,7 @@ module Rack
         Errors.check_path(path)
         Errors.check_endpoint(endpoint, path)
         Errors.check_as(as, path)
+        Errors.check_callbacks(route_befores, path)
 
         method = :get if method == :head
 
@@ -87,6 +88,7 @@ module Rack
       def append_branch(name, branch_befores = [], as = nil)
         Errors.check_branch_name(name)
         Errors.check_as(as, @branches.join('/'))
+        Errors.check_callbacks(branch_befores, name)
 
         @branches.push(name)
 

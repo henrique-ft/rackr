@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.files       =
     ['lib/rack-http_router.rb',
      'lib/rack-http_router/action.rb',
-     'lib/rack-http_router/middleware.rb',
+     'lib/rack-http_router/callback.rb',
      'lib/rack-http_router/router.rb',
      'lib/rack-http_router/router/route.rb',
      'lib/rack-http_router/router/build_request.rb']

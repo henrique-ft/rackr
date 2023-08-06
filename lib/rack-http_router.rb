@@ -2,7 +2,7 @@
 
 require_relative 'rack-http_router/router'
 require_relative 'rack-http_router/action'
-require_relative 'rack-http_router/middleware'
+require_relative 'rack-http_router/callback'
 
 module Rack
   class HttpRouter

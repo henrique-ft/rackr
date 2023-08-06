@@ -1,6 +1,6 @@
 module Rack
   class HttpRouter
-    module Middleware
+    module Callback
       def self.included(base)
         base.class_eval do
           include Rack::HttpRouter::Action
@@ -8,7 +8,7 @@ module Rack
       end
 
       def assign(obj, hash)
-        Rack::HttpRouter::Middleware.assign(obj, hash)
+        Rack::HttpRouter::Callback.assign(obj, hash)
       end
 
       def self.assign(obj, hash)
