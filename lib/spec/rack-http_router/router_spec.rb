@@ -148,11 +148,11 @@ RSpec.describe Rack::HttpRouter::Router do
       expect(router.call(request)).to eq('success')
     end
 
-    it 'can clear the last scope' do
+    it 'can clear the last branch' do
       router = Rack::HttpRouter::Router.new
 
       router.append_branch 'admin'
-      router.clear_last_scope
+      router.clear_last_branch
       router.add :get, 'teste', ->(_env) { 'success' }
 
       request =

@@ -139,7 +139,7 @@ module Rack
         if rest_keys.empty?
           (hash[first_key] ||= []) << val
         else
-          hash[first_key] = push_it(h[first_key] ||= {}, *rest_keys, val)
+          hash[first_key] = push_it(hash[first_key] ||= {}, *rest_keys, val)
         end
         hash
       end
