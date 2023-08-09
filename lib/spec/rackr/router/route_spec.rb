@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative '../../../rack-http_router/router/route'
+require_relative '../../../rackr/router/route'
 require 'byebug'
 
-RSpec.describe Rack::HttpRouter::Router::Route do
+RSpec.describe Rackr::Router::Route do
   it 'can match simple paths' do
     route = described_class.new '/test', double(call: 'Hey test')
 

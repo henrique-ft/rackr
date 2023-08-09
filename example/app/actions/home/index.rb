@@ -3,7 +3,7 @@
 module Actions
   module Home
     class Index
-      include Rack::HttpRouter::Action
+      include Rackr::Action
 
       def call(_req)
         view 'index', { name: route[:some_name] }

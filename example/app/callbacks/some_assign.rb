@@ -2,7 +2,7 @@
 
 module Middlewares
   class SomeAssign
-    include Rack::HttpRouter::Middleware
+    include Rackr::Callback
 
     def call(req)
       assign(req, { name: 'some name' })

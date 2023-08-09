@@ -1,10 +1,10 @@
 require 'byebug'
 require 'sequel'
 require 'json'
-#require 'rack-http_router'
-require_relative '../lib/rack-http_router'
+#require 'rackr'
+require_relative '../lib/rackr'
 require_relative 'app/actions/home/index'
-require_relative 'app/middlewares/some_assign'
+require_relative 'app/callbacks/some_assign'
 
 config = {
   db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
@@ -15,7 +15,7 @@ BigJson = JSON.parse(File.read('./foods.json'))
 BigJson2 = JSON.parse(File.read('./magic.json'))
 
 class PutsRequest
-  include Rack::HttpRouter::Action
+  include Rackr::Callback
 
   def call(req)
     p req.class
@@ -25,7 +25,7 @@ class PutsRequest
 end
 
 class SayHeyHo
-  include Rack::HttpRouter::Action
+  include Rackr::Callback
 
   def call(_req)
     json({ hey: "ho" })
@@ -33,22 +33,24 @@ class SayHeyHo
 end
 
 App =
-  Rack::HttpRouter.new(config).call do
-    get { html("<h1> / </h1>") }
+  Rackr.new(config).call do
+    get 'where-i-go', before: [SayHeyHo] do
+      text('?')
+    end
 
-    scope 'v1', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
-      scope 'oi', before: SayHeyHo do
-        get { html('<h1> rack http_router </h1>') }
+    r 'v2', as: :v2, before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
+      r 'oi', as: :v2_oi do
+        get { html('<h1> rack http_router </h1>') } # routes[:v2_oi] # routes só pode ser setado quando tiver inserindo uma rota, não uma branch
 
-        get 'bla', as: :some_name do
-          html("<h1> #{route[:some_name]} </h1>")
+        get 'bla', as: :bla do
+          html("<h1> #{route[:v2_oi_bla]} </h1>")
         end
       end
     end
 
-    scope 'v2', before: ->(req) { p req } do
-      get ':name/hello' do |req|
-        json({ name: req.params[:name] })
+    r 'v2', as: :v2, before: ->(req) { p "before"; req } do
+      get ':name/hello', as: :hello, before: ->(req) { p "ROUTE BEFORE"; req } do |req|
+        json({ name: req.params[:name] }) # routes[:v2_hello]
       end
 
       get 'big_json' do
