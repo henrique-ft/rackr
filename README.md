@@ -1,4 +1,4 @@
-# rack-http_router ![](https://img.shields.io/badge/version-0.0.2-blue.svg)
+# rackr ![](https://img.shields.io/badge/version-0.0.2-blue.svg)
 
 A complete http router solution that fit well with pure Rack apps
 
@@ -6,14 +6,14 @@ A complete http router solution that fit well with pure Rack apps
 
 #### Installation:
 ```bash
-gem install rack-http_router
+gem install rackr
 ```
 #### Use example:
 ```ruby
 # config.ru
 
 App =
-  Rack::HttpRouter.new.call do
+  Rackr.new.call do
     # Returns [200, {"Content-Type" => "text/html"}, ["<h1> rack http_router </h1>"]]
     get { html('<h1> rack http_router </h1>') }
 
@@ -53,12 +53,12 @@ App =
 run App
 ```
 
-We can also transform a class in a *"rack-http_router action"* including *Rack::HttpRouter::Action* module:
+We can also transform a class in a *"rackr action"* including *Rackr::Action* module:
 
 ```ruby
 module MyController
   class Index
-    include Rack::HttpRouter::Action
+    include Rackr::Action
 
     def call(req)
       json({say: "hello"})

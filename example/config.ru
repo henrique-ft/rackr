@@ -1,8 +1,8 @@
 require 'byebug'
 require 'sequel'
 require 'json'
-#require 'rack-http_router'
-require_relative '../lib/rack-http_router'
+#require 'rackr'
+require_relative '../lib/rackr'
 require_relative 'app/actions/home/index'
 require_relative 'app/callbacks/some_assign'
 
@@ -15,7 +15,7 @@ BigJson = JSON.parse(File.read('./foods.json'))
 BigJson2 = JSON.parse(File.read('./magic.json'))
 
 class PutsRequest
-  include Rack::HttpRouter::Callback
+  include Rackr::Callback
 
   def call(req)
     p req.class
@@ -25,7 +25,7 @@ class PutsRequest
 end
 
 class SayHeyHo
-  include Rack::HttpRouter::Callback
+  include Rackr::Callback
 
   def call(_req)
     json({ hey: "ho" })
@@ -33,7 +33,7 @@ class SayHeyHo
 end
 
 App =
-  Rack::HttpRouter.new(config).call do
+  Rackr.new(config).call do
     get 'where-i-go', before: [SayHeyHo] do
       text('?')
     end

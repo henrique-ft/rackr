@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative '../../../rack-http_router/router/build_request'
+require_relative '../../../rackr/router/build_request'
 require 'byebug'
 
-RSpec.describe Rack::HttpRouter::Router::BuildRequest do
+RSpec.describe Rackr::Router::BuildRequest do
   it 'can build an Rack::Request' do
     request = described_class.new({}).call
     expect(request.class).to eq(Rack::Request)
@@ -19,7 +19,7 @@ RSpec.describe Rack::HttpRouter::Router::BuildRequest do
 
     it 'it can match the route params' do
       route =
-        Rack::HttpRouter::Router::Route
+        Rackr::Router::Route
         .new '/test/:param1/test/:param2', double(call: 'Hey test')
 
       allow(Rack::Request)

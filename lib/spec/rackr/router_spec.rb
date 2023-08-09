@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative '../../rack-http_router/router'
+require_relative '../../rackr/router'
 require 'byebug'
 
-RSpec.describe Rack::HttpRouter::Router do
+RSpec.describe Rackr::Router do
   it 'can add routes' do
-    router = Rack::HttpRouter::Router.new
+    router = Rackr::Router.new
 
     router.add :get, 'get', double(call: 'Hey get')
     router.add :head, 'head', double(call: 'Hey head')
@@ -82,7 +82,7 @@ RSpec.describe Rack::HttpRouter::Router do
   end
 
   it 'can add named routes' do
-    router = Rack::HttpRouter::Router.new
+    router = Rackr::Router.new
 
     router.add :get, 'some_name', double(call: 'Hey get'), :some_name
 
@@ -90,7 +90,7 @@ RSpec.describe Rack::HttpRouter::Router do
   end
 
   it 'render 404 when fails' do
-    router = Rack::HttpRouter::Router.new
+    router = Rackr::Router.new
 
     router.add :get, 'teste', double(call: 'Hey test')
 
@@ -104,7 +104,7 @@ RSpec.describe Rack::HttpRouter::Router do
   end
 
   it 'render custom 404 when fails' do
-    router = Rack::HttpRouter::Router.new
+    router = Rackr::Router.new
 
     router.add_not_found proc { [404, {}, ['Custom not found']] }
 
@@ -118,9 +118,9 @@ RSpec.describe Rack::HttpRouter::Router do
   end
 
   it 'render custom error when exception happen' do
-    router = Rack::HttpRouter::Router.new
+    router = Rackr::Router.new
 
-    allow_any_instance_of(Rack::HttpRouter::Router::Route).to receive(:match?).and_raise(Exception)
+    allow_any_instance_of(Rackr::Router::Route).to receive(:match?).and_raise(Exception)
 
     request =
       {
@@ -134,7 +134,7 @@ RSpec.describe Rack::HttpRouter::Router do
 
   context 'branches' do
     it 'can append branches' do
-      router = Rack::HttpRouter::Router.new
+      router = Rackr::Router.new
 
       router.append_branch 'admin'
       router.add :get, 'teste', ->(_env) { 'success' }
@@ -149,7 +149,7 @@ RSpec.describe Rack::HttpRouter::Router do
     end
 
     it 'can clear the last branch' do
-      router = Rack::HttpRouter::Router.new
+      router = Rackr::Router.new
 
       router.append_branch 'admin'
       router.clear_last_branch
@@ -165,7 +165,7 @@ RSpec.describe Rack::HttpRouter::Router do
     end
 
     it 'dont conflict with root path inside branches' do
-      router = Rack::HttpRouter::Router.new
+      router = Rackr::Router.new
 
       router.append_branch 'admin'
       router.add :get, '', ->(_env) { 'success' }
@@ -181,7 +181,7 @@ RSpec.describe Rack::HttpRouter::Router do
 
     context 'as:' do
       it 'can receive branches named_routes' do
-        router = Rack::HttpRouter::Router.new
+        router = Rackr::Router.new
         before_action = ->(_req) { req }
 
         router.append_branch 'admin', before_action, :some_name
@@ -191,7 +191,7 @@ RSpec.describe Rack::HttpRouter::Router do
       end
 
       it 'is indepentent from other branchs named route' do
-        router = Rack::HttpRouter::Router.new
+        router = Rackr::Router.new
         before_action = ->(_req) { req }
 
         router.append_branch 'admin', before_action, :some_name
@@ -202,7 +202,7 @@ RSpec.describe Rack::HttpRouter::Router do
       end
 
       it 'concat with route named route' do
-        router = Rack::HttpRouter::Router.new
+        router = Rackr::Router.new
         before_action = ->(_req) { req }
 
         router.append_branch 'admin', before_action, :some_name
@@ -215,7 +215,7 @@ RSpec.describe Rack::HttpRouter::Router do
 
     context 'before:' do
       it 'can receive branches befores' do
-        router = Rack::HttpRouter::Router.new
+        router = Rackr::Router.new
         before_action = ->(_req) { 'inside before' }
 
         router.append_branch 'admin', before_action
@@ -231,7 +231,7 @@ RSpec.describe Rack::HttpRouter::Router do
       end
 
       it 'can append more than 1 branches befores' do
-        router = Rack::HttpRouter::Router.new
+        router = Rackr::Router.new
         befores_called = 0
         before_action = ->(req) do
           befores_called +=1
@@ -257,7 +257,7 @@ RSpec.describe Rack::HttpRouter::Router do
       end
 
       it 'break befores pipeline when not returning req' do
-        router = Rack::HttpRouter::Router.new
+        router = Rackr::Router.new
         before_action = ->(req) { req }
         before_action2 = ->(req) { 'hey' }
 
@@ -277,7 +277,7 @@ RSpec.describe Rack::HttpRouter::Router do
   end
 
   it 'receives a config' do
-    router = Rack::HttpRouter::Router.new({ something: 'x' })
+    router = Rackr::Router.new({ something: 'x' })
 
     expect(router.config[:something]).to eq('x')
   end

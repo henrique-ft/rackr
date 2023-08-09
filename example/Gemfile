@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem 'rack-http_router'
+gem 'rackr'
 # for small / medium projects and little memory usage
 gem 'thin'
 # database
