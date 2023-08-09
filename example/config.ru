@@ -1,8 +1,8 @@
 require 'byebug'
 require 'sequel'
 require 'json'
-#require 'rackr'
-require_relative '../lib/rackr'
+require 'rackr'
+# require_relative '../lib/rackr'
 require_relative 'app/actions/home/index'
 require_relative 'app/callbacks/some_assign'
 

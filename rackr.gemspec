@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'rackr'
-  s.version     = '0.0.4'
+  s.version     = '0.0.41'
   s.summary     = 'A complete http router solution that fit well with pure rack apps.'
   s.description = 'A complete http router solution that fit well with pure rack apps.'
   s.authors     = ['Henrique F. Teixeira']
@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
      'lib/rackr/action.rb',
      'lib/rackr/callback.rb',
      'lib/rackr/router.rb',
+     'lib/rackr/router/errors.rb',
      'lib/rackr/router/route.rb',
      'lib/rackr/router/build_request.rb']
   s.homepage    =
