@@ -3,9 +3,9 @@
 class Rackr
   class Router
     class Route
-      attr_reader :endpoint, :splitted_path, :has_params, :has_befores, :befores
+      attr_reader :endpoint, :splitted_path, :has_params, :has_befores, :has_afters, :befores
 
-      def initialize(path, endpoint, befores = [])
+      def initialize(path, endpoint, befores = [], afters = [])
         @path = path
         @splitted_path = @path.split('/')
         @endpoint = endpoint
@@ -13,6 +13,8 @@ class Rackr
         @has_params = @params != []
         @befores = befores
         @has_befores = befores != []
+        @afters = afters
+        @has_afters = afters != []
       end
 
       def match?(env)

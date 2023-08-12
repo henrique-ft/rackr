@@ -184,7 +184,7 @@ RSpec.describe Rackr::Router do
         router = Rackr::Router.new
         before_action = ->(_req) { req }
 
-        router.append_branch 'admin', before_action, :some_name
+        router.append_branch 'admin', branch_befores: before_action, as: :some_name
         router.add :get, 'teste', ->(_env) { 'success' }
 
         expect(router.route[:some_name]).to eq('/admin/teste')
@@ -194,8 +194,8 @@ RSpec.describe Rackr::Router do
         router = Rackr::Router.new
         before_action = ->(_req) { req }
 
-        router.append_branch 'admin', before_action, :some_name
-        router.append_branch 'independent', before_action, :independent
+        router.append_branch 'admin', branch_befores: before_action, as: :some_name
+        router.append_branch 'independent', branch_befores: before_action, as: :independent
         router.add :get, 'teste', ->(_env) { 'success' }
 
         expect(router.route[:independent]).to eq('/admin/independent/teste')
@@ -205,8 +205,8 @@ RSpec.describe Rackr::Router do
         router = Rackr::Router.new
         before_action = ->(_req) { req }
 
-        router.append_branch 'admin', before_action, :some_name
-        router.append_branch 'independent', before_action, :independent
+        router.append_branch 'admin', branch_befores: before_action, as: :some_name
+        router.append_branch 'independent', branch_befores: before_action, as: :independent
         router.add :get, 'teste', ->(_env) { 'success' }, :something
 
         expect(router.route[:independent_something]).to eq('/admin/independent/teste')
@@ -218,7 +218,7 @@ RSpec.describe Rackr::Router do
         router = Rackr::Router.new
         before_action = ->(_req) { 'inside before' }
 
-        router.append_branch 'admin', before_action
+        router.append_branch 'admin', branch_befores: before_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -242,8 +242,8 @@ RSpec.describe Rackr::Router do
           req
         end
 
-        router.append_branch 'admin', before_action
-        router.append_branch 'v1', before_action2
+        router.append_branch 'admin', branch_befores: before_action
+        router.append_branch 'v1', branch_befores: before_action2
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -261,8 +261,8 @@ RSpec.describe Rackr::Router do
         before_action = ->(req) { req }
         before_action2 = ->(_req) { 'hey' }
 
-        router.append_branch 'admin', before_action
-        router.append_branch 'v1', before_action2
+        router.append_branch 'admin', branch_befores: before_action
+        router.append_branch 'v1', branch_befores: before_action2
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =

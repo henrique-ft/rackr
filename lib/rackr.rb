@@ -29,8 +29,13 @@ class Rackr
     @router.config[:db]
   end
 
-  def r(name, before: [], as: nil, &block)
-    @router.append_branch(name, before, as)
+  def r(name, before: [], after: [], as: nil, &block)
+    @router.append_branch(
+      name,
+      branch_befores: before,
+      branch_afters: after,
+      as: as
+    )
     instance_eval(&block)
 
     @router.clear_last_branch
@@ -55,9 +60,9 @@ class Rackr
   %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
     define_method(http_method.downcase.to_sym) do |path = '', endpoint = -> {}, as: nil, before: nil, &block|
       if block.respond_to?(:call)
-        @router.add(http_method, path, block, as, before)
+        @router.add(http_method, path, block, as, before, after)
       else
-        @router.add(http_method, path, endpoint, as, before)
+        @router.add(http_method, path, endpoint, as, before, after)
       end
     end
   end

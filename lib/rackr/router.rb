@@ -22,6 +22,8 @@ class Rackr
       @branches = []
       @befores = []
       @branches_befores = {}
+      @afters = []
+      @branches_afters = {}
       @nameds_as = []
       @branches_named_as = {}
       @error = proc { |_req, e| raise e }
@@ -53,11 +55,12 @@ class Rackr
       @error.call(request_builder.call, e)
     end
 
-    def add(method, path, endpoint, as = nil, route_befores = [])
+    def add(method, path, endpoint, as = nil, route_befores = [], route_afters = [])
       Errors.check_path(path)
       Errors.check_endpoint(endpoint, path)
       Errors.check_as(as, path)
       Errors.check_callbacks(route_befores, path)
+      Errors.check_callbacks(route_afters, path)
 
       method = :get if method == :head
 
@@ -65,7 +68,12 @@ class Rackr
       add_named_route(path_with_branches, as)
 
       route_instance =
-        Route.new(path_with_branches, endpoint, @befores + ensure_array(route_befores))
+        Route.new(
+          path_with_branches,
+          endpoint,
+          @befores + ensure_array(route_befores),
+          @afters + ensure_array(route_afters)
+        )
 
       return push_to_branch(method.to_s.upcase, route_instance) if @branches.size >= 1
 
@@ -84,10 +92,11 @@ class Rackr
       @error = endpoint
     end
 
-    def append_branch(name, branch_befores = [], as = nil)
+    def append_branch(name, branch_befores: [], branch_afters: [], as: nil)
       Errors.check_branch_name(name)
       Errors.check_as(as, @branches.join('/'))
       Errors.check_callbacks(branch_befores, name)
+      Errors.check_callbacks(branch_afters, name)
 
       @branches.push(name)
 
@@ -95,12 +104,16 @@ class Rackr
       @befores.concat(branch_befores)
       @branches_befores[name] = branch_befores
 
+      @afters.concat(branch_afters)
+      @branches_afters[name] = branch_afters
+
       @nameds_as.push(as)
       @branches_named_as[name] = as
     end
 
     def clear_last_branch
       @befores -= @branches_befores[@branches.last]
+      @afters -= @branches_afters[@branches.last]
       @nameds_as -= [@branches_named_as[@branches.last]]
       @branches = @branches.first(@branches.size - 1)
     end
