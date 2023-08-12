@@ -55,7 +55,7 @@ class Rackr
       @error.call(request_builder.call, e)
     end
 
-    def add(method, path, endpoint, as = nil, route_befores = [], route_afters = [])
+    def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])
       Errors.check_path(path)
       Errors.check_endpoint(endpoint, path)
       Errors.check_as(as, path)

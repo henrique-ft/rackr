@@ -84,7 +84,7 @@ RSpec.describe Rackr::Router do
   it 'can add named routes' do
     router = Rackr::Router.new
 
-    router.add :get, 'some_name', double(call: 'Hey get'), :some_name
+    router.add :get, 'some_name', double(call: 'Hey get'), as: :some_name
 
     expect(router.route[:some_name]).to eq('/some_name')
   end
@@ -207,7 +207,7 @@ RSpec.describe Rackr::Router do
 
         router.append_branch 'admin', branch_befores: before_action, as: :some_name
         router.append_branch 'independent', branch_befores: before_action, as: :independent
-        router.add :get, 'teste', ->(_env) { 'success' }, :something
+        router.add :get, 'teste', ->(_env) { 'success' }, as: :something
 
         expect(router.route[:independent_something]).to eq('/admin/independent/teste')
       end
