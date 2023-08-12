@@ -9,7 +9,7 @@ class Rackr
     attr_writer :not_found
     attr_reader :route, :config
 
-    def initialize(config = {})
+    def initialize(config = {}, before: [], after: [])
       @routes = {}
       %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
         @routes[method] = { __instances: [] }
@@ -20,9 +20,9 @@ class Rackr
         end
       @config = config
       @branches = []
-      @befores = []
+      @befores = ensure_array(before)
       @branches_befores = {}
-      @afters = []
+      @afters = ensure_array(after)
       @branches_afters = {}
       @nameds_as = []
       @branches_named_as = {}

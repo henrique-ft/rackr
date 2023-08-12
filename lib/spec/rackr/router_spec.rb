@@ -230,17 +230,15 @@ RSpec.describe Rackr::Router do
       end
 
       it 'can append more than 1 branches after' do
-        router = Rackr::Router.new
         afters_called = 0
         after_action = lambda do |res|
           afters_called += 1
         end
-        after_action2 = lambda do |res|
-          afters_called += 1
-        end
+
+        router = Rackr::Router.new after: after_action
 
         router.append_branch 'admin', branch_afters: after_action
-        router.append_branch 'v1', branch_afters: after_action2
+        router.append_branch 'v1', branch_afters: after_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -250,7 +248,7 @@ RSpec.describe Rackr::Router do
           }
 
         expect(router.call(request)).to eq('success')
-        expect(afters_called).to eq(2)
+        expect(afters_called).to eq(3)
       end
     end
 
@@ -272,19 +270,16 @@ RSpec.describe Rackr::Router do
       end
 
       it 'can append more than 1 branches befores' do
-        router = Rackr::Router.new
         befores_called = 0
         before_action = lambda do |req|
           befores_called += 1
           req
         end
-        before_action2 = lambda do |req|
-          befores_called += 1
-          req
-        end
+
+        router = Rackr::Router.new before: before_action
 
         router.append_branch 'admin', branch_befores: before_action
-        router.append_branch 'v1', branch_befores: before_action2
+        router.append_branch 'v1', branch_befores: before_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -294,7 +289,7 @@ RSpec.describe Rackr::Router do
           }
 
         expect(router.call(request)).to eq('success')
-        expect(befores_called).to eq(2)
+        expect(befores_called).to eq(3)
       end
 
       it 'break befores pipeline when not returning req' do
