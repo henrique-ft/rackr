@@ -233,12 +233,12 @@ RSpec.describe Rackr::Router do
       it 'can append more than 1 branches befores' do
         router = Rackr::Router.new
         befores_called = 0
-        before_action = ->(req) do
-          befores_called +=1
+        before_action = lambda do |req|
+          befores_called += 1
           req
         end
-        before_action2 = ->(req) do
-          befores_called +=1
+        before_action2 = lambda do |req|
+          befores_called += 1
           req
         end
 
@@ -259,7 +259,7 @@ RSpec.describe Rackr::Router do
       it 'break befores pipeline when not returning req' do
         router = Rackr::Router.new
         before_action = ->(req) { req }
-        before_action2 = ->(req) { 'hey' }
+        before_action2 = ->(_req) { 'hey' }
 
         router.append_branch 'admin', before_action
         router.append_branch 'v1', before_action2

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Rackr
   module Callback
     def self.included(base)

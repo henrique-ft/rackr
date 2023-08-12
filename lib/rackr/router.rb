@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'router/errors'
 require_relative 'router/route'
 require_relative 'router/build_request'
@@ -65,9 +67,7 @@ class Rackr
       route_instance =
         Route.new(path_with_branches, endpoint, @befores + ensure_array(route_befores))
 
-      if @branches.size >= 1
-        return push_to_branch(method.to_s.upcase, route_instance)
-      end
+      return push_to_branch(method.to_s.upcase, route_instance) if @branches.size >= 1
 
       @routes[method.to_s.upcase][:__instances].push(route_instance)
     end
@@ -110,9 +110,7 @@ class Rackr
     def call_endpoint(endpoint, rack_request)
       return endpoint.call(rack_request) if endpoint.respond_to?(:call)
 
-      if endpoint.include?(Rackr::Action)
-        return endpoint.new(route: @route, config: @config).call(rack_request)
-      end
+      return endpoint.new(route: @route, config: @config).call(rack_request) if endpoint.include?(Rackr::Action)
 
       endpoint.new.call(rack_request)
     end
