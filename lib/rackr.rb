@@ -58,7 +58,7 @@ class Rackr
   end
 
   %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
-    define_method(http_method.downcase.to_sym) do |path = '', endpoint = -> {}, as: nil, before: nil, &block|
+    define_method(http_method.downcase.to_sym) do |path = '', endpoint = -> {}, as: nil, before: nil, after: nil, &block|
       if block.respond_to?(:call)
         @router.add(
           http_method,

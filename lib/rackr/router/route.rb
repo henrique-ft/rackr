@@ -3,9 +3,15 @@
 class Rackr
   class Router
     class Route
-      attr_reader :endpoint, :splitted_path, :has_params, :has_befores, :has_afters, :befores
+      attr_reader :endpoint,
+                  :splitted_path,
+                  :has_params,
+                  :has_befores,
+                  :befores,
+                  :has_afters,
+                  :afters
 
-      def initialize(path, endpoint, befores = [], afters = [])
+      def initialize(path, endpoint, befores: [], afters: [])
         @path = path
         @splitted_path = @path.split('/')
         @endpoint = endpoint

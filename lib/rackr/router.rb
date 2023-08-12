@@ -47,10 +47,21 @@ class Rackr
         before_result = call_endpoint(befores[i], rack_request)
         return before_result unless before_result.is_a?(Rack::Request)
 
+        rack_request = before_result
+
         i += 1
       end
 
-      call_endpoint(route_instance.endpoint, before_result || rack_request)
+      endpoint_result = call_endpoint(route_instance.endpoint, before_result || rack_request)
+
+      afters = route_instance.afters
+      i = 0
+      while i < afters.size
+        call_endpoint(afters[i], endpoint_result)
+        i += 1
+      end
+
+      endpoint_result
     rescue Exception => e
       @error.call(request_builder.call, e)
     end
@@ -71,8 +82,8 @@ class Rackr
         Route.new(
           path_with_branches,
           endpoint,
-          @befores + ensure_array(route_befores),
-          @afters + ensure_array(route_afters)
+          befores: @befores + ensure_array(route_befores),
+          afters: @afters + ensure_array(route_afters)
         )
 
       return push_to_branch(method.to_s.upcase, route_instance) if @branches.size >= 1
@@ -120,12 +131,14 @@ class Rackr
 
     private
 
-    def call_endpoint(endpoint, rack_request)
-      return endpoint.call(rack_request) if endpoint.respond_to?(:call)
+    def call_endpoint(endpoint, content)
+      return endpoint.call(content) if endpoint.respond_to?(:call)
 
-      return endpoint.new(route: @route, config: @config).call(rack_request) if endpoint.include?(Rackr::Action)
+      if endpoint.include?(Rackr::Action) || endpoint.include?(Rackr::Callback)
+        return endpoint.new(route: @route, config: @config).call(content)
+      end
 
-      endpoint.new.call(rack_request)
+      endpoint.new.call(content)
     end
 
     def ensure_array(list)
