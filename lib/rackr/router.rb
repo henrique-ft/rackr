@@ -115,6 +115,7 @@ class Rackr
       @befores.concat(branch_befores)
       @branches_befores[name] = branch_befores
 
+      branch_afters = ensure_array(branch_afters)
       @afters.concat(branch_afters)
       @branches_afters[name] = branch_afters
 

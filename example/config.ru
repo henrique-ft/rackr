@@ -3,8 +3,8 @@
 require 'byebug'
 require 'sequel'
 require 'json'
-require 'rackr'
-# require_relative '../lib/rackr'
+#require 'rackr'
+require_relative '../lib/rackr'
 require_relative 'app/actions/home/index'
 require_relative 'app/callbacks/some_assign'
 
@@ -38,6 +38,10 @@ App =
   Rackr.new(config).call do
     get 'where-i-go', before: [SayHeyHo] do
       text('?')
+    end
+
+    get do
+      text("oi")
     end
 
     r 'v2', as: :v2, before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do

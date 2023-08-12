@@ -182,9 +182,8 @@ RSpec.describe Rackr::Router do
     context 'as:' do
       it 'can receive branches named_routes' do
         router = Rackr::Router.new
-        before_action = ->(_req) { req }
 
-        router.append_branch 'admin', branch_befores: before_action, as: :some_name
+        router.append_branch 'admin', as: :some_name
         router.add :get, 'teste', ->(_env) { 'success' }
 
         expect(router.route[:some_name]).to eq('/admin/teste')
@@ -192,10 +191,9 @@ RSpec.describe Rackr::Router do
 
       it 'is indepentent from other branchs named route' do
         router = Rackr::Router.new
-        before_action = ->(_req) { req }
 
-        router.append_branch 'admin', branch_befores: before_action, as: :some_name
-        router.append_branch 'independent', branch_befores: before_action, as: :independent
+        router.append_branch 'admin', as: :some_name
+        router.append_branch 'independent', as: :independent
         router.add :get, 'teste', ->(_env) { 'success' }
 
         expect(router.route[:independent]).to eq('/admin/independent/teste')
@@ -203,13 +201,56 @@ RSpec.describe Rackr::Router do
 
       it 'concat with route named route' do
         router = Rackr::Router.new
-        before_action = ->(_req) { req }
 
-        router.append_branch 'admin', branch_befores: before_action, as: :some_name
-        router.append_branch 'independent', branch_befores: before_action, as: :independent
+        router.append_branch 'admin', as: :some_name
+        router.append_branch 'independent', as: :independent
         router.add :get, 'teste', ->(_env) { 'success' }, as: :something
 
         expect(router.route[:independent_something]).to eq('/admin/independent/teste')
+      end
+    end
+
+    context 'after:' do
+      it 'can receive branches afters' do
+        router = Rackr::Router.new
+        branch_after = -> (res) do
+          expect(res).to eq('success')
+        end
+
+        router.append_branch 'admin', branch_afters: branch_after
+        router.add :get, 'teste', ->(_env) { 'success' }
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'REQUEST_PATH' => '/admin/teste'
+          }
+
+        router.call(request)
+      end
+
+      it 'can append more than 1 branches after' do
+        router = Rackr::Router.new
+        afters_called = 0
+        after_action = lambda do |res|
+          afters_called += 1
+        end
+        after_action2 = lambda do |res|
+          afters_called += 1
+        end
+
+        router.append_branch 'admin', branch_afters: after_action
+        router.append_branch 'v1', branch_afters: after_action2
+        router.add :get, 'teste', ->(_env) { 'success' }
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'REQUEST_PATH' => '/admin/v1/teste'
+          }
+
+        expect(router.call(request)).to eq('success')
+        expect(afters_called).to eq(2)
       end
     end
 
