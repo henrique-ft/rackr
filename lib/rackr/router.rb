@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'router/errors'
 require_relative 'router/route'
 require_relative 'router/build_request'
@@ -7,7 +9,7 @@ class Rackr
     attr_writer :not_found
     attr_reader :route, :config
 
-    def initialize(config = {})
+    def initialize(config = {}, before: [], after: [])
       @routes = {}
       %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
         @routes[method] = { __instances: [] }
@@ -18,8 +20,10 @@ class Rackr
         end
       @config = config
       @branches = []
-      @befores = []
+      @befores = ensure_array(before)
       @branches_befores = {}
+      @afters = ensure_array(after)
+      @branches_afters = {}
       @nameds_as = []
       @branches_named_as = {}
       @error = proc { |_req, e| raise e }
@@ -43,19 +47,31 @@ class Rackr
         before_result = call_endpoint(befores[i], rack_request)
         return before_result unless before_result.is_a?(Rack::Request)
 
+        rack_request = before_result
+
         i += 1
       end
 
-      call_endpoint(route_instance.endpoint, before_result || rack_request)
+      endpoint_result = call_endpoint(route_instance.endpoint, before_result || rack_request)
+
+      afters = route_instance.afters
+      i = 0
+      while i < afters.size
+        call_endpoint(afters[i], endpoint_result)
+        i += 1
+      end
+
+      endpoint_result
     rescue Exception => e
       @error.call(request_builder.call, e)
     end
 
-    def add(method, path, endpoint, as = nil, route_befores = [])
+    def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])
       Errors.check_path(path)
       Errors.check_endpoint(endpoint, path)
       Errors.check_as(as, path)
       Errors.check_callbacks(route_befores, path)
+      Errors.check_callbacks(route_afters, path)
 
       method = :get if method == :head
 
@@ -63,11 +79,14 @@ class Rackr
       add_named_route(path_with_branches, as)
 
       route_instance =
-        Route.new(path_with_branches, endpoint, @befores + ensure_array(route_befores))
+        Route.new(
+          path_with_branches,
+          endpoint,
+          befores: @befores + ensure_array(route_befores),
+          afters: @afters + ensure_array(route_afters)
+        )
 
-      if @branches.size >= 1
-        return push_to_branch(method.to_s.upcase, route_instance)
-      end
+      return push_to_branch(method.to_s.upcase, route_instance) if @branches.size >= 1
 
       @routes[method.to_s.upcase][:__instances].push(route_instance)
     end
@@ -84,10 +103,11 @@ class Rackr
       @error = endpoint
     end
 
-    def append_branch(name, branch_befores = [], as = nil)
+    def append_branch(name, branch_befores: [], branch_afters: [], as: nil)
       Errors.check_branch_name(name)
       Errors.check_as(as, @branches.join('/'))
       Errors.check_callbacks(branch_befores, name)
+      Errors.check_callbacks(branch_afters, name)
 
       @branches.push(name)
 
@@ -95,26 +115,31 @@ class Rackr
       @befores.concat(branch_befores)
       @branches_befores[name] = branch_befores
 
+      branch_afters = ensure_array(branch_afters)
+      @afters.concat(branch_afters)
+      @branches_afters[name] = branch_afters
+
       @nameds_as.push(as)
       @branches_named_as[name] = as
     end
 
     def clear_last_branch
       @befores -= @branches_befores[@branches.last]
+      @afters -= @branches_afters[@branches.last]
       @nameds_as -= [@branches_named_as[@branches.last]]
       @branches = @branches.first(@branches.size - 1)
     end
 
     private
 
-    def call_endpoint(endpoint, rack_request)
-      return endpoint.call(rack_request) if endpoint.respond_to?(:call)
+    def call_endpoint(endpoint, content)
+      return endpoint.call(content) if endpoint.respond_to?(:call)
 
-      if endpoint.include?(Rackr::Action)
-        return endpoint.new(route: @route, config: @config).call(rack_request)
+      if endpoint.include?(Rackr::Action) || endpoint.include?(Rackr::Callback)
+        return endpoint.new(route: @route, config: @config).call(content)
       end
 
-      endpoint.new.call(rack_request)
+      endpoint.new.call(content)
     end
 
     def ensure_array(list)

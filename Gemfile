@@ -3,8 +3,8 @@
 source 'https://rubygems.org'
 
 gem 'erubi'
-gem 'rack'
 gem 'oj'
+gem 'rack'
 
 # for small / medium projects and little memory usage
 gem 'thin'

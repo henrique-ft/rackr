@@ -140,7 +140,7 @@ RSpec.describe Rackr::Action do
       it 'reads the config views folder' do
         path = 'test'
 
-        Rackr::Action.view path, config: { views: { path: 'some/path' }}
+        Rackr::Action.view path, config: { views: { path: 'some/path' } }
 
         expect(::File).to have_received(:read).with('some/path/test.html.erb')
       end
@@ -148,7 +148,7 @@ RSpec.describe Rackr::Action do
       it 'reads the layout in views folder' do
         path = 'test'
 
-        Rackr::Action.view path, config: { views: { path: 'some/path' }}
+        Rackr::Action.view path, config: { views: { path: 'some/path' } }
 
         expect(::File).to have_received(:read).with('some/path/layout/_header.html.erb')
         expect(::File).to have_received(:read).with('some/path/layout/_footer.html.erb')
@@ -160,7 +160,7 @@ RSpec.describe Rackr::Action do
         allow(::File).to receive(:read).with('some/path/layout/_header.html.erb').and_raise(Errno::ENOENT)
         allow(::File).to receive(:read).with('some/path/layout/_footer.html.erb').and_raise(Errno::ENOENT)
 
-        result = Rackr::Action.view path, config: { views: { path: 'some/path' }}
+        result = Rackr::Action.view path, config: { views: { path: 'some/path' } }
 
         expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.]])
       end
@@ -186,7 +186,7 @@ RSpec.describe Rackr::Action do
 
     context 'layout' do
       it 'returns an layout array' do
-        expect(Rackr::Action.layout(:admin, 'index')).to eq(["layout/admin/_header", "index", "layout/admin/_footer"])
+        expect(Rackr::Action.layout(:admin, 'index')).to eq(['layout/admin/_header', 'index', 'layout/admin/_footer'])
       end
     end
 
@@ -205,10 +205,10 @@ RSpec.describe Rackr::Action do
 
     context 'erb' do
       it 'can render view_params with success' do
-        content = """
+        content = ''"
           <%= @view.hash[:name] %>
-        """
-        result = Rackr::Action.erb(content, { hash: { name: "something" }})
+        "''
+        result = Rackr::Action.erb(content, { hash: { name: 'something' } })
         expect(result).to eq("\n          something\n        ")
       end
     end
@@ -288,7 +288,7 @@ RSpec.describe Rackr::Action do
   context 'including' do
     let(:route) { 'route' }
     let(:config) { { some_config: 'a', db: 'db' } }
-    let(:included) { SomeClass.new(route: route, config: config)}
+    let(:included) { SomeClass.new(route: route, config: config) }
 
     it { expect(included.route).to eq(route) }
     it { expect(included.config).to eq(config) }

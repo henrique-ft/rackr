@@ -7,8 +7,8 @@ require_relative 'rackr/callback'
 class Rackr
   include Action
 
-  def initialize(config = {})
-    @router = Router.new(config)
+  def initialize(config = {}, before:, after:)
+    @router = Router.new(config, before: before, after: after)
   end
 
   def call(&block)
@@ -29,8 +29,13 @@ class Rackr
     @router.config[:db]
   end
 
-  def r(name, before: [], as: nil, &block)
-    @router.append_branch(name, before, as)
+  def r(name, before: [], after: [], as: nil, &block)
+    @router.append_branch(
+      name,
+      branch_befores: before,
+      branch_afters: after,
+      as: as
+    )
     instance_eval(&block)
 
     @router.clear_last_branch
@@ -53,11 +58,25 @@ class Rackr
   end
 
   %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
-    define_method(http_method.downcase.to_sym) do |path = '', endpoint = -> {}, as: nil, before: nil, &block|
+    define_method(http_method.downcase.to_sym) do |path = '', endpoint = -> {}, as: nil, before: nil, after: nil, &block|
       if block.respond_to?(:call)
-        @router.add(http_method, path, block, as, before)
+        @router.add(
+          http_method,
+          path,
+          block,
+          as: as,
+          route_befores: before,
+          route_afters: after
+        )
       else
-        @router.add(http_method, path, endpoint, as, before)
+        @router.add(
+          http_method,
+          path,
+          endpoint,
+          as: as,
+          route_befores: before,
+          route_afters: after
+        )
       end
     end
   end

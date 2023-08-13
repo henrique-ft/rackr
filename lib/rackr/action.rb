@@ -116,7 +116,7 @@ class Rackr
         db: nil,
         response_instance: false
       )
-        base_path = config.dig(:views, :path) || "views"
+        base_path = config.dig(:views, :path) || 'views'
 
         file_or_nil = lambda do |path|
           ::File.read(path)

@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require 'byebug'
 require 'sequel'
 require 'json'
-require 'rackr'
-# require_relative '../lib/rackr'
+#require 'rackr'
+require_relative '../lib/rackr'
 require_relative 'app/actions/home/index'
 require_relative 'app/callbacks/some_assign'
 
@@ -28,7 +30,7 @@ class SayHeyHo
   include Rackr::Callback
 
   def call(_req)
-    json({ hey: "ho" })
+    json({ hey: 'ho' })
   end
 end
 
@@ -38,18 +40,30 @@ App =
       text('?')
     end
 
+    get do
+      text("oi")
+    end
+
     r 'v2', as: :v2, before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
       r 'oi', as: :v2_oi do
-        get { html('<h1> rack http_router </h1>') } # routes[:v2_oi] # routes só pode ser setado quando tiver inserindo uma rota, não uma branch
-
+        # routes[:v2_oi] # routes só pode ser setado quando tiver inserindo uma rota, não uma branch
+        get do
+          html('<h1> rack http_router </h1>')
+        end
         get 'bla', as: :bla do
           html("<h1> #{route[:v2_oi_bla]} </h1>")
         end
       end
     end
 
-    r 'v2', as: :v2, before: ->(req) { p "before"; req } do
-      get ':name/hello', as: :hello, before: ->(req) { p "ROUTE BEFORE"; req } do |req|
+    r 'v2', as: :v2, before: lambda { |req|
+                               p 'before'
+                               req
+                             } do
+      get ':name/hello', as: :hello, before: lambda { |req|
+                                               p 'ROUTE BEFORE'
+                                               req
+                                             } do |req|
         json({ name: req.params[:name] }) # routes[:v2_hello]
       end
 
