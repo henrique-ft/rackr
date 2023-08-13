@@ -7,7 +7,7 @@ require_relative 'rackr/callback'
 class Rackr
   include Action
 
-  def initialize(config = {}, before:, after:)
+  def initialize(config = {}, before: [], after: [])
     @router = Router.new(config, before: before, after: after)
   end
 
