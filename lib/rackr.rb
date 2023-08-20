@@ -5,6 +5,8 @@ require_relative 'rackr/action'
 require_relative 'rackr/callback'
 
 class Rackr
+  class NotFound < StandardError; end
+
   include Action
 
   def initialize(config = {}, before: [], after: [])

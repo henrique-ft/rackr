@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../../rackr/router'
+require_relative '../../rackr'
 require 'byebug'
 
 RSpec.describe Rackr::Router do
@@ -103,18 +104,37 @@ RSpec.describe Rackr::Router do
     expect(router.call(request)).to eq([404, {}, ['Not found']])
   end
 
-  it 'render custom 404 when fails' do
-    router = Rackr::Router.new
+  context 'when not found' do
+    it 'renders custom 404' do
+      router = Rackr::Router.new
 
-    router.add_not_found proc { [404, {}, ['Custom not found']] }
+      router.add_not_found proc { [404, {}, ['Custom not found']] }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'GET',
-        'REQUEST_PATH' => '/fail'
-      }
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'REQUEST_PATH' => '/fail'
+        }
 
-    expect(router.call(request)).to eq([404, {}, ['Custom not found']])
+      expect(router.call(request)).to eq([404, {}, ['Custom not found']])
+    end
+
+    it 'catches Rackr::NotFound' do
+      router = Rackr::Router.new
+
+      router.add_not_found proc { [404, {}, ['Custom not found']] }
+      router.add :get, 'raise', ->(_env) do
+        raise Rackr::NotFound
+      end
+
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'REQUEST_PATH' => '/raise'
+        }
+
+      expect(router.call(request)).to eq([404, {}, ['Custom not found']])
+    end
   end
 
   it 'render custom error when exception happen' do
