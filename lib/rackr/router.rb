@@ -62,6 +62,8 @@ class Rackr
       end
 
       endpoint_result
+    rescue Rackr::NotFound
+      render_not_found(request_builder.call)
     rescue Exception => e
       @error.call(request_builder.call, e)
     end
