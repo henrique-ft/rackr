@@ -50,6 +50,7 @@ App =
         get do
           html('<h1> rack http_router </h1>')
         end
+
         get 'bla', as: :bla do
           html("<h1> #{route[:v2_oi_bla]} </h1>")
         end

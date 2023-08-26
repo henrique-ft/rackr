@@ -9,7 +9,7 @@ RSpec.describe Rackr::Router::Route do
 
     request =
       {
-        'REQUEST_PATH' => '/test'
+        'PATH_INFO' => '/test'
       }
 
     expect(route.match?(request)).to eq(true)
@@ -22,7 +22,7 @@ RSpec.describe Rackr::Router::Route do
 
     request =
       {
-        'REQUEST_PATH' => '/test/1/test/2'
+        'PATH_INFO' => '/test/1/test/2'
       }
 
     expect(route.match?(request)).to eq(true)
@@ -35,7 +35,7 @@ RSpec.describe Rackr::Router::Route do
 
     request =
       {
-        'REQUEST_PATH' => '/test/1/wrong/2'
+        'PATH_INFO' => '/test/1/wrong/2'
       }
 
     expect(route.match?(request)).to eq(false)

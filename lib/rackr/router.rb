@@ -188,7 +188,7 @@ class Rackr
     def match_route(env, last_tail = nil, found_branches = [])
       routes =
         if last_tail.nil?
-          last_tail = env['REQUEST_PATH'].split('/').drop(1)
+          last_tail = env['PATH_INFO'].split('/').drop(1)
 
           @routes[env['REQUEST_METHOD']]
         else

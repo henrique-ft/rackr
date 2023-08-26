@@ -20,7 +20,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'GET',
-        'REQUEST_PATH' => '/get'
+        'PATH_INFO' => '/get'
       }
 
     expect(router.call(request)).to eq('Hey get')
@@ -28,7 +28,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'HEAD',
-        'REQUEST_PATH' => '/head'
+        'PATH_INFO' => '/head'
       }
 
     expect(router.call(request)).to eq('Hey head')
@@ -36,7 +36,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'POST',
-        'REQUEST_PATH' => '/post'
+        'PATH_INFO' => '/post'
       }
 
     expect(router.call(request)).to eq('Hey post')
@@ -44,7 +44,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'DELETE',
-        'REQUEST_PATH' => '/delete'
+        'PATH_INFO' => '/delete'
       }
 
     expect(router.call(request)).to eq('Hey delete')
@@ -52,7 +52,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'PUT',
-        'REQUEST_PATH' => '/put'
+        'PATH_INFO' => '/put'
       }
 
     expect(router.call(request)).to eq('Hey put')
@@ -60,7 +60,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'TRACE',
-        'REQUEST_PATH' => '/trace'
+        'PATH_INFO' => '/trace'
       }
 
     expect(router.call(request)).to eq('Hey trace')
@@ -68,7 +68,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'OPTIONS',
-        'REQUEST_PATH' => '/options'
+        'PATH_INFO' => '/options'
       }
 
     expect(router.call(request)).to eq('Hey options')
@@ -76,7 +76,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'PATCH',
-        'REQUEST_PATH' => '/patch'
+        'PATH_INFO' => '/patch'
       }
 
     expect(router.call(request)).to eq('Hey patch')
@@ -98,7 +98,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'GET',
-        'REQUEST_PATH' => '/fail'
+        'PATH_INFO' => '/fail'
       }
 
     expect(router.call(request)).to eq([404, {}, ['Not found']])
@@ -113,7 +113,7 @@ RSpec.describe Rackr::Router do
       request =
         {
           'REQUEST_METHOD' => 'GET',
-          'REQUEST_PATH' => '/fail'
+          'PATH_INFO' => '/fail'
         }
 
       expect(router.call(request)).to eq([404, {}, ['Custom not found']])
@@ -130,7 +130,7 @@ RSpec.describe Rackr::Router do
       request =
         {
           'REQUEST_METHOD' => 'GET',
-          'REQUEST_PATH' => '/raise'
+          'PATH_INFO' => '/raise'
         }
 
       expect(router.call(request)).to eq([404, {}, ['Custom not found']])
@@ -145,7 +145,7 @@ RSpec.describe Rackr::Router do
     request =
       {
         'REQUEST_METHOD' => 'GET',
-        'REQUEST_PATH' => '/teste'
+        'PATH_INFO' => '/teste'
       }
     router.add :get, 'teste', double(call: 'Hey test')
     router.add_error proc { |_req, _e| [500, {}, ['Custom internal server error']] }
@@ -162,7 +162,7 @@ RSpec.describe Rackr::Router do
       request =
         {
           'REQUEST_METHOD' => 'GET',
-          'REQUEST_PATH' => '/admin/teste'
+          'PATH_INFO' => '/admin/teste'
         }
 
       expect(router.call(request)).to eq('success')
@@ -178,7 +178,7 @@ RSpec.describe Rackr::Router do
       request =
         {
           'REQUEST_METHOD' => 'GET',
-          'REQUEST_PATH' => '/teste'
+          'PATH_INFO' => '/teste'
         }
 
       expect(router.call(request)).to eq('success')
@@ -193,7 +193,7 @@ RSpec.describe Rackr::Router do
       request =
         {
           'REQUEST_METHOD' => 'GET',
-          'REQUEST_PATH' => '/admin'
+          'PATH_INFO' => '/admin'
         }
 
       expect(router.call(request)).to eq('success')
@@ -243,7 +243,7 @@ RSpec.describe Rackr::Router do
         request =
           {
             'REQUEST_METHOD' => 'GET',
-            'REQUEST_PATH' => '/admin/teste'
+            'PATH_INFO' => '/admin/teste'
           }
 
         router.call(request)
@@ -264,7 +264,7 @@ RSpec.describe Rackr::Router do
         request =
           {
             'REQUEST_METHOD' => 'GET',
-            'REQUEST_PATH' => '/admin/v1/teste'
+            'PATH_INFO' => '/admin/v1/teste'
           }
 
         expect(router.call(request)).to eq('success')
@@ -283,7 +283,7 @@ RSpec.describe Rackr::Router do
         request =
           {
             'REQUEST_METHOD' => 'GET',
-            'REQUEST_PATH' => '/admin/teste'
+            'PATH_INFO' => '/admin/teste'
           }
 
         expect(router.call(request)).to eq('inside before')
@@ -305,7 +305,7 @@ RSpec.describe Rackr::Router do
         request =
           {
             'REQUEST_METHOD' => 'GET',
-            'REQUEST_PATH' => '/admin/v1/teste'
+            'PATH_INFO' => '/admin/v1/teste'
           }
 
         expect(router.call(request)).to eq('success')
@@ -324,7 +324,7 @@ RSpec.describe Rackr::Router do
         request =
           {
             'REQUEST_METHOD' => 'GET',
-            'REQUEST_PATH' => '/admin/v1/teste'
+            'PATH_INFO' => '/admin/v1/teste'
           }
 
         expect(router.call(request)).to eq('hey')

@@ -26,7 +26,7 @@ class Rackr
       def match?(env)
         return match_with_params?(env) if @has_params
 
-        env['REQUEST_PATH'] == @path
+        env['PATH_INFO'] == @path
       end
 
       private
@@ -36,7 +36,7 @@ class Rackr
       end
 
       def match_with_params?(env)
-        splitted_request_path = env['REQUEST_PATH'].split('/')
+        splitted_request_path = env['PATH_INFO'].split('/')
 
         return false if @splitted_path.size != splitted_request_path.size
 
