@@ -1,0 +1,1 @@
+rake bench static_bench static_graphs R10K_APPS="rackr"
