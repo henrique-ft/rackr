@@ -5,7 +5,7 @@ require 'byebug'
 
 RSpec.describe Rackr::Router::BuildRequest do
   it 'can build an Rack::Request' do
-    request = described_class.new({}).call
+    request = described_class.new({}, []).call
     expect(request.class).to eq(Rack::Request)
   end
 
@@ -31,7 +31,7 @@ RSpec.describe Rackr::Router::BuildRequest do
       expect(rack_request).to receive(:update_param).with(:param1, 1)
       expect(rack_request).to receive(:update_param).with(:param2, 2)
 
-      described_class.new({}).call(route)
+      described_class.new({}, rack_request.path.split('/')).call(route)
     end
   end
 end

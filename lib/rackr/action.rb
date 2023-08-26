@@ -8,10 +8,10 @@ class Rackr
   module Action
     def self.included(base)
       base.class_eval do
-        attr_reader :route, :config, :db if self != Rackr
+        attr_reader :routes, :config, :db if self != Rackr
 
-        def initialize(route: nil, config: nil)
-          @route = route
+        def initialize(routes: nil, config: nil)
+          @routes = routes
           @config = config
           @db = config[:db]
         end
@@ -22,7 +22,7 @@ class Rackr
             a_view_params,
             status: status,
             config: config,
-            route: route,
+            routes: routes,
             db: db
           )
         end
@@ -35,7 +35,7 @@ class Rackr
             a_view_params,
             status: status,
             config: config,
-            route: route,
+            routes: routes,
             db: db,
             response_instance: response_instance
           )
@@ -93,7 +93,7 @@ class Rackr
         view_params = {},
         status: 200,
         config: {},
-        route: nil,
+        routes: nil,
         db: nil
       )
         view(
@@ -101,7 +101,7 @@ class Rackr
           view_params,
           status: status,
           config: config,
-          route: route,
+          routes: routes,
           db: db,
           response_instance: true
         )
@@ -112,7 +112,7 @@ class Rackr
         view_params = {},
         status: 200,
         config: {},
-        route: nil,
+        routes: nil,
         db: nil,
         response_instance: false
       )
@@ -138,7 +138,7 @@ class Rackr
           ].join,
           view_params,
           config: config,
-          route: route,
+          routes: routes,
           db: db
         )
 
@@ -194,7 +194,7 @@ class Rackr
       end
 
       # rubocop:disable Lint/UnusedMethodArgument
-      def erb(content, view_params = {}, config: nil, route: nil, db: nil)
+      def erb(content, view_params = {}, config: nil, routes: nil, db: nil)
         @view = OpenStruct.new(view_params)
 
         eval(Erubi::Engine.new(content).src)

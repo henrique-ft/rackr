@@ -52,7 +52,7 @@ App =
         end
 
         get 'bla', as: :bla do
-          html("<h1> #{route[:v2_oi_bla]} </h1>")
+          html("<h1> #{routes[:v2_oi_bla]} </h1>")
         end
       end
     end

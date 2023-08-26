@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class Rackr
   class Router
     class Route
@@ -21,10 +19,11 @@ class Rackr
         @has_befores = befores != []
         @afters = afters
         @has_afters = afters != []
+        @path_regex = /\A#{path.gsub(/(:\w+)/, '([^/]+)')}\z/
       end
 
       def match?(env)
-        return match_with_params?(env) if @has_params
+        return env['PATH_INFO'].match?(@path_regex) if @has_params
 
         env['PATH_INFO'] == @path
       end
@@ -33,25 +32,6 @@ class Rackr
 
       def fetch_params
         @splitted_path.select { |value| value.start_with? ':' }
-      end
-
-      def match_with_params?(env)
-        splitted_request_path = env['PATH_INFO'].split('/')
-
-        return false if @splitted_path.size != splitted_request_path.size
-
-        matched_path_pieces =
-          @splitted_path
-          .map
-          .with_index do |segment, i|
-            if segment.start_with?(':')
-              true
-            else
-              splitted_request_path[i] == segment
-            end
-          end
-
-        !matched_path_pieces.include?(false)
       end
     end
   end
