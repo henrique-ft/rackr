@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'rackr'
-  s.version     = '0.0.44'
+  s.version     = '0.0.45'
   s.summary     = 'A complete http router solution that fit well with pure rack apps.'
   s.description = 'A complete http router solution that fit well with pure rack apps.'
   s.authors     = ['Henrique F. Teixeira']
