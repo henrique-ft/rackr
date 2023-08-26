@@ -168,6 +168,21 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq('success')
     end
 
+    it 'can append named branches' do
+      router = Rackr::Router.new
+
+      router.append_branch :name
+      router.add :get, 'teste', ->(_env) { 'success' }
+
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'PATH_INFO' => '/something/teste'
+        }
+
+      expect(router.call(request)).to eq('success')
+    end
+
     it 'can clear the last branch' do
       router = Rackr::Router.new
 

@@ -57,7 +57,7 @@ App =
       end
     end
 
-    r 'v3', as: :v3, before: lambda { |req|
+    r 'v3', as: :v2, before: lambda { |req|
                                p 'before'
                                req
                              } do

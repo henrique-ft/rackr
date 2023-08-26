@@ -114,6 +114,8 @@ class Rackr
       Errors.check_callbacks(branch_befores, name)
       Errors.check_callbacks(branch_afters, name)
 
+      name = ":#{name}" if name.is_a? Symbol
+
       @branches.push(name)
 
       branch_befores = ensure_array(branch_befores)
