@@ -19,8 +19,8 @@ class Rackr
     @router
   end
 
-  def route
-    @router.route
+  def routes
+    @router.routes
   end
 
   def config
