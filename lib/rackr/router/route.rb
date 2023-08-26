@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class Rackr
   class Router
     class Route
@@ -21,7 +19,7 @@ class Rackr
         @has_befores = befores != []
         @afters = afters
         @has_afters = afters != []
-        @path_regex = %r{\A#{path.gsub(/(:\w+)/, '([^/]+)')}\z}
+        @path_regex = /\A#{path.gsub(/(:\w+)/, '([^/]+)')}\z/
       end
 
       def match?(env)
