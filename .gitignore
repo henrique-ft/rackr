@@ -1,0 +1,6 @@
+perf_tests/apps
+perf_tests/data
+perf_tests/graphs
+perf_tests/static/apps
+perf_tests/static/data
+perf_tests/static/graphs
