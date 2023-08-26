@@ -87,7 +87,7 @@ RSpec.describe Rackr::Router do
 
     router.add :get, 'some_name', double(call: 'Hey get'), as: :some_name
 
-    expect(router.route[:some_name]).to eq('/some_name')
+    expect(router.routes[:some_name]).to eq('/some_name')
   end
 
   it 'render 404 when fails' do
@@ -221,7 +221,7 @@ RSpec.describe Rackr::Router do
         router.append_branch 'admin', as: :some_name
         router.add :get, 'teste', ->(_env) { 'success' }
 
-        expect(router.route[:some_name]).to eq('/admin/teste')
+        expect(router.routes[:some_name]).to eq('/admin/teste')
       end
 
       it 'is indepentent from other branchs named route' do
@@ -231,7 +231,7 @@ RSpec.describe Rackr::Router do
         router.append_branch 'independent', as: :independent
         router.add :get, 'teste', ->(_env) { 'success' }
 
-        expect(router.route[:independent]).to eq('/admin/independent/teste')
+        expect(router.routes[:independent]).to eq('/admin/independent/teste')
       end
 
       it 'concat with route named route' do
@@ -241,7 +241,7 @@ RSpec.describe Rackr::Router do
         router.append_branch 'independent', as: :independent
         router.add :get, 'teste', ->(_env) { 'success' }, as: :something
 
-        expect(router.route[:independent_something]).to eq('/admin/independent/teste')
+        expect(router.routes[:independent_something]).to eq('/admin/independent/teste')
       end
     end
 

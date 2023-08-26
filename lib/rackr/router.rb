@@ -7,14 +7,14 @@ require_relative 'router/build_request'
 class Rackr
   class Router
     attr_writer :not_found
-    attr_reader :route, :config
+    attr_reader :routes, :config
 
     def initialize(config = {}, before: [], after: [])
-      @routes = {}
+      @instance_routes = {}
       %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
-        @routes[method] = { __instances: [] }
+        @instance_routes[method] = { __instances: [] }
       end
-      @route =
+      @routes =
         Hash.new do |_hash, key|
           raise(Errors::UndefinedNamedRouteError, "Undefined named route: '#{key}'")
         end
@@ -93,7 +93,7 @@ class Rackr
 
       return push_to_branch(method.to_s.upcase, route_instance) if @branches.size >= 1
 
-      @routes[method.to_s.upcase][:__instances].push(route_instance)
+      @instance_routes[method.to_s.upcase][:__instances].push(route_instance)
     end
 
     def add_not_found(endpoint)
@@ -143,7 +143,7 @@ class Rackr
       return endpoint.call(content) if endpoint.respond_to?(:call)
 
       if endpoint.include?(Rackr::Action) || endpoint.include?(Rackr::Callback)
-        return endpoint.new(route: @route, config: @config).call(content)
+        return endpoint.new(routes: @routes, config: @config).call(content)
       end
 
       endpoint.new.call(content)
@@ -160,12 +160,12 @@ class Rackr
       nameds_as = [@nameds_as.last].push(as).compact
       return if nameds_as.empty?
 
-      @route[nameds_as.join('_').to_sym] = path_with_branches
+      @routes[nameds_as.join('_').to_sym] = path_with_branches
     end
 
     def push_to_branch(method, route_instance)
       branches_with_slash = @branches + %i[__instances]
-      push_it(@routes[method], *branches_with_slash, route_instance)
+      push_it(@instance_routes[method], *branches_with_slash, route_instance)
     end
 
     def push_it(hash, first_key, *rest_keys, val)
@@ -191,18 +191,18 @@ class Rackr
     end
 
     def match_route(env, last_tail = nil, found_branches = [])
-      routes =
+      instance_routes =
         if last_tail.nil?
           last_tail = @splitted_request_path.drop(1)
 
-          @routes[env['REQUEST_METHOD']]
+          @instance_routes[env['REQUEST_METHOD']]
         else
-          @routes[env['REQUEST_METHOD']].dig(*found_branches)
+          @instance_routes[env['REQUEST_METHOD']].dig(*found_branches)
         end
 
       segment, *tail = last_tail
 
-      routes.each do |branch, _v|
+      instance_routes.each do |branch, _v|
         next if branch == :__instances
 
         if segment == branch || branch.start_with?(':')
@@ -212,7 +212,7 @@ class Rackr
       end
 
       if tail.empty? || found_branches == []
-        return @routes[env['REQUEST_METHOD']].dig(
+        return @instance_routes[env['REQUEST_METHOD']].dig(
           *(found_branches << :__instances)
         )
           &.detect { |route_instance| route_instance.match?(env) }

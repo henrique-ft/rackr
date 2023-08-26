@@ -52,12 +52,12 @@ App =
         end
 
         get 'bla', as: :bla do
-          html("<h1> #{route[:v2_oi_bla]} </h1>")
+          html("<h1> #{routes[:v2_oi_bla]} </h1>")
         end
       end
     end
 
-    r 'v3', as: :v2, before: lambda { |req|
+    r 'v2', as: :v2, before: lambda { |req|
                                p 'before'
                                req
                              } do
