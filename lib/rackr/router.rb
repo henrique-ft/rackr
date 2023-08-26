@@ -28,10 +28,13 @@ class Rackr
       @branches_named_as = {}
       @error = proc { |_req, e| raise e }
       @not_found = proc { [404, {}, ['Not found']] }
+      @splitted_request_path = []
     end
 
     def call(env)
-      request_builder = BuildRequest.new(env)
+      @splitted_request_path = env['PATH_INFO'].split('/')
+
+      request_builder = BuildRequest.new(env, @splitted_request_path)
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
       route_instance = match_route(env)
@@ -188,7 +191,7 @@ class Rackr
     def match_route(env, last_tail = nil, found_branches = [])
       routes =
         if last_tail.nil?
-          last_tail = env['PATH_INFO'].split('/').drop(1)
+          last_tail = @splitted_request_path.drop(1)
 
           @routes[env['REQUEST_METHOD']]
         else

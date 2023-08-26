@@ -3,8 +3,9 @@
 class Rackr
   class Router
     class BuildRequest
-      def initialize(env)
+      def initialize(env, spplited_request_path)
         @env = env
+        @spplited_request_path = spplited_request_path
       end
 
       def call(route = nil)
@@ -19,14 +20,12 @@ class Rackr
       private
 
       def update_request_params(request, route)
-        splitted_request_path = request.path.split('/')
-
         i = 0
 
         while i < route.splitted_path.size
           route_word = route.splitted_path[i]
           if route_word.start_with?(':')
-            param = splitted_request_path[i]
+            param = @spplited_request_path[i]
             param = param.to_i if is_a_integer_string?(param)
 
             update_request_param(request, route_word, param)
