@@ -2,11 +2,20 @@
 
 class Rackr
   class Router
+    ##
+    # Used to match and set request url params
+
     class BuildRequest
+      ##
+      # get the request env and spplited request path to initialize a Rackr::Router::BuildRequest object
+
       def initialize(env, spplited_request_path)
         @env = env
         @spplited_request_path = spplited_request_path
       end
+
+      ##
+      # Match and set request url params if given route has params
 
       def call(route = nil)
         request = Rack::Request.new(@env)
