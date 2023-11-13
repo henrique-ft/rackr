@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>module Rackr::Router::Errors - RDoc Documentation</title>
+
+<script type="text/javascript">
+  var rdoc_rel_prefix = "../../";
+  var index_rel_prefix = "../../";
+</script>
+
+<script src="../../js/navigation.js" defer></script>
+<script src="../../js/search.js" defer></script>
+<script src="../../js/search_index.js" defer></script>
+<script src="../../js/searcher.js" defer></script>
+<script src="../../js/darkfish.js" defer></script>
+
+<link href="../../css/fonts.css" rel="stylesheet">
+<link href="../../css/rdoc.css" rel="stylesheet">
+
+
+<body id="top" role="document" class="module">
+<nav role="navigation">
+  <div id="project-navigation">
+    <div id="home-section" role="region" title="Quick navigation" class="nav-section">
+  <h2>
+    <a href="../../index.html" rel="home">Home</a>
+  </h2>
+
+  <div id="table-of-contents-navigation">
+    <a href="../../table_of_contents.html#pages">Pages</a>
+    <a href="../../table_of_contents.html#classes">Classes</a>
+    <a href="../../table_of_contents.html#methods">Methods</a>
+  </div>
+</div>
+
+    <div id="search-section" role="search" class="project-section initially-hidden">
+  <form action="#" method="get" accept-charset="utf-8">
+    <div id="search-field-wrapper">
+      <input id="search-field" role="combobox" aria-label="Search"
+             aria-autocomplete="list" aria-controls="search-results"
+             type="text" name="search" placeholder="Search" spellcheck="false"
+             title="Type to search, Up and Down to navigate, Enter to load">
+    </div>
+
+    <ul id="search-results" aria-label="Search Results"
+        aria-busy="false" aria-expanded="false"
+        aria-atomic="false" class="initially-hidden"></ul>
+  </form>
+</div>
+
+  </div>
+
+  
+
+  <div id="class-metadata">
+    
+    
+    
+    
+    
+<!-- Method Quickref -->
+<div id="method-list-section" class="nav-section">
+  <h3>Methods</h3>
+
+  <ul class="link-list" role="directory">
+    <li ><a href="#method-c-check_as">::check_as</a>
+    <li ><a href="#method-c-check_branch_name">::check_branch_name</a>
+    <li ><a href="#method-c-check_callbacks">::check_callbacks</a>
+    <li ><a href="#method-c-check_endpoint">::check_endpoint</a>
+    <li ><a href="#method-c-check_path">::check_path</a>
+  </ul>
+</div>
+
+  </div>
+</nav>
+
+<main role="main" aria-labelledby="module-Rackr::Router::Errors">
+  <h1 id="module-Rackr::Router::Errors" class="module">
+    module Rackr::Router::Errors
+  </h1>
+
+  <section class="description">
+    
+  </section>
+
+  <section id="5Buntitled-5D" class="documentation-section">
+
+
+
+
+
+     <section id="public-class-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Class Methods</h3>
+       </header>
+
+      <div id="method-c-check_as" class="method-detail ">
+        <div class="method-heading">
+          <span class="method-name">check_as</span><span
+            class="method-args">(as, path)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+
+        <div class="method-description">
+          
+
+          <div class="method-source-code" id="check_as-source">
+            <pre><span class="ruby-comment"># File rackr/router/errors.rb, line 27</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">check_as</span>(<span class="ruby-identifier">as</span>, <span class="ruby-identifier">path</span>)
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">as</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">as</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Symbol</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">as</span>.<span class="ruby-identifier">nil?</span>
+
+  <span class="ruby-identifier">raise</span>(<span class="ruby-constant">InvalidNamedRouteError</span>,
+        <span class="ruby-node">&quot;as: argument in routes and branches must be a `string` or a `symbol`, got: &#39;#{as}&#39; for &#39;#{path}&#39;&quot;</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-c-check_branch_name" class="method-detail ">
+        <div class="method-heading">
+          <span class="method-name">check_branch_name</span><span
+            class="method-args">(path)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+
+        <div class="method-description">
+          
+
+          <div class="method-source-code" id="check_branch_name-source">
+            <pre><span class="ruby-comment"># File rackr/router/errors.rb, line 15</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">check_branch_name</span>(<span class="ruby-identifier">path</span>)
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">path</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">path</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Symbol</span>)
+
+  <span class="ruby-identifier">raise</span>(<span class="ruby-constant">InvalidBranchNameError</span>, <span class="ruby-node">&quot;Route branch name must be a `string` or a `symbol`, got: &#39;#{path}&#39;&quot;</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-c-check_callbacks" class="method-detail ">
+        <div class="method-heading">
+          <span class="method-name">check_callbacks</span><span
+            class="method-args">(callbacks, path)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+
+        <div class="method-description">
+          
+
+          <div class="method-source-code" id="check_callbacks-source">
+            <pre><span class="ruby-comment"># File rackr/router/errors.rb, line 34</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">check_callbacks</span>(<span class="ruby-identifier">callbacks</span>, <span class="ruby-identifier">path</span>)
+  <span class="ruby-identifier">check</span> = <span class="ruby-identifier">lambda</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">callback</span><span class="ruby-operator">|</span>
+    <span class="ruby-keyword">unless</span> <span class="ruby-identifier">callback</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">callback</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:call</span>) <span class="ruby-operator">||</span> (<span class="ruby-identifier">callback</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:new</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">callback</span>.<span class="ruby-identifier">instance_methods</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:call</span>))
+      <span class="ruby-identifier">raise</span>(<span class="ruby-constant">InvalidCallbackError</span>,
+            <span class="ruby-node">&quot;Callbacks must respond to a `call` method or be a class with a `call` instance method, got: &#39;#{callback.inspect}&#39; for &#39;#{path}&#39;&quot;</span>)
+    <span class="ruby-keyword">end</span>
+  }
+
+  <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">compact</span>.<span class="ruby-identifier">each</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">check</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">check</span>.<span class="ruby-identifier">call</span>(<span class="ruby-identifier">callbacks</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-c-check_endpoint" class="method-detail ">
+        <div class="method-heading">
+          <span class="method-name">check_endpoint</span><span
+            class="method-args">(endpoint, path)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+
+        <div class="method-description">
+          
+
+          <div class="method-source-code" id="check_endpoint-source">
+            <pre><span class="ruby-comment"># File rackr/router/errors.rb, line 45</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">check_endpoint</span>(<span class="ruby-identifier">endpoint</span>, <span class="ruby-identifier">path</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">endpoint</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:call</span>) <span class="ruby-operator">||</span> (<span class="ruby-identifier">endpoint</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:new</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">endpoint</span>.<span class="ruby-identifier">instance_methods</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:call</span>))
+    <span class="ruby-keyword">return</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">raise</span>(<span class="ruby-constant">InvalidEndpointError</span>,
+        <span class="ruby-node">&quot;Endpoints must respond to a `call` method or be a class with a `call` instance method, got: &#39;#{endpoint.inspect}&#39; for &#39;#{path}&#39;&quot;</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-c-check_path" class="method-detail ">
+        <div class="method-heading">
+          <span class="method-name">check_path</span><span
+            class="method-args">(path)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+
+        <div class="method-description">
+          
+
+          <div class="method-source-code" id="check_path-source">
+            <pre><span class="ruby-comment"># File rackr/router/errors.rb, line 21</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">check_path</span>(<span class="ruby-identifier">path</span>)
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">path</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">path</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Symbol</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">path</span>.<span class="ruby-identifier">nil?</span>
+
+  <span class="ruby-identifier">raise</span>(<span class="ruby-constant">InvalidPathError</span>, <span class="ruby-node">&quot;Path must be a `string`, `symbol` or `nil`, got: &#39;#{path}&#39;&quot;</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+    </section>
+
+  </section>
+</main>
+
+
+<footer id="validator-badges" role="contentinfo">
+  <p><a href="https://validator.w3.org/check/referer">Validate</a>
+  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.4.0.
+  <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
+</footer>
+

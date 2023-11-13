@@ -1,0 +1,14 @@
+Sun, 12 Nov 2023 22:20:29 -0300
+rackr/action.rb	Sun, 12 Nov 2023 22:20:24 -0300
+rackr/callback.rb	Sun, 29 Oct 2023 18:16:51 -0300
+rackr/router/build_request.rb	Sun, 29 Oct 2023 18:16:51 -0300
+rackr/router/errors.rb	Sun, 29 Oct 2023 18:16:51 -0300
+rackr/router/route.rb	Sun, 29 Oct 2023 18:16:51 -0300
+rackr/router.rb	Sun, 29 Oct 2023 18:16:51 -0300
+rackr.rb	Sun, 29 Oct 2023 18:16:51 -0300
+spec/rackr/action_spec.rb	Sun, 29 Oct 2023 18:16:51 -0300
+spec/rackr/callback_spec.rb	Sun, 29 Oct 2023 18:16:51 -0300
+spec/rackr/router/build_request_spec.rb	Sun, 29 Oct 2023 18:16:51 -0300
+spec/rackr/router/errors_spec.rb	Sun, 29 Oct 2023 18:16:51 -0300
+spec/rackr/router/route_spec.rb	Sun, 29 Oct 2023 18:16:51 -0300
+spec/rackr/router_spec.rb	Sun, 29 Oct 2023 18:16:51 -0300
