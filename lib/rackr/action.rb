@@ -28,7 +28,7 @@ class Rackr
         end
 
         ##
-        # Instance alias, injecting config, routes and db
+        # Rackr::Action instance alias, injecting config, routes and db
 
         def view_response(a_path, a_view_params = {}, status: 200)
           Rackr::Action.view_response(
@@ -42,7 +42,7 @@ class Rackr
         end
 
         ##
-        # Instance alias, injecting config, routes and db
+        # Rackr::Action instance alias, injecting config, routes and db
 
         def view(
           a_path, a_view_params = {}, status: 200, response_instance: false
@@ -61,77 +61,77 @@ class Rackr
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def layout(layout_path, file_path)
       Rackr::Action.layout(layout_path, file_path)
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def html(content, status: 200)
       Rackr::Action.html(content, status: status)
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def html_response(content, status: 200)
       Rackr::Action.html_response(content, status: status)
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def json(content = {}, status: 200)
       Rackr::Action.json(content, status: status)
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def json_response(content = {}, status: 200)
       Rackr::Action.json_response(content, status: status)
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def text(content, status: 200)
       Rackr::Action.text(content, status: status)
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def text_response(content, status: 200)
       Rackr::Action.text_response(content, status: status)
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def erb(content, view_params = {})
       Rackr::Action.erb(content, view_params)
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def redirect_response(url)
       Rackr::Action.redirect_response(url)
     end
 
     ##
-    # Instance alias
+    # Rackr::Action alias for instances
 
     def redirect_to(url)
       Rackr::Action.redirect_to(url)
     end
 
     ##
-    # Instance alias for creating a Rack::Response
+    # Rackr::Action alias for instances for creating a Rack::Response
 
     def response(body = nil, status = 200, headers = {})
       Rack::Response.new(body, status, headers)
@@ -229,7 +229,7 @@ class Rackr
       end
 
       ##
-      # Returns a Rack Response instance with Content-Type: 'text/html'
+      # Returns a Rack::Response instance with Content-Type: 'text/html'
 
       def html_response(content, status: 200)
         Rack::Response.new(content, status, { 'Content-Type' => 'text/html' })
@@ -243,7 +243,7 @@ class Rackr
       end
 
       ##
-      # Returns a Rack Response instance with Content-Type: 'application/json' and json serialize
+      # Returns a Rack::Response instance with Content-Type: 'application/json' and json serialize
 
       def json_response(content = {}, status: 200)
         Rack::Response.new(
@@ -261,7 +261,7 @@ class Rackr
       end
 
       ##
-      # Returns a Rack Response instance with Content-Type: 'text/plain'
+      # Returns a Rack::Response instance with Content-Type: 'text/plain'
 
       def text_response(content, status: 200)
         Rack::Response.new(
@@ -280,7 +280,7 @@ class Rackr
       end
 
       ##
-      # Returns a Rack Response instance with Location: the given url and 302 status
+      # Returns a Rack::Response instance with Location: the given url and 302 status
 
       def redirect_response(url)
         Rack::Response.new(
@@ -298,7 +298,7 @@ class Rackr
       end
 
       ##
-      # Alias for create a new Rack Response instance
+      # Alias for create a new Rack::Response instance
 
       def response(body = nil, status = 200, headers = {})
         Rack::Response.new(body, status, headers)

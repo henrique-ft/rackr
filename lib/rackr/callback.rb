@@ -2,6 +2,9 @@
 
 class Rackr
   module Callback
+    ##
+    # Also include Rackr::Action when including this module
+
     def self.included(base)
       base.class_eval do
         include Rackr::Action

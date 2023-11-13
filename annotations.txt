@@ -1,0 +1,1 @@
+remenber to set https://www.rubydoc.info/gems/rackr link in rubygems
