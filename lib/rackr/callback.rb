@@ -11,9 +11,16 @@ class Rackr
       end
     end
 
+    ##
+    # Alias for Rackr::Callback assign method
+
     def assign(obj, hash)
       Rackr::Callback.assign(obj, hash)
     end
+
+    ##
+    # Receive an object and a hash, transform the hash keys in object attributes.
+    # Can be used to assign values to a request
 
     def self.assign(obj, hash)
       hash.each do |k, v|
