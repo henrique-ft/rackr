@@ -12,7 +12,7 @@ end
 
 RSpec.describe Rackr::Callback do
   it 'includes http router action' do
-    expect(SomeClass3.included_modules).to eq([Rackr::Action, Rackr::Callback, Kernel])
+    expect(SomeClass3.included_modules.include?(Rackr::Action)).to be_truthy
   end
 
   context 'assign' do

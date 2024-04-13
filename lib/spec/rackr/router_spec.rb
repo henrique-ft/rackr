@@ -177,7 +177,8 @@ RSpec.describe Rackr::Router do
       request =
         {
           'REQUEST_METHOD' => 'GET',
-          'PATH_INFO' => '/something/teste'
+          'PATH_INFO' => '/something/teste',
+          'rack.input' => ''
         }
 
       expect(router.call(request)).to eq('success')
