@@ -12,8 +12,10 @@ require_relative 'app/config'
 require_relative 'app/models/food'
 require_relative 'app/models/nutrients_table'
 require_relative 'app/models/report'
-# Actions
+# Callbacks
 require_relative 'app/http/callbacks/foods/assign'
+# Actions
+require_relative 'app/http/actions/foods/index'
 # Router
 require_relative 'app/http/router'
 
