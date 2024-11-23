@@ -6,7 +6,7 @@ module Actions
       include Rackr::Action
 
       def call(_req)
-        view 'index', { name: route[:some_name] }
+        view 'index', { name: routes[:v2_oi_bla] }
       end
     end
   end
