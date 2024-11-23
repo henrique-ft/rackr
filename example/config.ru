@@ -40,9 +40,7 @@ App =
       text('?')
     end
 
-    get do
-      text("oi")
-    end
+    get Actions::Home::Index
 
     r 'v2', as: :v2, before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
       r 'oi', as: :v2_oi do
