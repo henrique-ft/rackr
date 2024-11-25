@@ -3,7 +3,7 @@ Router =
     get { text('hello world') }
 
     r 'foods', as: :foods do
-      get '/', Actions::Foods::Index
+      get Actions::Foods::Index
 
       r :id, as: :food, before: Callbacks::Foods::Assign do
         get do |req|
