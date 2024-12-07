@@ -15,12 +15,12 @@
     <nav id="nav" class="demo shadow-p">
       <input id="bmenub" type="checkbox" class="show">
       <label for="bmenub" class="burger pseudo button"><i class="fa-solid fa-bars"></i></label>
-      <a href="<%= routes[:foods] %>" class="brand">
+      <a href="<%= routes.get[:foods] %>" class="brand">
         <span></span>
       </a>
 
       <div class="menu">
-        <a class="pseudo button icon-puzzle" href="<%= routes[:foods] %>"><i class="fa-solid fa-carrot"></i> Foods</a>
+        <a class="pseudo button icon-puzzle" href="<%= routes.get[:foods] %>"><i class="fa-solid fa-carrot"></i> Foods</a>
       </div>
     </nav>
 
