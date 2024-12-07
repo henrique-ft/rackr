@@ -60,7 +60,7 @@ class Rackr
   end
 
   %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
-    define_method(http_method.downcase.to_sym) do |*params, as: nil, before: nil, after: nil, &block|
+    define_method(http_method.downcase.to_sym) do |*params, before: [], after: [], as: nil, &block|
       path = params[0] || ''
       endpoint = params[1] || ''
 
