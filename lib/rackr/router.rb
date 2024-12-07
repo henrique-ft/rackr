@@ -14,18 +14,20 @@ class Rackr
       %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
         @instance_routes[method] = { __instances: [] }
       end
-      @routes =
-        Hash.new do |_hash, key|
+      http_methods = HTTP_METHODS.map { |m| m.downcase.to_sym }
+      @routes = Struct.new(*http_methods).new
+      http_methods.each do |method|
+        @routes.send("#{method}=", Hash.new do |_hash, key|
           raise(Errors::UndefinedNamedRouteError, "Undefined named route: '#{key}'")
-        end
+        end)
+      end
+
       @config = config
       @branches = []
       @befores = ensure_array(before)
       @branches_befores = {}
       @afters = ensure_array(after)
       @branches_afters = {}
-      @nameds_as = []
-      @branches_named_as = {}
       @error = proc { |_req, e| raise e }
       @not_found = proc { [404, {}, ['Not found']] }
       @splitted_request_path = []
@@ -81,7 +83,7 @@ class Rackr
       method = :get if method == :head
 
       path_with_branches = "/#{@branches.join('/')}#{put_path_slash(path)}"
-      add_named_route(path_with_branches, as)
+      add_named_route(method, path_with_branches, as)
 
       route_instance =
         Route.new(
@@ -108,9 +110,8 @@ class Rackr
       @error = endpoint
     end
 
-    def append_branch(name, branch_befores: [], branch_afters: [], as: nil)
+    def append_branch(name, branch_befores: [], branch_afters: [])
       Errors.check_branch_name(name)
-      Errors.check_as(as, @branches.join('/'))
       Errors.check_callbacks(branch_befores, name)
       Errors.check_callbacks(branch_afters, name)
 
@@ -125,15 +126,11 @@ class Rackr
       branch_afters = ensure_array(branch_afters)
       @afters.concat(branch_afters)
       @branches_afters[name] = branch_afters
-
-      @nameds_as.push(as)
-      @branches_named_as[name] = as
     end
 
     def clear_last_branch
       @befores -= @branches_befores[@branches.last]
       @afters -= @branches_afters[@branches.last]
-      @nameds_as -= [@branches_named_as[@branches.last]]
       @branches = @branches.first(@branches.size - 1)
     end
 
@@ -156,11 +153,11 @@ class Rackr
       [list]
     end
 
-    def add_named_route(path_with_branches, as)
-      nameds_as = [@nameds_as.last].push(as).compact
-      return if nameds_as.empty?
+    def add_named_route(method, path_with_branches, as)
+      return @routes.send(method)[as] = path_with_branches unless as.nil?
 
-      @routes[nameds_as.join('_').to_sym] = path_with_branches
+      key = path_with_branches.sub("/","").gsub(":","").gsub("/","_")
+      @routes.send(method)["#{key}".to_sym] = path_with_branches
     end
 
     def push_to_branch(method, route_instance)

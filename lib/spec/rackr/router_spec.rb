@@ -82,14 +82,6 @@ RSpec.describe Rackr::Router do
     expect(router.call(request)).to eq('Hey patch')
   end
 
-  it 'can add named routes' do
-    router = Rackr::Router.new
-
-    router.add :get, 'some_name', double(call: 'Hey get'), as: :some_name
-
-    expect(router.routes[:some_name]).to eq('/some_name')
-  end
-
   it 'render 404 when fails' do
     router = Rackr::Router.new
 
@@ -215,34 +207,44 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq('success')
     end
 
-    context 'as:' do
-      it 'can receive branches named_routes' do
-        router = Rackr::Router.new
+    context 'named_routes' do
+      context 'create named routes based on path' do
+        it do
+          router = Rackr::Router.new
 
-        router.append_branch 'admin', as: :some_name
-        router.add :get, 'teste', ->(_env) { 'success' }
+          router.add :get, 'some_name', double(call: 'Hey get'), as: :some_name
 
-        expect(router.routes[:some_name]).to eq('/admin/teste')
+          expect(router.routes.get[:some_name]).to eq('/some_name')
+        end
+
+        it do
+          router = Rackr::Router.new
+
+          router.append_branch 'admin'
+          router.add :get, 'teste', ->(_env) { 'success' }
+
+          expect(router.routes.get[:admin_teste]).to eq('/admin/teste')
+        end
+
+        it do
+          router = Rackr::Router.new
+
+          router.append_branch 'admin'
+          router.append_branch 'independent'
+          router.add :get, 'teste', ->(_env) { 'success' }
+
+          expect(router.routes.get[:admin_independent_teste]).to eq('/admin/independent/teste')
+        end
       end
 
-      it 'is indepentent from other branchs named route' do
+      it 'can change a named route with as: keyword' do
         router = Rackr::Router.new
 
-        router.append_branch 'admin', as: :some_name
-        router.append_branch 'independent', as: :independent
-        router.add :get, 'teste', ->(_env) { 'success' }
-
-        expect(router.routes[:independent]).to eq('/admin/independent/teste')
-      end
-
-      it 'concat with route named route' do
-        router = Rackr::Router.new
-
-        router.append_branch 'admin', as: :some_name
-        router.append_branch 'independent', as: :independent
+        router.append_branch 'admin'
+        router.append_branch 'independent'
         router.add :get, 'teste', ->(_env) { 'success' }, as: :something
 
-        expect(router.routes[:independent_something]).to eq('/admin/independent/teste')
+        expect(router.routes.get[:something]).to eq('/admin/independent/teste')
       end
     end
 
