@@ -40,26 +40,23 @@ App =
       text('?')
     end
 
-    get Actions::Home::Index
-
-    r 'v2', as: :v2, before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
-      r 'oi', as: :v2_oi do
-        # routes[:v2_oi] # routes só pode ser setado quando tiver inserindo uma rota, não uma branch
+    r 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
+      r 'oi'do
         get do
           html('<h1> rack http_router </h1>')
         end
 
         get 'bla', as: :bla do
-          html("<h1> #{routes[:v2_oi_bla]} </h1>")
+          html("<h1> #{routes.get[:bla]} </h1>")
         end
       end
     end
 
-    r 'v2', as: :v2, before: lambda { |req|
+    r 'v2', before: lambda { |req|
                                p 'before'
                                req
                              } do
-      get ':name/hello', as: :hello, before: lambda { |req|
+      get ':name/hello', before: lambda { |req|
                                                p 'ROUTE BEFORE'
                                                req
                                              } do |req|

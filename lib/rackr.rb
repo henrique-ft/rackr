@@ -7,6 +7,8 @@ require_relative 'rackr/callback'
 class Rackr
   class NotFound < StandardError; end
 
+  HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH]
+
   include Action
 
   def initialize(config = {}, before: [], after: [])
@@ -31,12 +33,11 @@ class Rackr
     @router.config[:db]
   end
 
-  def r(name, before: [], after: [], as: nil, &block)
+  def r(name, before: [], after: [], &block)
     @router.append_branch(
       name,
       branch_befores: before,
       branch_afters: after,
-      as: as
     )
     instance_eval(&block)
 
@@ -59,8 +60,8 @@ class Rackr
     end
   end
 
-  %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |http_method|
-    define_method(http_method.downcase.to_sym) do |*params, as: nil, before: nil, after: nil, &block|
+  HTTP_METHODS.each do |http_method|
+    define_method(http_method.downcase.to_sym) do |*params, before: [], after: [], as: nil, &block|
       path = params[0] || ''
       endpoint = params[1] || ''
 

@@ -39,24 +39,12 @@ RSpec.describe Rackr::Action do
     context 'html_response' do
       it 'can render from string with success' do
         response = Rackr::Action.text_response('test')
-        expect(response.finish).to eq(
-          [
-            200,
-            { 'Content-Type' => 'text/plain' },
-            %w[test]
-          ]
-        )
+        expect(response.finish).to eq([200, {"content-length"=>"4", "content-type"=>"text/plain"}, ["test"]])
       end
 
       it 'can render text with other status' do
         response = Rackr::Action.text_response('test', status: 201)
-        expect(response.finish).to eq(
-          [
-            201,
-            { 'Content-Type' => 'text/plain' },
-            %w[test]
-          ]
-        )
+        expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/plain"}, ["test"]])
       end
     end
 
@@ -87,24 +75,12 @@ RSpec.describe Rackr::Action do
     context 'html_response' do
       it 'can render from string with success' do
         response = Rackr::Action.html_response('test')
-        expect(response.finish).to eq(
-          [
-            200,
-            { 'Content-Type' => 'text/html' },
-            %w[test]
-          ]
-        )
+        expect(response.finish).to eq([200, {"content-length"=>"4", "content-type"=>"text/html"}, ["test"]])
       end
 
       it 'can render html with other status' do
         response = Rackr::Action.html_response('test', status: 201)
-        expect(response.finish).to eq(
-          [
-            201,
-            { 'Content-Type' => 'text/html' },
-            %w[test]
-          ]
-        )
+        expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/html"}, ["test"]])
       end
     end
 
@@ -126,7 +102,7 @@ RSpec.describe Rackr::Action do
 
         response = Rackr::Action.view path, response_instance: true
 
-        expect(response.finish).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.file.file.]])
+        expect(response.finish).to eq([200, {"content-length"=>"15", "content-type"=>"text/html"}, ["file.file.file."]])
       end
 
       it 'reads the views/* folder' do
@@ -199,7 +175,7 @@ RSpec.describe Rackr::Action do
         path = 'test'
 
         response = Rackr::Action.view_response path
-        expect(response.finish).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.file.file.]])
+        expect(response.finish).to eq([200, {"content-length"=>"15", "content-type"=>"text/html"}, ["file.file.file."]])
       end
     end
 
@@ -240,24 +216,12 @@ RSpec.describe Rackr::Action do
     context 'json_response' do
       it 'can render from hash with success' do
         response = Rackr::Action.json_response({ test: 'value' })
-        expect(response.finish).to eq(
-          [
-            200,
-            { 'Content-Type' => 'application/json' },
-            %w[{"test":"value"}]
-          ]
-        )
+        expect(response.finish).to eq([200, {"content-length"=>"16", "content-type"=>"application/json"}, ["{\"test\":\"value\"}"]])
       end
 
       it 'can render json with other status' do
         response = Rackr::Action.json_response({ test: 'value' }, status: 201)
-        expect(response.finish).to eq(
-          [
-            201,
-            { 'Content-Type' => 'application/json' },
-            %w[{"test":"value"}]
-          ]
-        )
+        expect(response.finish).to eq([201, {"content-length"=>"16", "content-type"=>"application/json"}, ["{\"test\":\"value\"}"]])
       end
     end
   end
@@ -281,7 +245,7 @@ RSpec.describe Rackr::Action do
 
     it 'can redirect with rack response' do
       res = Rackr::Action.redirect_response('/hey')
-      expect(res.finish).to eq([302, { 'Location' => '/hey' }, []])
+      expect(res.finish).to eq([302, { 'location' => '/hey' }, []])
     end
   end
 
