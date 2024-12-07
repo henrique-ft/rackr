@@ -154,10 +154,11 @@ class Rackr
     end
 
     def add_named_route(method, path_with_branches, as)
-      return @routes.send(method)[as] = path_with_branches unless as.nil?
+      return @routes.send(method.downcase)[:root] = path_with_branches if path_with_branches == '/'
+      return @routes.send(method.downcase)[as] = path_with_branches unless as.nil?
 
       key = path_with_branches.sub("/","").gsub(":","").gsub("/","_")
-      @routes.send(method)["#{key}".to_sym] = path_with_branches
+      @routes.send(method.downcase)["#{key}".to_sym] = path_with_branches
     end
 
     def push_to_branch(method, route_instance)

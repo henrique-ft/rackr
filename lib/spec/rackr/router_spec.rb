@@ -237,6 +237,13 @@ RSpec.describe Rackr::Router do
         end
       end
 
+      it 'when root path, it adds the root key' do
+        router = Rackr::Router.new
+        router.add :get, '', ->(_env) { 'success' }
+
+        expect(router.routes.get[:root]).to eq('/')
+      end
+
       it 'can change a named route with as: keyword' do
         router = Rackr::Router.new
 
