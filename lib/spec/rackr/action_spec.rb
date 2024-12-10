@@ -34,6 +34,17 @@ RSpec.describe Rackr::Action do
           ]
         )
       end
+
+      it 'can render text with other headers' do
+        result = Rackr::Action.text('test', headers: { 'other' => 'header'})
+        expect(result).to eq(
+          [
+            200,
+            {"Content-Type"=>"text/plain", "other"=>"header"},
+            %w[test]
+          ]
+        )
+      end
     end
 
     context 'html_response' do
@@ -45,6 +56,11 @@ RSpec.describe Rackr::Action do
       it 'can render text with other status' do
         response = Rackr::Action.text_response('test', status: 201)
         expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/plain"}, ["test"]])
+      end
+
+      it 'can render text with other headers' do
+        response = Rackr::Action.text_response('test', status: 201, headers: { 'other' => 'header' })
+        expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/plain", "other"=>"header"}, ["test"]])
       end
     end
 
@@ -70,6 +86,17 @@ RSpec.describe Rackr::Action do
           ]
         )
       end
+
+      it 'can render text with other headers' do
+        result = Rackr::Action.html('test', headers: { 'other' => 'header' })
+        expect(result).to eq(
+          [
+            200,
+            {"Content-Type"=>"text/html", "other"=>"header"},
+            %w[test]
+          ]
+        )
+      end
     end
 
     context 'html_response' do
@@ -81,6 +108,11 @@ RSpec.describe Rackr::Action do
       it 'can render html with other status' do
         response = Rackr::Action.html_response('test', status: 201)
         expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/html"}, ["test"]])
+      end
+
+      it 'can render text with other headers' do
+        response = Rackr::Action.html_response('test', status: 201, headers: { 'other' => 'header' })
+        expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/html", "other"=>"header"}, ["test"]])
       end
     end
 
@@ -149,6 +181,14 @@ RSpec.describe Rackr::Action do
         expect(result).to eq([404, { 'Content-Type' => 'text/html' }, %w[file.file.file.]])
       end
 
+      it 'can render with different headers' do
+        path = 'test'
+
+        result = Rackr::Action.view path, headers: { 'a' => 'b' }
+
+        expect(result).to eq([200, { 'Content-Type' => 'text/html', 'a' => 'b' }, %w[file.file.file.]])
+      end
+
       it 'can render multiple erbs' do
         path = 'test'
 
@@ -211,6 +251,17 @@ RSpec.describe Rackr::Action do
           ]
         )
       end
+
+      it 'can render json with other headers' do
+        result = Rackr::Action.json({ test: 'value' }, status: 201, headers: { 'a' => 'b' })
+        expect(result).to eq(
+          [
+            201,
+            { 'Content-Type' => 'application/json', 'a' => 'b' },
+            %w[{"test":"value"}]
+          ]
+        )
+      end
     end
 
     context 'json_response' do
@@ -222,6 +273,11 @@ RSpec.describe Rackr::Action do
       it 'can render json with other status' do
         response = Rackr::Action.json_response({ test: 'value' }, status: 201)
         expect(response.finish).to eq([201, {"content-length"=>"16", "content-type"=>"application/json"}, ["{\"test\":\"value\"}"]])
+      end
+
+      it 'can render text with other headers' do
+        response = Rackr::Action.json_response({ test: 'value' }, headers: { 'a' => 'b' })
+        expect(response.finish).to eq([200, {"content-length"=>"16", "content-type"=>"application/json", 'a' => 'b' }, ["{\"test\":\"value\"}"]])
       end
     end
   end
@@ -241,6 +297,11 @@ RSpec.describe Rackr::Action do
     it 'can redirect' do
       result = Rackr::Action.redirect_to('/hey')
       expect(result).to eq([302, { 'Location' => '/hey' }, []])
+    end
+
+    it 'can redirect with headers' do
+      result = Rackr::Action.redirect_to('/hey', headers: { 'a' => 'b' })
+      expect(result).to eq([302, { 'Location' => '/hey', 'a' => 'b' }, []])
     end
 
     it 'can redirect with rack response' do

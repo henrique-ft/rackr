@@ -16,11 +16,12 @@ class Rackr
           @db = config[:db]
         end
 
-        def view_response(a_path, a_view_params = {}, status: 200)
+        def view_response(a_path, a_view_params = {}, status: 200, headers: {})
           Rackr::Action.view_response(
             a_path,
             a_view_params,
             status: status,
+            headers: headers,
             config: config,
             routes: routes,
             db: db
@@ -28,12 +29,13 @@ class Rackr
         end
 
         def view(
-          a_path, a_view_params = {}, status: 200, response_instance: false
+          a_path, a_view_params = {}, status: 200, response_instance: false, headers: {}
         )
           Rackr::Action.view(
             a_path,
             a_view_params,
             status: status,
+            headers: headers,
             config: config,
             routes: routes,
             db: db,
@@ -47,40 +49,40 @@ class Rackr
       Rackr::Action.layout(layout_path, file_path)
     end
 
-    def html(content, status: 200)
-      Rackr::Action.html(content, status: status)
+    def html(content, status: 200, headers: {})
+      Rackr::Action.html(content, status: status, headers: headers)
     end
 
     def html_response(content, status: 200)
-      Rackr::Action.html_response(content, status: status)
+      Rackr::Action.html_response(content, status: status, headers: headers)
     end
 
-    def json(content = {}, status: 200)
-      Rackr::Action.json(content, status: status)
+    def json(content = {}, status: 200, headers: {})
+      Rackr::Action.json(content, status: status, headers: headers)
     end
 
-    def json_response(content = {}, status: 200)
-      Rackr::Action.json_response(content, status: status)
+    def json_response(content = {}, status: 200, headers: {})
+      Rackr::Action.json_response(content, status: status, headers: headers)
     end
 
-    def text(content, status: 200)
-      Rackr::Action.text(content, status: status)
+    def text(content, status: 200, headers: {})
+      Rackr::Action.text(content, status: status, headers: headers)
     end
 
-    def text_response(content, status: 200)
-      Rackr::Action.text_response(content, status: status)
+    def text_response(content, status: 200, headers: {})
+      Rackr::Action.text_response(content, status: status, headers: headers)
     end
 
     def erb(content, view_params = {})
       Rackr::Action.erb(content, view_params)
     end
 
-    def redirect_response(url)
-      Rackr::Action.redirect_response(url)
+    def redirect_response(url, headers: {})
+      Rackr::Action.redirect_response(url, headers: headers, headers: headers)
     end
 
-    def redirect_to(url)
-      Rackr::Action.redirect_to(url)
+    def redirect_to(url, headers: {})
+      Rackr::Action.redirect_to(url, headers: headers, headers: headers)
     end
 
     def response(body = nil, status = 200, headers = {})
@@ -92,6 +94,7 @@ class Rackr
         paths,
         view_params = {},
         status: 200,
+        headers: {},
         config: {},
         routes: nil,
         db: nil
@@ -102,6 +105,7 @@ class Rackr
           status: status,
           config: config,
           routes: routes,
+          headers: headers,
           db: db,
           response_instance: true
         )
@@ -111,6 +115,7 @@ class Rackr
         paths,
         view_params = {},
         status: 200,
+        headers: {},
         config: {},
         routes: nil,
         db: nil,
@@ -146,11 +151,11 @@ class Rackr
           return Rack::Response.new(
             erb,
             status,
-            { 'Content-Type' => 'text/html' }
+            { 'Content-Type' => 'text/html' }.merge(headers)
           )
         end
 
-        [status, { 'Content-Type' => 'text/html' }, [erb]]
+        [status, { 'Content-Type' => 'text/html' }.merge(headers), [erb]]
       end
 
       def layout(layout_path, file_path)
@@ -161,35 +166,35 @@ class Rackr
         ]
       end
 
-      def html(content, status: 200)
-        [status, { 'Content-Type' => 'text/html' }, [content]]
+      def html(content, status: 200, headers: {})
+        [status, { 'Content-Type' => 'text/html' }.merge(headers), [content]]
       end
 
-      def html_response(content, status: 200)
-        Rack::Response.new(content, status, { 'Content-Type' => 'text/html' })
+      def html_response(content, status: 200, headers: {})
+        Rack::Response.new(content, status, { 'Content-Type' => 'text/html' }.merge(headers))
       end
 
-      def json(content = {}, status: 200)
-        [status, { 'Content-Type' => 'application/json' }, [Oj.dump(content, mode: :compat)]]
+      def json(content = {}, status: 200, headers: {})
+        [status, { 'Content-Type' => 'application/json' }.merge(headers), [Oj.dump(content, mode: :compat)]]
       end
 
-      def json_response(content = {}, status: 200)
+      def json_response(content = {}, status: 200, headers: {})
         Rack::Response.new(
           Oj.dump(content, mode: :compat),
           status,
-          { 'Content-Type' => 'application/json' }
+          { 'Content-Type' => 'application/json' }.merge(headers)
         )
       end
 
-      def text(content, status: 200)
-        [status, { 'Content-Type' => 'text/plain' }, [content]]
+      def text(content, status: 200, headers: {})
+        [status, { 'Content-Type' => 'text/plain' }.merge(headers), [content]]
       end
 
-      def text_response(content, status: 200)
+      def text_response(content, status: 200, headers: {})
         Rack::Response.new(
           content,
           status,
-          { 'Content-Type' => 'text/plain' }
+          { 'Content-Type' => 'text/plain' }.merge(headers)
         )
       end
 
@@ -201,16 +206,16 @@ class Rackr
       end
       # rubocop:enable Lint/UnusedMethodArgument
 
-      def redirect_response(url)
+      def redirect_response(url, headers: {})
         Rack::Response.new(
           nil,
           302,
-          { 'Location' => url }
+          { 'Location' => url }.merge(headers)
         )
       end
 
-      def redirect_to(url)
-        [302, { 'Location' => url }, []]
+      def redirect_to(url, headers: {})
+        [302, { 'Location' => url }.merge(headers), []]
       end
 
       def response(body = nil, status = 200, headers = {})
