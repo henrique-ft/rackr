@@ -49,12 +49,12 @@ class Rackr
       Rackr::Action.layout(layout_path, file_path)
     end
 
-    def html(content, status: 200, headers: {})
-      Rackr::Action.html(content, status: status, headers: headers)
+    def html(content, status: 200, headers: {}, &block)
+      Rackr::Action.html(content, status: status, headers: headers, &block)
     end
 
-    def html_response(content, status: 200)
-      Rackr::Action.html_response(content, status: status, headers: headers)
+    def html_response(content, status: 200, &block)
+      Rackr::Action.html_response(content, status: status, headers: headers, &block)
     end
 
     def json(content = {}, status: 200, headers: {})
@@ -166,11 +166,19 @@ class Rackr
         ]
       end
 
-      def html(content, status: 200, headers: {})
+      def html(content, status: 200, headers: {}, &block)
+        if block_given?
+          content = HTMLBuilder.new(&block).to_s
+        end
+
         [status, { 'Content-Type' => 'text/html' }.merge(headers), [content]]
       end
 
-      def html_response(content, status: 200, headers: {})
+      def html_response(content, status: 200, headers: {}, &block)
+        if block_given?
+          content = HTMLBuilder.new(&block).to_s
+        end
+
         Rack::Response.new(content, status, { 'Content-Type' => 'text/html' }.merge(headers))
       end
 

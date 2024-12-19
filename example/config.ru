@@ -36,6 +36,14 @@ end
 
 App =
   Rackr.new(config).call do
+    get do
+      html("<h1>oi</h1") do
+        h4 id: 4, click: 'openUser()' do
+          'tchal'
+        end
+      end
+    end
+
     get 'where-i-go', before: [SayHeyHo] do
       text('?')
     end
