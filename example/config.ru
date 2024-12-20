@@ -6,6 +6,7 @@ require 'json'
 #require 'rackr'
 require_relative '../lib/rackr'
 require_relative 'app/actions/home/index'
+require_relative 'app/actions/home/show'
 require_relative 'app/callbacks/some_assign'
 
 config = {
@@ -37,12 +38,22 @@ end
 App =
   Rackr.new(config).call do
     get do
-      html("<h1>oi</h1") do
-        h4 id: 4, click: 'openUser()' do
-          'tchal'
+      html do
+        head do
+        end
+        body do
+          h3 'foo', id: 4, click: 'openUser()'
+          br
+          p '''
+          i want it all
+          <br/>
+          bla
+          '''
         end
       end
     end
+
+    get 'show', Actions::Home::Show
 
     get 'where-i-go', before: [SayHeyHo] do
       text('?')

@@ -49,11 +49,11 @@ class Rackr
       Rackr::Action.layout(layout_path, file_path)
     end
 
-    def html(content, status: 200, headers: {}, &block)
+    def html(content = '', status: 200, headers: {}, &block)
       Rackr::Action.html(content, status: status, headers: headers, &block)
     end
 
-    def html_response(content, status: 200, &block)
+    def html_response(content = '', status: 200, &block)
       Rackr::Action.html_response(content, status: status, headers: headers, &block)
     end
 
@@ -166,17 +166,17 @@ class Rackr
         ]
       end
 
-      def html(content, status: 200, headers: {}, &block)
+      def html(content = '', status: 200, headers: {}, &block)
         if block_given?
-          content = HTMLBuilder.new(&block).to_s
+          content = HTMLBuilder.new(&block).result
         end
 
         [status, { 'Content-Type' => 'text/html' }.merge(headers), [content]]
       end
 
-      def html_response(content, status: 200, headers: {}, &block)
+      def html_response(content = '', status: 200, headers: {}, &block)
         if block_given?
-          content = HTMLBuilder.new(&block).to_s
+          content = HTMLBuilder.new(&block).result
         end
 
         Rack::Response.new(content, status, { 'Content-Type' => 'text/html' }.merge(headers))
