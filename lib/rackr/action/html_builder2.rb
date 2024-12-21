@@ -1,25 +1,73 @@
 class Rackr
   module Action
-    class HTMLBuilder
-      attr_reader :result
+    module HTMLBuilder2
+      TAGS = %i[
+        div
+        title
+        embed
+        meta
+        br
+        a
+        em
+        b
+        ul
+        ol
+        li
+        img
+        table
+        tbody
+        thead
+        tr
+        th
+        td
+        form
+        input
+        button
+        h1
+        h2
+        h3
+        h4
+        h5
+        h6
+        span
+        label
+        iframe
+        template
+        main
+        footer
+        aside
+        section
+        small
+        script
+        nav
+      ]
 
-      def initialize(&block)
-        @result = ''
+      def html_slice(&block)
+        @result = '<!DOCTYPE html><html>'
         instance_eval(&block) if block_given?
       end
 
-      def p(*args, &block)
-        method_missing(:p, *args, &block)
+      def get_html_result
+        @result << '</html>'
+        result_return = @result
+        @result = ''
+
+        result_return
       end
 
-      def method_missing(name, *args, &block)
-        if name == :_
-          @result << args.first.result
-        else
-          tag_name = name.to_s.gsub("_", "-")
-          content, attributes = _parse_arguments(args)
-          _generate_tag(tag_name, content, attributes, &block)
+      TAGS.each do |name|
+        define_method name do |*args, &block|
+          tag(name, *args, &block)
         end
+      end
+
+      def _(content)
+        @result << content
+      end
+
+      def tag(tag_name, *args, &block)
+        content, attributes = _parse_arguments(args)
+        _generate_tag(tag_name, content, attributes, &block)
       end
 
       private

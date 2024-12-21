@@ -2,6 +2,7 @@
 
 require_relative 'rackr/router'
 require_relative 'rackr/action/html_builder'
+require_relative 'rackr/action/html_builder2'
 require_relative 'rackr/action'
 require_relative 'rackr/callback'
 

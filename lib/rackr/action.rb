@@ -50,10 +50,20 @@ class Rackr
     end
 
     def html(content = '', status: 200, headers: {}, &block)
+      if block_given? && respond_to?(:html_slice)
+        html_slice(&block)
+        content = get_html_result
+      end
+
       Rackr::Action.html(content, status: status, headers: headers, &block)
     end
 
-    def html_response(content = '', status: 200, &block)
+    def html_response(content = '', status: 200, headers: {} &block)
+      if block_given? && respond_to?(:html_slice)
+        html_slice(&block)
+        content = get_html_result
+      end
+
       Rackr::Action.html_response(content, status: status, headers: headers, &block)
     end
 
@@ -78,11 +88,11 @@ class Rackr
     end
 
     def redirect_response(url, headers: {})
-      Rackr::Action.redirect_response(url, headers: headers, headers: headers)
+      Rackr::Action.redirect_response(url, headers: headers)
     end
 
     def redirect_to(url, headers: {})
-      Rackr::Action.redirect_to(url, headers: headers, headers: headers)
+      Rackr::Action.redirect_to(url, headers: headers)
     end
 
     def response(body = nil, status = 200, headers = {})
@@ -167,18 +177,10 @@ class Rackr
       end
 
       def html(content = '', status: 200, headers: {}, &block)
-        if block_given?
-          content = HTMLBuilder.new(&block).result
-        end
-
         [status, { 'Content-Type' => 'text/html' }.merge(headers), [content]]
       end
 
       def html_response(content = '', status: 200, headers: {}, &block)
-        if block_given?
-          content = HTMLBuilder.new(&block).result
-        end
-
         Rack::Response.new(content, status, { 'Content-Type' => 'text/html' }.merge(headers))
       end
 

@@ -38,19 +38,21 @@ end
 App =
   Rackr.new(config).call do
     get do
-      html do
-        head do
-        end
-        body do
-          h3 'foo', id: 4, click: 'openUser()'
-          br
-          p '''
-          i want it all
-          <br/>
-          bla
-          '''
-        end
-      end
+      #html do
+        #head do
+        #end
+        #body do
+          #h3 'foo', id: 4, click: 'openUser()'
+          #br
+          #p '''
+          #i want it all
+          #<br/>
+          #bla
+          #'''
+        #end
+      #end
+
+      text("oi")
     end
 
     get 'show', Actions::Home::Show
