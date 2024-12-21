@@ -33,6 +33,9 @@ module Actions
             '''
             user_list
           end
+          _ '''
+          rand text
+          '''
           br
           a 'google link', href: 'http://www.google.com'
         end

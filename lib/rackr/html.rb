@@ -63,7 +63,7 @@ class Rackr
     end
 
     def _(content)
-      @result << content
+      @result << content.to_s
     end
 
     def tag(tag_name, *args, &block)
@@ -107,7 +107,7 @@ class Rackr
     def _build_open_tag(tag_name, attributes)
       open_tag = "<#{tag_name}"
       attributes.each do |key, value|
-        open_tag << " #{key}='#{value}'"
+        open_tag << " #{key.to_s.gsub('_', '-')}='#{value}'"
       end
       open_tag
     end
