@@ -56,6 +56,7 @@ App =
     end
 
     get 'show', Actions::Home::Show
+    get 'show/:name', Actions::Home::Show
 
     get 'where-i-go', before: [SayHeyHo] do
       text('?')

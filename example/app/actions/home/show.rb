@@ -4,16 +4,29 @@ module Actions
   module Home
     class Show
       include Rackr::Action
-      include Rackr::Action::HTMLBuilder2
+      include Rackr::HTML
 
-      def call(_req)
+      def call(req)
+        @name = req.params[:name]
+
+        render_html
+      end
+
+      private
+
+      def render_html
         html do
           tag :head do
             title 'my site'
             meta charset: 'utf-8'
-            script src: ''
+            script """
+              alert('hi')
+            """
           end
           tag :body do
+            tag :p, """
+              welcome <b>#{@name}</b>!!!
+            """
             h1 'users'
             tag :p, '''
               This is a list of users
