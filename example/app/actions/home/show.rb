@@ -24,9 +24,9 @@ module Actions
             """
           end
           tag :body do
-            tag :p, """
+            tag :p, %Q(
               welcome <b>#{@name}</b>!!!
-            """
+            )
             h1 'users'
             tag :p, '''
               This is a list of users

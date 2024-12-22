@@ -44,14 +44,14 @@ class Rackr
     ]
 
     def html_slice(&block)
-      @result = '<!DOCTYPE html><html>'
+      @html_result = '<!DOCTYPE html><html>'
       instance_eval(&block) if block_given?
     end
 
     def get_html_result
-      @result << '</html>'
-      result_return = @result
-      @result = ''
+      @html_result << '</html>'
+      result_return = @html_result
+      @html_result = ''
 
       result_return
     end
@@ -63,7 +63,7 @@ class Rackr
     end
 
     def _(content)
-      @result << content.to_s
+      @html_result << content.to_s
     end
 
     def tag(tag_name, *args, &block)
@@ -92,14 +92,14 @@ class Rackr
       open_tag = _build_open_tag(tag_name, attributes)
 
       if block_given?
-        @result << open_tag << ">"
+        @html_result << open_tag << ">"
         instance_eval(&block)
-        @result << "</#{tag_name}>"
+        @html_result << "</#{tag_name}>"
       else
         if content.empty?
-          @result << open_tag << "/>"
+          @html_result << open_tag << "/>"
         else
-          @result << open_tag << ">" << content << "</#{tag_name}>"
+          @html_result << open_tag << ">" << content << "</#{tag_name}>"
         end
       end
     end
