@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative '../../rackr/callback'
-require 'byebug'
 
 class SomeClass2
 end
