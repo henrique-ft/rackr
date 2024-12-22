@@ -67,13 +67,13 @@ class Rackr
     end
 
     def tag(tag_name, *args, &block)
-      content, attributes = _parse_arguments(args)
-      _generate_tag(tag_name, content, attributes, &block)
+      content, attributes = parse_arguments(args)
+      generate_html_tag(tag_name, content, attributes, &block)
     end
 
     private
 
-    def _parse_arguments(args)
+    def parse_arguments(args)
       content = ''
       attributes = {}
 
@@ -88,8 +88,8 @@ class Rackr
       [content, attributes]
     end
 
-    def _generate_tag(tag_name, content, attributes, &block)
-      open_tag = _build_open_tag(tag_name, attributes)
+    def generate_html_tag(tag_name, content, attributes, &block)
+      open_tag = build_html_open_tag(tag_name, attributes)
 
       if block_given?
         @html_result_string << open_tag << ">"
@@ -104,7 +104,7 @@ class Rackr
       end
     end
 
-    def _build_open_tag(tag_name, attributes)
+    def build_html_open_tag(tag_name, attributes)
       open_tag = "<#{tag_name}"
       attributes.each do |key, value|
         open_tag << " #{key.to_s.gsub('_', '-')}='#{value}'"
