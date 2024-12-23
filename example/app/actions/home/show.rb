@@ -20,7 +20,9 @@ module Actions
               welcome <b>#{@name}</b>!!!
           )
           h1 'users'
-          tag :p { _ "This is a list of users <b>oi</b>" }
+          tag :p do
+            _ "This is a list of users <b>oi</b>"
+          end
           user_list
           _ '''
           rand text

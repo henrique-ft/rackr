@@ -45,14 +45,14 @@ class Rackr
       end
     end
 
-    def layout(layout_path, file_path)
-      Rackr::Action.layout(layout_path, file_path)
-    end
-
     def html(content = '', status: 200, headers: {}, &block)
       if block_given? && respond_to?(:html_slice)
-        html_slice(:root, &block)
-        content = html_slice
+        if respond_to?(:layout)
+          content = layout(&block)
+        else
+          html_slice(:root, &block)
+          content = html_slice
+        end
       end
 
       Rackr::Action.html(content, status: status, headers: headers, &block)
@@ -60,8 +60,12 @@ class Rackr
 
     def html_response(content = '', status: 200, headers: {} &block)
       if block_given? && respond_to?(:html_slice)
-        html_slice(:root, &block)
-        content = html_slice
+        if respond_to?(:layout)
+          content = layout(&block)
+        else
+          html_slice(:root, &block)
+          content = html_slice
+        end
       end
 
       Rackr::Action.html_response(content, status: status, headers: headers, &block)
@@ -166,14 +170,6 @@ class Rackr
         end
 
         [status, { 'Content-Type' => 'text/html' }.merge(headers), [erb]]
-      end
-
-      def layout(layout_path, file_path)
-        [
-          "layout/#{layout_path}/_header",
-          file_path,
-          "layout/#{layout_path}/_footer"
-        ]
       end
 
       def html(content = '', status: 200, headers: {}, &block)

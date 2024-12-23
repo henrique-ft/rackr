@@ -6,12 +6,10 @@ module Actions
       include Rackr::Action
       include Rackr::HTML
 
-      def call(_req)
-        html(::Layout.new(page).render)
-      end
+      include Layout
 
-      def page
-        html_slice do
+      def call(_req)
+        html do
           script %Q(
               function incrementComponent() {
                 return {

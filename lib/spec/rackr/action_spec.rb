@@ -200,12 +200,6 @@ RSpec.describe Rackr::Action do
       end
     end
 
-    context 'layout' do
-      it 'returns an layout array' do
-        expect(Rackr::Action.layout(:admin, 'index')).to eq(['layout/admin/_header', 'index', 'layout/admin/_footer'])
-      end
-    end
-
     context 'view_response' do
       before do
         allow(::File).to receive(:read).and_return('file.')
