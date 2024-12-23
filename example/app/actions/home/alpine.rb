@@ -7,7 +7,11 @@ module Actions
       include Rackr::HTML
 
       def call(_req)
-        page = html_slice do
+        html(::Layout.new(page).render)
+      end
+
+      def page
+        html_slice do
           script %Q(
               function incrementComponent() {
                 return {
@@ -29,8 +33,6 @@ module Actions
             end
           end
         end
-
-        html(::Layout.new(page).render)
       end
     end
   end
