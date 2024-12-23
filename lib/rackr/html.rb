@@ -42,18 +42,15 @@ class Rackr
       script
       nav
     ]
+    DEFAULT_SLICE = :default
 
-    def html_slice(&block)
-      @html_result_string = '<!DOCTYPE html><html>'
-      instance_eval(&block) if block_given?
-    end
-
-    def get_html_result
-      @html_result_string << '</html>'
-      result_return = @html_result_string
-      @html_result_string = ''
-
-      result_return
+    def html_slice(slice_name = DEFAULT_SLICE, &block)
+      if block_given?
+        @html_result_string = '<!DOCTYPE html><html>'
+        instance_eval(&block)
+      else
+        get_html_result(slice_name)
+      end
     end
 
     TAGS.each do |name|
@@ -72,6 +69,14 @@ class Rackr
     end
 
     private
+
+    def get_html_result(slice_name = DEFAULT_SLICE)
+      @html_result_string << '</html>'
+      result_return = @html_result_string
+      @html_result_string = ''
+
+      result_return
+    end
 
     def parse_arguments(args)
       content = ''

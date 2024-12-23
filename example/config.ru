@@ -37,23 +37,25 @@ end
 
 App =
   Rackr.new(config).call do
+    html_slice do
+      tag :head
+      tag :body do
+        h3 'foo', id: 4, click: 'openUser()'
+        br
+        tag :p, %q(
+          i want it all
+          <br/>
+          bla
+        )
+      end
+    end
+
     get 'my-view' do
       view 'index', { name: 'Henrique' }
     end
 
     get do
-      html do
-        tag :head
-        tag :body do
-          h3 'foo', id: 4, click: 'openUser()'
-          br
-          tag :p, %q(
-          i want it all
-          <br/>
-          bla
-          )
-        end
-      end
+      html(html_slice)
     end
 
     get 'show', Actions::Home::Show
