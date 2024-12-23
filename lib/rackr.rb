@@ -11,6 +11,7 @@ class Rackr
   HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH]
 
   include Action
+  include HTML
 
   def initialize(config = {}, before: [], after: [])
     @router = Router.new(config, before: before, after: after)

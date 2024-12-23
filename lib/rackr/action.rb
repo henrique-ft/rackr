@@ -177,10 +177,20 @@ class Rackr
       end
 
       def html(content = '', status: 200, headers: {}, &block)
+        if content == '' && block_given? && respond_to?(:html_slice)
+          html_slice(&block)
+          content = get_html_result
+        end
+
         [status, { 'Content-Type' => 'text/html' }.merge(headers), [content]]
       end
 
       def html_response(content = '', status: 200, headers: {}, &block)
+        if content == '' && block_given? && respond_to?(:html_slice)
+          html_slice(&block)
+          content = get_html_result
+        end
+
         Rack::Response.new(content, status, { 'Content-Type' => 'text/html' }.merge(headers))
       end
 
