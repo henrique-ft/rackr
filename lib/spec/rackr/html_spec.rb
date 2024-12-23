@@ -4,14 +4,14 @@ require_relative '../../rackr/html'
 describe Rackr::HTML do
   let(:html_generator) { Class.new { include Rackr::HTML }.new }
 
-  describe '#html_slice and #get_html_result' do
+  describe '#html_slice' do
     it 'wraps generated content in a valid HTML structure' do
       html_generator.html_slice do
         div do
           h1 { _("Hello World") }
         end
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to eq("<!DOCTYPE html><html><div><h1>Hello World</h1></div></html>")
     end
   end
@@ -21,7 +21,7 @@ describe Rackr::HTML do
       html_generator.html_slice do
         meta charset: 'UTF-8'
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to include("<meta charset='UTF-8'/>")
     end
 
@@ -29,7 +29,7 @@ describe Rackr::HTML do
       html_generator.html_slice do
         h1 "Welcome"
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to include("<h1>Welcome</h1>")
     end
   end
@@ -42,7 +42,7 @@ describe Rackr::HTML do
           tag :p, "Paragraph content"
         end
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to include("<div><h1>Header</h1><p>Paragraph content</p></div>")
     end
   end
@@ -52,7 +52,7 @@ describe Rackr::HTML do
       html_generator.html_slice do
         a "Click here", href: "https://example.com", target: "_blank"
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to include("<a href='https://example.com' target='_blank'>Click here</a>")
     end
 
@@ -62,7 +62,7 @@ describe Rackr::HTML do
           span "Label", class: "label-class"
         end
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to include("<div class='container'><span class='label-class'>Label</span></div>")
     end
   end
@@ -74,7 +74,7 @@ describe Rackr::HTML do
           _ "This is a paragraph."
         end
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to include("<p>This is a paragraph.</p>")
     end
 
@@ -85,7 +85,7 @@ describe Rackr::HTML do
           li { _("Item 2") }
         end
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to include("<ul><li>Item 1</li><li>Item 2</li></ul>")
     end
   end
@@ -95,7 +95,7 @@ describe Rackr::HTML do
       html_generator.html_slice do
         img src: "image.png", alt: "An image"
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to include("<img src='image.png' alt='An image'/>")
     end
 
@@ -103,7 +103,7 @@ describe Rackr::HTML do
       html_generator.html_slice do
         link rel: "stylesheet", href: "styles.css", data_test_id: "1234"
       end
-      result = html_generator.get_html_result
+      result = html_generator.html_slice
       expect(result).to include("<link rel='stylesheet' href='styles.css' data-test-id='1234'/>")
     end
   end
