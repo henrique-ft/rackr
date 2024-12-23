@@ -44,13 +44,16 @@ class Rackr
     ]
     DEFAULT_SLICE = :default
 
-    def html_slice(slice_name = DEFAULT_SLICE, &block)
+    def html_slice(html_slice_name_id = DEFAULT_SLICE, wrap: ['',''], &block)
+      @html_slice_name_id = html_slice_name_id
+
       if block_given?
-        @html_slice_result_string = '<!DOCTYPE html><html>'
+        @html_slice_result_string ||= {}
+        @html_slice_result_string[@html_slice_name_id] = wrap[0].dup
         instance_eval(&block)
-        @html_slice_result_string << '</html>'
+        @html_slice_result_string[@html_slice_name_id] << wrap[1]
       else
-        @html_slice_result_string
+        @html_slice_result_string[@html_slice_name_id] || ''
       end
     end
 
@@ -61,7 +64,7 @@ class Rackr
     end
 
     def _(content)
-      @html_slice_result_string << content.to_s
+      @html_slice_result_string[@html_slice_name_id] << content.to_s
     end
 
     def tag(tag_name, *args, &block)
@@ -90,14 +93,14 @@ class Rackr
       open_tag = build_html_open_tag(tag_name, attributes)
 
       if block_given?
-        @html_slice_result_string << open_tag << ">"
+        @html_slice_result_string[@html_slice_name_id] << open_tag << ">"
         instance_eval(&block)
-        @html_slice_result_string << "</#{tag_name}>"
+        @html_slice_result_string[@html_slice_name_id] << "</#{tag_name}>"
       else
         if content.empty?
-          @html_slice_result_string << open_tag << "/>"
+          @html_slice_result_string[@html_slice_name_id] << open_tag << "/>"
         else
-          @html_slice_result_string << open_tag << ">" << content << "</#{tag_name}>"
+          @html_slice_result_string[@html_slice_name_id] << open_tag << ">" << content << "</#{tag_name}>"
         end
       end
     end
