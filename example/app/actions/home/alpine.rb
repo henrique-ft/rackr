@@ -8,6 +8,11 @@ module Actions
 
       include Layout
 
+      def head
+        meta um: "um"
+        meta dois: "dois"
+      end
+
       def call(_req)
         html do
           script %Q(
