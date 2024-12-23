@@ -7,7 +7,7 @@ module Actions
       include Rackr::HTML
 
       def call(_req)
-        page = ::Layout.new(html_slice do
+        page = html_slice do
           script %Q(
               function incrementComponent() {
                 return {
@@ -19,16 +19,18 @@ module Actions
               }
           )
 
-          div x_data: 'incrementComponent()' do
-            button 'increment', '@click': 'increment()'
-            br
-            span x_text: 'i'
-            br
-            span 'higher than 10', x_show: 'i > 10'
+          [1, 2].each do
+            div x_data: 'incrementComponent()' do
+              button 'increment', '@click': 'increment()'
+              br
+              span x_text: 'i'
+              br
+              span 'higher than 10', x_show: 'i > 10'
+            end
           end
-        end)
+        end
 
-        html(page.render)
+        html(::Layout.new(page).render)
       end
     end
   end
