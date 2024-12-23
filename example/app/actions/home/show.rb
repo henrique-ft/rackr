@@ -16,23 +16,14 @@ module Actions
 
       def render_html
         html do
-          tag :head do
-            title 'my site'
-            meta charset: 'utf-8'
-            script """
-              alert('hi')
-            """
-          end
-          tag :body do
-            tag :p, %Q(
+          tag :p, %Q(
               welcome <b>#{@name}</b>!!!
-            )
-            h1 'users'
-            tag :p, '''
+          )
+          h1 'users'
+          tag :p, '''
               This is a list of users
-            '''
-            user_list
-          end
+          '''
+          user_list
           _ '''
           rand text
           '''

@@ -5,8 +5,8 @@ describe Rackr::HTML do
   let(:html_generator) { Class.new { include Rackr::HTML }.new }
 
   describe '#html_slice' do
-    it 'generates a html slice' do
-      html_generator.html_slice do
+    it 'generates a html slice with DOCTYPE html' do
+      html_generator.html_slice :root do
         div do
           h1 { _("Hello World") }
         end
@@ -15,14 +15,14 @@ describe Rackr::HTML do
       expect(result).to eq("<!DOCTYPE html><html><div><h1>Hello World</h1></div></html>")
     end
 
-    it 'can add to wraps generated content' do
-      html_generator.html_slice(wrap: ['x', 'z']) do
+    it 'generates a html slice' do
+      html_generator.html_slice do
         div do
           h1 { _("Hello World") }
         end
       end
       result = html_generator.html_slice
-      expect(result).to eq("x<div><h1>Hello World</h1></div>z")
+      expect(result).to eq("<div><h1>Hello World</h1></div>")
     end
   end
 

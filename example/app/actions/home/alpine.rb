@@ -7,17 +7,16 @@ module Actions
       include Rackr::HTML
 
       def call(_req)
-        html do
-          script src: "//unpkg.com/alpinejs"
+        page = ::Layout.new(html_slice do
           script %Q(
-            function incrementComponent() {
-              return {
-                i: 4,
-                increment() {
-                  this.i += 1
+              function incrementComponent() {
+                return {
+                  i: 4,
+                  increment() {
+                    this.i += 1
+                  }
                 }
               }
-            }
           )
 
           div x_data: 'incrementComponent()' do
@@ -27,7 +26,9 @@ module Actions
             br
             span 'higher than 10', x_show: 'i > 10'
           end
-        end
+        end)
+
+        html(page.render)
       end
     end
   end

@@ -61,8 +61,13 @@ class Rackr
       source
     ].freeze
 
-    def html_slice(wrap: ['<!DOCTYPE html><html>', '</html>'], &block)
+    def html_slice(type = nil, &block)
       if block_given?
+        if type == :root
+          wrap = ['<!DOCTYPE html><html>', '</html>']
+        else
+          wrap = ['','']
+        end
         @html_slice_result_string = wrap[0]
         instance_eval(&block)
         @html_slice_result_string << wrap[1]
