@@ -99,7 +99,7 @@ class Rackr
 
       first_argument = args.shift
       if first_argument.is_a?(String)
-        content = first_argument
+        content = CGI.escapeHTML(first_argument)
         attributes = args.pop || {}
       elsif first_argument.is_a?(Hash)
         attributes = first_argument
