@@ -37,10 +37,11 @@ end
 
 App =
   Rackr.new(config).call do
-    html_slice(:navbar) do
+    def layout
       tag :head
       tag :body do
         h3 'foo', id: 4, click: 'openUser()'
+        yield
         br
         tag :p, %q(
           i want it all
@@ -55,7 +56,11 @@ App =
     end
 
     get do
-      html(html_slice(:navbar))
+      html do
+        layout do
+          h1 'layout'
+        end
+      end
     end
 
     get 'show', Actions::Home::Show

@@ -51,7 +51,7 @@ class Rackr
 
     def html(content = '', status: 200, headers: {}, &block)
       if block_given? && respond_to?(:html_slice)
-        html_slice(wrap: ['<!DOCTYPE html><html>', '</html>'], &block)
+        html_slice(&block)
         content = html_slice
       end
 
@@ -60,7 +60,7 @@ class Rackr
 
     def html_response(content = '', status: 200, headers: {} &block)
       if block_given? && respond_to?(:html_slice)
-        html_slice(wrap: ['<!DOCTYPE html><html>', '</html>'], &block)
+        html_slice(&block)
         content = html_slice
       end
 
@@ -178,7 +178,7 @@ class Rackr
 
       def html(content = '', status: 200, headers: {}, &block)
         if content == '' && block_given? && respond_to?(:html_slice)
-          html_slice(wrap: ['<!DOCTYPE html><html>', '</html>'], &block)
+          html_slice(&block)
           content = html_slice
         end
 
@@ -187,7 +187,7 @@ class Rackr
 
       def html_response(content = '', status: 200, headers: {}, &block)
         if content == '' && block_given? && respond_to?(:html_slice)
-          html_slice(wrap: ['<!DOCTYPE html><html>', '</html>'], &block)
+          html_slice(&block)
           content = html_slice
         end
 
