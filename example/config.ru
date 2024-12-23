@@ -6,7 +6,9 @@ require 'json'
 #require 'rackr'
 require_relative '../lib/rackr'
 require_relative 'app/actions/home/index'
+require_relative 'app/actions/home/index2'
 require_relative 'app/actions/home/show'
+require_relative 'app/actions/home/alpine'
 require_relative 'app/callbacks/some_assign'
 
 config = {
@@ -51,9 +53,11 @@ App =
       end
     end
 
-    get 'my-view' do
+    get 'view' do
       view 'index', { name: 'Henrique' }
     end
+
+    get 'alpine', Actions::Home::Alpine
 
     get do
       html do
@@ -102,7 +106,8 @@ App =
       end
     end
 
-    get 'my-action', Actions::Home::Index
+    get 'action', Actions::Home::Index
+    get 'action2', Actions::Home::Index2
 
     not_found { text 'Are you lost?' }
   end

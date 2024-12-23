@@ -1,5 +1,8 @@
 class Rackr
   module HTML
+    # HTML as a first-class citizen in ruby code
+    # Faster than ERB.
+
     TAGS = %i[
       div
       title
@@ -30,6 +33,7 @@ class Rackr
       h4
       h5
       h6
+      hr
       span
       label
       iframe
@@ -37,11 +41,25 @@ class Rackr
       main
       footer
       aside
+      source
       section
       small
       script
       nav
+      area
     ]
+
+    EMPTY_TAGS = %i[
+      area
+      br
+      embed
+      hr
+      img
+      input
+      link
+      meta
+      source
+    ].freeze
 
     def html_slice(wrap: ['<!DOCTYPE html><html>', '</html>'], &block)
       if block_given?
@@ -93,7 +111,7 @@ class Rackr
         instance_eval(&block)
         @html_slice_result_string << "</#{tag_name}>"
       else
-        if content.empty?
+        if content.empty? && EMPTY_TAGS.include?(tag_name)
           @html_slice_result_string << open_tag << "/>"
         else
           @html_slice_result_string << open_tag << ">" << content << "</#{tag_name}>"
