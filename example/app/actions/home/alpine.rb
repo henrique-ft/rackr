@@ -16,14 +16,14 @@ module Actions
       def call(_req)
         html do
           script %Q(
-              function incrementComponent() {
-                return {
-                  i: 4,
-                  increment() {
-                    this.i += 1
-                  }
+            function incrementComponent() {
+              return {
+                i: 4,
+                increment() {
+                  this.i += 1
                 }
               }
+            }
           )
 
           [1, 2].each do
