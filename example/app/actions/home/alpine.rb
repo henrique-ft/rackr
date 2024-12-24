@@ -5,16 +5,30 @@ module Actions
     class Alpine
       include Rackr::Action
       include Rackr::HTML
+      #include Rackr::HTML::Stimulus
+      #include Rackr::HTML::Alpine
+      #include Rackr::HTML::HTMX
 
       include Layout
 
       def head
+        title 'Alpine js example'
+        script src: '//unpkg.com/alpinejs'
+
         meta um: "um"
         meta dois: "dois"
       end
 
       def call(_req)
-        html do
+        @numbers = [1,2,3,4,5]
+
+        # or: page
+        html(page)
+      end
+
+      def page
+        # or: html do
+        layout do
           script %Q(
             function incrementComponent() {
               return {
@@ -26,13 +40,10 @@ module Actions
             }
           )
 
-          [1, 2].each do
+          @numbers.each do
             div x_data: 'incrementComponent()' do
-              button 'increment', '@click': 'increment()'
-              br
-              span x_text: 'i'
-              br
-              span 'higher than 10', x_show: 'i > 10'
+              button x_text: '`increment me (${i})`', '@click': 'increment()'
+              span ' -> higher than 10', x_show: 'i > 10'
             end
           end
         end

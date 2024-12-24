@@ -174,8 +174,12 @@ class Rackr
 
       def html(content = '', status: 200, headers: {}, &block)
         if content == '' && block_given? && respond_to?(:html_slice)
-          html_slice(:root, &block)
-          content = html_slice
+          if respond_to?(:layout)
+            content = layout(&block)
+          else
+            html_slice(:root, &block)
+            content = html_slice
+          end
         end
 
         [status, { 'Content-Type' => 'text/html' }.merge(headers), [content]]
@@ -183,8 +187,12 @@ class Rackr
 
       def html_response(content = '', status: 200, headers: {}, &block)
         if content == '' && block_given? && respond_to?(:html_slice)
-          html_slice(:root, &block)
-          content = html_slice
+          if respond_to?(:layout)
+            content = layout(&block)
+          else
+            html_slice(:root, &block)
+            content = html_slice
+          end
         end
 
         Rack::Response.new(content, status, { 'Content-Type' => 'text/html' }.merge(headers))
