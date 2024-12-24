@@ -61,6 +61,10 @@ class Rackr
       source
     ].freeze
 
+    def html_layout(&block)
+      html_slice(:root, &block)
+    end
+
     def html_slice(type = nil, &block)
       if block_given?
         if type == :root

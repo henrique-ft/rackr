@@ -16,6 +16,7 @@ group :development, :test do
   gem 'byebug'
   gem 'pry', '~> 0.12.2'
   gem 'rerun'
+  gem 'capybara'
   gem 'rspec'
   gem 'rubocop', require: false
 end
