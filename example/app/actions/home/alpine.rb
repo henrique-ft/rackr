@@ -35,13 +35,16 @@ module Actions
                 i: 4,
                 increment() {
                   this.i += 1
+                },
+                init() {
+                  console.log('increment component')
                 }
               }
             }
           )
 
           @numbers.each do
-            div x_data: 'incrementComponent()' do
+            div x_data: 'incrementComponent()', x_init: "init()" do
               button x_text: '`increment me (${i})`', '@click': 'increment()'
               span ' -> higher than 10', x_show: 'i > 10'
             end

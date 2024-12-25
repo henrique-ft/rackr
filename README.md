@@ -100,6 +100,10 @@ use https://github.com/alexch/rerun
 
 use https://github.com/baldowl/rack_csrf
 
+#### HTTP Cache:
+
+use https://github.com/rtomayko/rack-cache
+
 ## Feel free to get the idea, fork, contribute and do whatever you want!
 
 Contact me if you have any issue:
