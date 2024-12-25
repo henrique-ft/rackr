@@ -11,8 +11,22 @@ module Actions
 
       include Layout
 
+      class Component
+        include Rackr::HTML
+
+        def html
+          html_slice do
+            div do
+              _ 'Hello '
+              span x_text: '$router.params.name'
+            end
+          end
+        end
+      end
+
       def head
         title 'Alpine js example'
+        script src: 'https://unpkg.com/@shaun/alpinejs-router@1.x.x/dist/cdn.min.js'
         script src: '//unpkg.com/alpinejs'
 
         meta um: "um"
@@ -35,20 +49,27 @@ module Actions
                 i: 4,
                 increment() {
                   this.i += 1
-                },
-                init() {
-                  console.log('increment component')
                 }
               }
             }
           )
 
+          a 'click me', x_link: true, href: '/alpine/hello/world'
+
+          x_route('/alpine/hello/:name', Component.new.html)
+
           @numbers.each do
-            div x_data: 'incrementComponent()', x_init: "init()" do
+            div x_data: 'incrementComponent()' do
               button x_text: '`increment me (${i})`', '@click': 'increment()'
               span ' -> higher than 10', x_show: 'i > 10'
             end
           end
+        end
+      end
+
+      def x_route(name, html_template)
+        template x_route: "/alpine/hello/:name" do
+          _ html_template
         end
       end
     end

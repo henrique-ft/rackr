@@ -54,6 +54,10 @@ App =
     end
 
     get 'alpine', Actions::Home::Alpine
+    get 'alpine/hello/world', Actions::Home::Alpine
+    #scope 'alpine' do
+      #get '*', Actions::Home::Alpine
+    #end
 
     get do
       html do
