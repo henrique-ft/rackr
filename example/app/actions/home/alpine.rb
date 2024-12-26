@@ -56,7 +56,7 @@ module Actions
 
           a 'click me', x_link: true, href: '/alpine/hello/world'
 
-          x_route('/alpine/hello/:name', Component)
+          x_route('/alpine/hello/:name', Component.new.html)
 
           @numbers.each do
             div x_data: 'incrementComponent()' do

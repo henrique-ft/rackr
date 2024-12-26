@@ -54,10 +54,6 @@ App =
     #end
 
     r 'alpine' do
-      get '/oi', Actions::Home::Alpine
-    end
-
-    r 'alpine' do
       get '*', Actions::Home::Alpine
     end
 
