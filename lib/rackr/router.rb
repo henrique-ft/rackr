@@ -30,13 +30,15 @@ class Rackr
       @branches_afters = {}
       @error = proc { |_req, e| raise e }
       @not_found = proc { [404, {}, ['Not found']] }
-      @splitted_request_path = []
+      @splitted_request_path_info = []
+      @current_request_path_info = nil
     end
 
     def call(env)
-      @splitted_request_path = env['PATH_INFO'].split('/')
+      @splitted_request_path_info = env['PATH_INFO'].split('/')
+      @current_request_path_info = env['PATH_INFO'].sub(/\/\z/, '') # remove trailing "/"
 
-      request_builder = BuildRequest.new(env, @splitted_request_path)
+      request_builder = BuildRequest.new(env, @splitted_request_path_info)
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
       route_instance = match_route(env)
@@ -194,7 +196,7 @@ class Rackr
     def match_route(env, last_tail = nil, found_branches = [])
       instance_routes =
         if last_tail.nil?
-          last_tail = @splitted_request_path.drop(1)
+          last_tail = @splitted_request_path_info.drop(1)
 
           @instance_routes[env['REQUEST_METHOD']]
         else
@@ -216,7 +218,7 @@ class Rackr
         return @instance_routes[env['REQUEST_METHOD']].dig(
           *(found_branches << :__instances)
         )
-          &.detect { |route_instance| route_instance.match?(env) }
+          &.detect { |route_instance| route_instance.match?(@current_request_path_info) }
       end
 
       match_route(env, tail, found_branches)

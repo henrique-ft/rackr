@@ -23,11 +23,11 @@ class Rackr
         @wildcard = wildcard
       end
 
-      def match?(env)
-        return env['PATH_INFO'].match?(@path_regex) if @has_params
+      def match?(path_info)
+        return path_info.match?(@path_regex) if @has_params
         return true if @wildcard
 
-        env['PATH_INFO'] == @path
+        path_info == @path
       end
 
       private

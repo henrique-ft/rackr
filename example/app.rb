@@ -49,67 +49,61 @@ App =
       end
     end
 
-    #get 'view' do
-      #view 'index', { name: 'Henrique' }
-    #end
+    get 'view' do
+      view 'index', { name: 'Henrique' }
+    end
 
     r 'alpine' do
       get '*', Actions::Home::Alpine
     end
 
-    #get 'alpine', Actions::Home::Alpine
-    #get 'alpine/hello/world', Actions::Home::Alpine
-    #scope 'alpine' do
-      #get '*', Actions::Home::Alpine
-    #end
+    get do
+      html do
+        h1 'hello'
+      end
+    end
 
-    #get do
-      #html do
-        #h1 'hello'
-      #end
-    #end
+    get 'show', Actions::Home::Show
+    get 'show/:name', Actions::Home::Show
 
-    #get 'show', Actions::Home::Show
-    #get 'show/:name', Actions::Home::Show
+    get 'where-i-go', before: [SayHeyHo] do
+      text('?')
+    end
 
-    #get 'where-i-go', before: [SayHeyHo] do
-      #text('?')
-    #end
+    r 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
+      r 'oi'do
+        get do
+          html('<h1> rack http_router </h1>')
+        end
 
-    #r 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
-      #r 'oi'do
-        #get do
-          #html('<h1> rack http_router </h1>')
-        #end
+        get 'bla', as: :bla do
+          html("<h1> #{routes.get[:bla]} </h1>")
+        end
+      end
+    end
 
-        #get 'bla', as: :bla do
-          #html("<h1> #{routes.get[:bla]} </h1>")
-        #end
-      #end
-    #end
+    r 'v2', before: lambda { |req|
+      p 'before'
+      req
+    } do
+      get ':name/hello', before: lambda { |req|
+        p 'ROUTE BEFORE'
+        req
+      } do |req|
+        json({ name: req.params[:name] }) # routes[:v2_hello]
+      end
 
-    #r 'v2', before: lambda { |req|
-      #p 'before'
-      #req
-    #} do
-      #get ':name/hello', before: lambda { |req|
-        #p 'ROUTE BEFORE'
-        #req
-      #} do |req|
-        #json({ name: req.params[:name] }) # routes[:v2_hello]
-      #end
+      get 'big_json' do
+        json BigJson
+      end
 
-      #get 'big_json' do
-        #json BigJson
-      #end
+      get 'big_json2' do
+        json BigJson2
+      end
+    end
 
-      #get 'big_json2' do
-        #json BigJson2
-      #end
-    #end
-
-    #get 'action', Actions::Home::Index
-    #get 'action2', Actions::Home::Index2
+    get 'action', Actions::Home::Index
+    get 'action2', Actions::Home::Index2
 
     not_found { text 'Are you lost?' }
   end

@@ -19,7 +19,7 @@ class Rackr
         end
 
         def check_branch_slashes(path)
-          if path.include?('/')
+          if path.is_a?(String) && path.include?('/')
             raise(InvalidBranchNameError, "Avoid slashes in branch name, use nested branches instead, got: '#{path}'")
           end
         end
