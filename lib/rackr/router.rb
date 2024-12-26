@@ -36,7 +36,8 @@ class Rackr
 
     def call(env)
       @splitted_request_path_info = env['PATH_INFO'].split('/')
-      @current_request_path_info = env['PATH_INFO'].sub(/\/\z/, '') # remove trailing "/"
+      @current_request_path_info =
+        (env['PATH_INFO'] == '/') ? env['PATH_INFO'] : env['PATH_INFO'].sub(/\/\z/, '') # remove trailing "/"
 
       request_builder = BuildRequest.new(env, @splitted_request_path_info)
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
