@@ -82,8 +82,9 @@ App =
       end
     end
 
-    scope 'v2', before: lambda { |req|
+    scope 'v3', before: lambda { |req|
       p 'before'
+
       req
     } do
 
