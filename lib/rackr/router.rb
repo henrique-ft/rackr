@@ -21,7 +21,7 @@ class Rackr
           raise(Errors::UndefinedNamedRouteError, "Undefined named route: '#{key}'")
         end)
       end
-
+      @dev_mode = ENV['RACK_ENV'] == 'development'
       @config = config
       @scopes = []
       @befores = ensure_array(before)
@@ -72,7 +72,9 @@ class Rackr
     rescue Rackr::NotFound
       call_endpoint(@not_found, request_builder.call)
     rescue Exception => e
-      @error.call(request_builder.call, e)
+      return @error.call(request_builder.call, e) unless @dev_mode
+
+      call_endpoint(Errors::DevHtml, env.merge({'error' => e}))
     end
 
     def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])

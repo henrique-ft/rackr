@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'rackr/html'
-require_relative 'rackr/router'
 require_relative 'rackr/action'
 require_relative 'rackr/callback'
+require_relative 'rackr/html'
+require_relative 'rackr/router/errors/dev_html'
+require_relative 'rackr/router'
 
 class Rackr
   class NotFound < StandardError; end
