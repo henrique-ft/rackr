@@ -114,6 +114,7 @@ class Rackr
 
     def append_branch(name, branch_befores: [], branch_afters: [])
       Errors.check_branch_name(name)
+      Errors.check_branch_slashes(name)
       Errors.check_callbacks(branch_befores, name)
       Errors.check_callbacks(branch_afters, name)
 

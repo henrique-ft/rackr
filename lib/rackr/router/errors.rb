@@ -18,6 +18,12 @@ class Rackr
           raise(InvalidBranchNameError, "Route branch name must be a `string` or a `symbol`, got: '#{path}'")
         end
 
+        def check_branch_slashes(path)
+          if path.include?('/')
+            raise(InvalidBranchNameError, "Avoid slashes in branch name, use nested branches instead, got: '#{path}'")
+          end
+        end
+
         def check_path(path)
           return if path.is_a?(String) || path.is_a?(Symbol) || path.nil?
 
