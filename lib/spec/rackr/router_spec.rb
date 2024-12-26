@@ -175,11 +175,11 @@ RSpec.describe Rackr::Router do
     expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
   end
 
-  context 'branches' do
-    it 'can append branches' do
+  context 'scopes' do
+    it 'can append scopes' do
       router = Rackr::Router.new
 
-      router.append_branch 'admin'
+      router.append_scope 'admin'
       router.add :get, 'teste', ->(_env) { 'success' }
 
       request =
@@ -191,10 +191,10 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq('success')
     end
 
-    it 'can append named branches' do
+    it 'can append named scopes' do
       router = Rackr::Router.new
 
-      router.append_branch :name
+      router.append_scope :name
       router.add :get, 'teste', ->(_env) { 'success' }
 
       request =
@@ -207,11 +207,11 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq('success')
     end
 
-    it 'can clear the last branch' do
+    it 'can clear the last scope' do
       router = Rackr::Router.new
 
-      router.append_branch 'admin'
-      router.clear_last_branch
+      router.append_scope 'admin'
+      router.clear_last_scope
       router.add :get, 'teste', ->(_env) { 'success' }
 
       request =
@@ -223,10 +223,10 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq('success')
     end
 
-    it 'dont conflict with root path inside branches' do
+    it 'dont conflict with root path inside scopes' do
       router = Rackr::Router.new
 
-      router.append_branch 'admin'
+      router.append_scope 'admin'
       router.add :get, '', ->(_env) { 'success' }
 
       request =
@@ -251,7 +251,7 @@ RSpec.describe Rackr::Router do
         it do
           router = Rackr::Router.new
 
-          router.append_branch 'admin'
+          router.append_scope 'admin'
           router.add :get, 'teste', ->(_env) { 'success' }
 
           expect(router.routes.get[:admin_teste]).to eq('/admin/teste')
@@ -260,8 +260,8 @@ RSpec.describe Rackr::Router do
         it do
           router = Rackr::Router.new
 
-          router.append_branch 'admin'
-          router.append_branch 'independent'
+          router.append_scope 'admin'
+          router.append_scope 'independent'
           router.add :get, 'teste', ->(_env) { 'success' }
 
           expect(router.routes.get[:admin_independent_teste]).to eq('/admin/independent/teste')
@@ -278,8 +278,8 @@ RSpec.describe Rackr::Router do
       it 'can change a named route with as: keyword' do
         router = Rackr::Router.new
 
-        router.append_branch 'admin'
-        router.append_branch 'independent'
+        router.append_scope 'admin'
+        router.append_scope 'independent'
         router.add :get, 'teste', ->(_env) { 'success' }, as: :something
 
         expect(router.routes.get[:something]).to eq('/admin/independent/teste')
@@ -287,13 +287,13 @@ RSpec.describe Rackr::Router do
     end
 
     context 'after:' do
-      it 'can receive branches afters' do
+      it 'can receive scopes afters' do
         router = Rackr::Router.new
-        branch_after = -> (res) do
+        scope_after = -> (res) do
           expect(res).to eq('success')
         end
 
-        router.append_branch 'admin', branch_afters: branch_after
+        router.append_scope 'admin', scope_afters: scope_after
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -305,7 +305,7 @@ RSpec.describe Rackr::Router do
         router.call(request)
       end
 
-      it 'can append more than 1 branches after' do
+      it 'can append more than 1 scopes after' do
         afters_called = 0
         after_action = lambda do |res|
           afters_called += 1
@@ -313,8 +313,8 @@ RSpec.describe Rackr::Router do
 
         router = Rackr::Router.new after: after_action
 
-        router.append_branch 'admin', branch_afters: after_action
-        router.append_branch 'v1', branch_afters: after_action
+        router.append_scope 'admin', scope_afters: after_action
+        router.append_scope 'v1', scope_afters: after_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -329,11 +329,11 @@ RSpec.describe Rackr::Router do
     end
 
     context 'before:' do
-      it 'can receive branches befores' do
+      it 'can receive scopes befores' do
         router = Rackr::Router.new
         before_action = ->(_req) { 'inside before' }
 
-        router.append_branch 'admin', branch_befores: before_action
+        router.append_scope 'admin', scope_befores: before_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -345,7 +345,7 @@ RSpec.describe Rackr::Router do
         expect(router.call(request)).to eq('inside before')
       end
 
-      it 'can append more than 1 branches befores' do
+      it 'can append more than 1 scopes befores' do
         befores_called = 0
         before_action = lambda do |req|
           befores_called += 1
@@ -354,8 +354,8 @@ RSpec.describe Rackr::Router do
 
         router = Rackr::Router.new before: before_action
 
-        router.append_branch 'admin', branch_befores: before_action
-        router.append_branch 'v1', branch_befores: before_action
+        router.append_scope 'admin', scope_befores: before_action
+        router.append_scope 'v1', scope_befores: before_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -373,8 +373,8 @@ RSpec.describe Rackr::Router do
         before_action = ->(req) { req }
         before_action2 = ->(_req) { 'hey' }
 
-        router.append_branch 'admin', branch_befores: before_action
-        router.append_branch 'v1', branch_befores: before_action2
+        router.append_scope 'admin', scope_befores: before_action
+        router.append_scope 'v1', scope_befores: before_action2
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =

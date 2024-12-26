@@ -23,11 +23,11 @@ class Rackr
       end
 
       @config = config
-      @branches = []
+      @scopes = []
       @befores = ensure_array(before)
-      @branches_befores = {}
+      @scopes_befores = {}
       @afters = ensure_array(after)
-      @branches_afters = {}
+      @scopes_afters = {}
       @error = proc { |_req, e| raise e }
       @not_found = proc { [404, {}, ['Not found']] }
       @splitted_request_path_info = []
@@ -85,19 +85,19 @@ class Rackr
       method = :get if method == :head
 
       wildcard = (path == '*') ? true : false
-      path_with_branches = "/#{@branches.join('/')}#{put_path_slash(path)}"
-      add_named_route(method, path_with_branches, as)
+      path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
+      add_named_route(method, path_with_scopes, as)
 
       route_instance =
         Route.new(
-          path_with_branches,
+          path_with_scopes,
           endpoint,
           befores: @befores + ensure_array(route_befores),
           afters: @afters + ensure_array(route_afters),
           wildcard: wildcard
         )
 
-      return push_to_branch(method.to_s.upcase, route_instance) if @branches.size >= 1
+      return push_to_scope(method.to_s.upcase, route_instance) if @scopes.size >= 1
 
       @instance_routes[method.to_s.upcase][:__instances].push(route_instance)
     end
@@ -114,29 +114,29 @@ class Rackr
       @error = endpoint
     end
 
-    def append_branch(name, branch_befores: [], branch_afters: [])
-      Errors.check_branch_name(name)
-      Errors.check_branch_slashes(name)
-      Errors.check_callbacks(branch_befores, name)
-      Errors.check_callbacks(branch_afters, name)
+    def append_scope(name, scope_befores: [], scope_afters: [])
+      Errors.check_scope_name(name)
+      Errors.check_scope_slashes(name)
+      Errors.check_callbacks(scope_befores, name)
+      Errors.check_callbacks(scope_afters, name)
 
       name = ":#{name}" if name.is_a? Symbol
 
-      @branches.push(name)
+      @scopes.push(name)
 
-      branch_befores = ensure_array(branch_befores)
-      @befores.concat(branch_befores)
-      @branches_befores[name] = branch_befores
+      scope_befores = ensure_array(scope_befores)
+      @befores.concat(scope_befores)
+      @scopes_befores[name] = scope_befores
 
-      branch_afters = ensure_array(branch_afters)
-      @afters.concat(branch_afters)
-      @branches_afters[name] = branch_afters
+      scope_afters = ensure_array(scope_afters)
+      @afters.concat(scope_afters)
+      @scopes_afters[name] = scope_afters
     end
 
-    def clear_last_branch
-      @befores -= @branches_befores[@branches.last]
-      @afters -= @branches_afters[@branches.last]
-      @branches = @branches.first(@branches.size - 1)
+    def clear_last_scope
+      @befores -= @scopes_befores[@scopes.last]
+      @afters -= @scopes_afters[@scopes.last]
+      @scopes = @scopes.first(@scopes.size - 1)
     end
 
     private
@@ -158,17 +158,17 @@ class Rackr
       [list]
     end
 
-    def add_named_route(method, path_with_branches, as)
-      return @routes.send(method.downcase)[:root] = path_with_branches if path_with_branches == '/'
-      return @routes.send(method.downcase)[as] = path_with_branches unless as.nil?
+    def add_named_route(method, path_with_scopes, as)
+      return @routes.send(method.downcase)[:root] = path_with_scopes if path_with_scopes == '/'
+      return @routes.send(method.downcase)[as] = path_with_scopes unless as.nil?
 
-      key = path_with_branches.sub("/","").gsub(":","").gsub("/","_")
-      @routes.send(method.downcase)["#{key}".to_sym] = path_with_branches
+      key = path_with_scopes.sub("/","").gsub(":","").gsub("/","_")
+      @routes.send(method.downcase)["#{key}".to_sym] = path_with_scopes
     end
 
-    def push_to_branch(method, route_instance)
-      branches_with_slash = @branches + %i[__instances]
-      push_it(@instance_routes[method], *branches_with_slash, route_instance)
+    def push_to_scope(method, route_instance)
+      scopes_with_slash = @scopes + %i[__instances]
+      push_it(@instance_routes[method], *scopes_with_slash, route_instance)
     end
 
     def push_it(hash, first_key, *rest_keys, val)
@@ -181,8 +181,8 @@ class Rackr
     end
 
     def put_path_slash(path)
-      return '' if ['/', ''].include?(path) && @branches != []
-      return "/#{path}" if @branches != []
+      return '' if ['/', ''].include?(path) && @scopes != []
+      return "/#{path}" if @scopes != []
 
       path
     end
@@ -193,35 +193,35 @@ class Rackr
       @not_found.new.call(env)
     end
 
-    def match_route(env, last_tail = nil, found_branches = [])
+    def match_route(env, last_tail = nil, found_scopes = [])
       instance_routes =
         if last_tail.nil?
           last_tail = @splitted_request_path_info.drop(1)
 
           @instance_routes[env['REQUEST_METHOD']]
         else
-          @instance_routes[env['REQUEST_METHOD']].dig(*found_branches)
+          @instance_routes[env['REQUEST_METHOD']].dig(*found_scopes)
         end
 
       segment, *tail = last_tail
 
-      instance_routes.each do |branch, _v|
-        next if branch == :__instances
+      instance_routes.each do |scope, _v|
+        next if scope == :__instances
 
-        if segment == branch || branch.start_with?(':')
-          found_branches.push(branch)
+        if segment == scope || scope.start_with?(':')
+          found_scopes.push(scope)
           break
         end
       end
 
-      if tail.empty? || found_branches == []
+      if tail.empty? || found_scopes == []
         return @instance_routes[env['REQUEST_METHOD']].dig(
-          *(found_branches << :__instances)
+          *(found_scopes << :__instances)
         )
           &.detect { |route_instance| route_instance.match?(@current_request_path_info) }
       end
 
-      match_route(env, tail, found_branches)
+      match_route(env, tail, found_scopes)
     end
   end
 end

@@ -36,14 +36,14 @@ class Rackr
   end
 
   def r(name, before: [], after: [], &block)
-    @router.append_branch(
+    @router.append_scope(
       name,
-      branch_befores: before,
-      branch_afters: after,
+      scope_befores: before,
+      scope_afters: after,
     )
     instance_eval(&block)
 
-    @router.clear_last_branch
+    @router.clear_last_scope
   end
 
   def not_found(endpoint = -> {}, &block)

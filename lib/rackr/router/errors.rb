@@ -12,15 +12,15 @@ class Rackr
       class InvalidBranchNameError < Error; end
 
       class << self
-        def check_branch_name(path)
+        def check_scope_name(path)
           return if path.is_a?(String) || path.is_a?(Symbol)
 
-          raise(InvalidBranchNameError, "Route branch name must be a `string` or a `symbol`, got: '#{path}'")
+          raise(InvalidBranchNameError, "Route scope name must be a `string` or a `symbol`, got: '#{path}'")
         end
 
-        def check_branch_slashes(path)
+        def check_scope_slashes(path)
           if path.is_a?(String) && path.include?('/')
-            raise(InvalidBranchNameError, "Avoid slashes in branch name, use nested branches instead, got: '#{path}'")
+            raise(InvalidBranchNameError, "Avoid slashes in scope name, use nested scopes instead, got: '#{path}'")
           end
         end
 
@@ -34,7 +34,7 @@ class Rackr
           return if as.is_a?(String) || as.is_a?(Symbol) || as.nil?
 
           raise(InvalidNamedRouteError,
-                "as: argument in routes and branches must be a `string` or a `symbol`, got: '#{as}' for '#{path}'")
+                "as: argument in routes and scopes must be a `string` or a `symbol`, got: '#{as}' for '#{path}'")
         end
 
         def check_callbacks(callbacks, path)
