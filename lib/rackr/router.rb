@@ -43,8 +43,7 @@ class Rackr
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
       route_instance = match_route(env)
-
-      return render_not_found(request_builder.call) if route_instance.nil?
+      return call_endpoint(@not_found, request_builder.call) if route_instance.nil?
 
       rack_request = request_builder.call(route_instance)
 
@@ -71,7 +70,7 @@ class Rackr
 
       endpoint_result
     rescue Rackr::NotFound
-      render_not_found(request_builder.call)
+      call_endpoint(@not_found, request_builder.call)
     rescue Exception => e
       @error.call(request_builder.call, e)
     end
@@ -186,12 +185,6 @@ class Rackr
       return "/#{path}" if @scopes != []
 
       path
-    end
-
-    def render_not_found(env)
-      return @not_found.call(env) if @not_found.respond_to?(:call)
-
-      @not_found.new.call(env)
     end
 
     def match_route(env, last_tail = nil, found_scopes = [])

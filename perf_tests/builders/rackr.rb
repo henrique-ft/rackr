@@ -4,8 +4,8 @@ rackr_routes = lambda do |f, level, prefixes, lvars|
   prefix = prefixes.join('/')
   ROUTES_PER_LEVEL.times do
     if level > 1
-      f.puts "#{spaces}r '#{base}' do"
-      f.puts "#{spaces}  r ':#{lvars.last}' do"
+      f.puts "#{spaces}scope '#{base}' do"
+      f.puts "#{spaces}  scope ':#{lvars.last}' do"
     end
 
     if level == 1

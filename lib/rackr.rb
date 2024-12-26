@@ -35,7 +35,7 @@ class Rackr
     @router.config[:db]
   end
 
-  def r(name, before: [], after: [], &block)
+  def scope(name, before: [], after: [], &block)
     @router.append_scope(
       name,
       scope_befores: before,

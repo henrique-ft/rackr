@@ -48,7 +48,7 @@ end)
 
           next if checking
 
-          rpss << rps 
+          rpss << rps
           puts ", #{rps.to_i} requests/second"
           runtimes_with_startup << Process.clock_gettime(Process::CLOCK_MONOTONIC) - t
           memory << `#{FileUtils::RUBY} -r ./#{file}  -e 'GC.start; system("ps -o rss -p \#{$$}")'`.split.last.to_i
@@ -92,6 +92,20 @@ end)
       ['memory', 'Initial Memory Usage'],
     ].each do |file, title|
       g = Gruff::Line.new(ENV['DIM'] || '1280x720')
+
+      g.theme_greyscale
+      g.colors = [
+        '#990000',
+        '#383838',
+        '#989898',
+        '#c8c8c8',
+        '#e8e8e8',
+        '#686868'
+      ]
+      #g.marker_color = '#aea9a9'
+      #g.font_color = 'black'
+      #g.background_color = 'white'
+
       g.legend_font_size = ENV['LEGEND_FONT_SIZE'].to_i if ENV['LEGEND_FONT_SIZE']
       g.title = title
       labels = {}

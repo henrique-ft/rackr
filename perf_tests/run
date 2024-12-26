@@ -1,1 +1,1 @@
-rake bench graphs R10K_APPS="rackr"
+rake bench graphs R10K_APPS="rackr" LEVELS="4"

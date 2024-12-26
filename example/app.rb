@@ -53,7 +53,7 @@ App =
       view 'index', { name: 'Henrique' }
     end
 
-    r 'alpine' do
+    scope 'alpine' do
       get '*', Actions::Home::Alpine
     end
 
@@ -70,8 +70,8 @@ App =
       text('?')
     end
 
-    r 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
-      r 'oi'do
+    scope 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
+      scope 'oi'do
         get do
           html('<h1> rack http_router </h1>')
         end
@@ -82,10 +82,11 @@ App =
       end
     end
 
-    r 'v2', before: lambda { |req|
+    scope 'v2', before: lambda { |req|
       p 'before'
       req
     } do
+
       get ':name/hello', before: lambda { |req|
         p 'ROUTE BEFORE'
         req
@@ -105,5 +106,9 @@ App =
     get 'action', Actions::Home::Index
     get 'action2', Actions::Home::Index2
 
-    not_found { text 'Are you lost?' }
+    not_found do
+      html do
+        h1 'are you lost?'
+      end
+    end
   end
