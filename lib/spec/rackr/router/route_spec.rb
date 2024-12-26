@@ -15,6 +15,17 @@ RSpec.describe Rackr::Router::Route do
     expect(route.match?(request)).to eq(true)
   end
 
+  it 'can match wildcards' do
+    route = described_class.new '*', double(call: 'Hey test'), wildcard: true
+
+    request =
+      {
+        'PATH_INFO' => '/test'
+      }
+
+    expect(route.match?(request)).to eq(true)
+  end
+
   it 'can match path with params' do
     route =
       described_class

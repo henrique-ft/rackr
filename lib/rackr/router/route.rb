@@ -9,7 +9,7 @@ class Rackr
                   :has_afters,
                   :afters
 
-      def initialize(path, endpoint, befores: [], afters: [])
+      def initialize(path, endpoint, befores: [], afters: [], wildcard: false)
         @path = path
         @splitted_path = @path.split('/')
         @endpoint = endpoint
@@ -20,10 +20,12 @@ class Rackr
         @afters = afters
         @has_afters = afters != []
         @path_regex = /\A#{path.gsub(/(:\w+)/, '([^/]+)')}\z/
+        @wildcard = wildcard
       end
 
       def match?(env)
         return env['PATH_INFO'].match?(@path_regex) if @has_params
+        return true if @wildcard
 
         env['PATH_INFO'] == @path
       end

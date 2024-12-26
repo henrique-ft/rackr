@@ -5,81 +5,112 @@ require_relative '../../rackr'
 require 'byebug'
 
 RSpec.describe Rackr::Router do
-  it 'can add routes' do
-    router = Rackr::Router.new
+  context 'can add routes' do
+    let(:router) do
+      router = Rackr::Router.new
 
-    router.add :get, 'get', double(call: 'Hey get')
-    router.add :head, 'head', double(call: 'Hey head')
-    router.add :post, 'post', double(call: 'Hey post')
-    router.add :delete, 'delete', double(call: 'Hey delete')
-    router.add :put, 'put', double(call: 'Hey put')
-    router.add :trace, 'trace', double(call: 'Hey trace')
-    router.add :options, 'options', double(call: 'Hey options')
-    router.add :patch, 'patch', double(call: 'Hey patch')
+      router.add :get, 'get', double(call: 'Hey get')
+      router.add :head, 'head', double(call: 'Hey head')
+      router.add :post, 'post', double(call: 'Hey post')
+      router.add :delete, 'delete', double(call: 'Hey delete')
+      router.add :put, 'put', double(call: 'Hey put')
+      router.add :trace, 'trace', double(call: 'Hey trace')
+      router.add :options, 'options', double(call: 'Hey options')
+      router.add :patch, 'patch', double(call: 'Hey patch')
+      router.add :get, '*', double(call: 'Hey wildcard')
 
-    request =
-      {
-        'REQUEST_METHOD' => 'GET',
-        'PATH_INFO' => '/get'
-      }
+      router
+    end
 
-    expect(router.call(request)).to eq('Hey get')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'PATH_INFO' => '/any-route'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'HEAD',
-        'PATH_INFO' => '/head'
-      }
+      expect(router.call(request)).to eq('Hey wildcard')
+    end
 
-    expect(router.call(request)).to eq('Hey head')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'PATH_INFO' => '/get'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'POST',
-        'PATH_INFO' => '/post'
-      }
+      expect(router.call(request)).to eq('Hey get')
+    end
 
-    expect(router.call(request)).to eq('Hey post')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'HEAD',
+          'PATH_INFO' => '/head'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'DELETE',
-        'PATH_INFO' => '/delete'
-      }
+      expect(router.call(request)).to eq('Hey head')
+    end
 
-    expect(router.call(request)).to eq('Hey delete')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'POST',
+          'PATH_INFO' => '/post'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'PUT',
-        'PATH_INFO' => '/put'
-      }
+      expect(router.call(request)).to eq('Hey post')
+    end
 
-    expect(router.call(request)).to eq('Hey put')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'DELETE',
+          'PATH_INFO' => '/delete'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'TRACE',
-        'PATH_INFO' => '/trace'
-      }
+      expect(router.call(request)).to eq('Hey delete')
+    end
 
-    expect(router.call(request)).to eq('Hey trace')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'PUT',
+          'PATH_INFO' => '/put'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'OPTIONS',
-        'PATH_INFO' => '/options'
-      }
+      expect(router.call(request)).to eq('Hey put')
+    end
 
-    expect(router.call(request)).to eq('Hey options')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'TRACE',
+          'PATH_INFO' => '/trace'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'PATCH',
-        'PATH_INFO' => '/patch'
-      }
+      expect(router.call(request)).to eq('Hey trace')
+    end
 
-    expect(router.call(request)).to eq('Hey patch')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'OPTIONS',
+          'PATH_INFO' => '/options'
+        }
+
+      expect(router.call(request)).to eq('Hey options')
+    end
+
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'PATCH',
+          'PATH_INFO' => '/patch'
+        }
+
+      expect(router.call(request)).to eq('Hey patch')
+    end
   end
 
   it 'render 404 when fails' do

@@ -53,8 +53,12 @@ App =
       view 'index', { name: 'Henrique' }
     end
 
-    get 'alpine', Actions::Home::Alpine
-    get 'alpine/hello/world', Actions::Home::Alpine
+    r 'alpine' do
+      get '*', Actions::Home::Alpine
+    end
+
+    #get 'alpine', Actions::Home::Alpine
+    #get 'alpine/hello/world', Actions::Home::Alpine
     #scope 'alpine' do
       #get '*', Actions::Home::Alpine
     #end

@@ -56,19 +56,22 @@ module Actions
 
           a 'click me', x_link: true, href: '/alpine/hello/world'
 
-          x_route('/alpine/hello/:name', Component.new.html)
+          x_route('/alpine/hello/:name', Component)
 
           @numbers.each do
             div x_data: 'incrementComponent()' do
               button x_text: '`increment me (${i})`', '@click': 'increment()'
               span ' -> higher than 10', x_show: 'i > 10'
+              template x_if: 'i > 10' do
+                span 'ttestt'
+              end
             end
           end
         end
       end
 
       def x_route(name, html_template)
-        template x_route: "/alpine/hello/:name" do
+        template x_route: name do
           _ html_template
         end
       end

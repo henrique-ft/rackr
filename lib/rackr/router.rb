@@ -82,6 +82,7 @@ class Rackr
 
       method = :get if method == :head
 
+      wildcard = (path == '*') ? true : false
       path_with_branches = "/#{@branches.join('/')}#{put_path_slash(path)}"
       add_named_route(method, path_with_branches, as)
 
@@ -90,7 +91,8 @@ class Rackr
           path_with_branches,
           endpoint,
           befores: @befores + ensure_array(route_befores),
-          afters: @afters + ensure_array(route_afters)
+          afters: @afters + ensure_array(route_afters),
+          wildcard: wildcard
         )
 
       return push_to_branch(method.to_s.upcase, route_instance) if @branches.size >= 1
