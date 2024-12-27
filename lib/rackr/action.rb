@@ -91,6 +91,14 @@ class Rackr
       Rackr::Action.erb(content, view_params)
     end
 
+    def head(status, headers: {})
+      Rackr::Action.head(status, headers: headers)
+    end
+
+    def head_response(status, headers: {})
+      Rackr::Action.head_response(status, headers: headers)
+    end
+
     def redirect_response(url, headers: {})
       Rackr::Action.redirect_response(url, headers: headers)
     end
@@ -240,6 +248,14 @@ class Rackr
 
       def redirect_to(url, headers: {})
         [302, { 'Location' => url }.merge(headers), []]
+      end
+
+      def head(status, headers: {})
+        [status, headers, []]
+      end
+
+      def head_response(status, headers: {})
+        Rack::Response.new(nil, status, headers)
       end
 
       def response(body = nil, status = 200, headers = {})
