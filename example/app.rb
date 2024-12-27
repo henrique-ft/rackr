@@ -133,7 +133,6 @@ App =
       end
     end
 
-
     not_found do
       html do
         h1 'are you lost?'

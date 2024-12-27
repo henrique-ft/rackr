@@ -40,7 +40,6 @@ class Rackr
             tag :body do
               div do
                 h1 env['error'].inspect
-                hr
                 backtrace(env)
               end
             end
@@ -51,7 +50,45 @@ class Rackr
           first, *tail = env['error'].backtrace
 
           tag :p, first, class: "first-p"
+
+          line_number = extract_line_number(first)
+          match = first.match(%r{^(\/[\w\/.-]+)})
+          file_path = (match ? match[1] : nil)
+          if file_path != nil
+            lines = []
+            File.open(file_path) do |file|
+              lines = file.readlines
+            end
+
+            lines.map!.with_index do |line, i|
+              "#{i+1}: #{line} \n"
+            end
+
+            tag :pre, slice_around_index(lines, line_number).join("")
+          end
+
+          hr
           tag :p, tail.join("\n")
+        end
+
+
+        def extract_line_number(input)
+          if match = input.match(/:(\d+):in/)
+            match[1].to_i
+          else
+            nil
+          end
+        end
+
+        def slice_around_index(array, index)
+          return array if index == nil || index < 1
+
+          index -= 1
+          start_index = [index - 2, 0].max
+          end_index = [index + 2, array.size - 1].min
+
+          # Slice the array
+          array[start_index..end_index]
         end
       end
     end
