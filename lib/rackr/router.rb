@@ -42,7 +42,6 @@ class Rackr
       request_builder = BuildRequest.new(env, @splitted_request_path_info)
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
-      p @instance_routes
       route_instance = match_route(env)
       return call_endpoint(@not_found, request_builder.call) if route_instance.nil?
 
