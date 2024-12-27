@@ -72,11 +72,11 @@ class Rackr
         else
           wrap = ['','']
         end
-        @html_slice_result_string = wrap[0]
+        @html_slice = wrap[0]
         instance_eval(&block)
-        @html_slice_result_string << wrap[1]
+        @html_slice << wrap[1]
       else
-        @html_slice_result_string
+        @html_slice
       end
     end
 
@@ -87,12 +87,12 @@ class Rackr
     end
 
     def _(content)
-      @html_slice_result_string << content.to_s
+      @html_slice << content.to_s
     end
 
     def tag(tag_name, *args, &block)
       content, attributes = parse_html_tag_arguments(args)
-      generate_html_tag(tag_name, content, attributes, &block)
+      generate_and_append_html_tag(tag_name, content, attributes, &block)
     end
 
     private
@@ -112,18 +112,18 @@ class Rackr
       [content, attributes]
     end
 
-    def generate_html_tag(tag_name, content, attributes, &block)
+    def generate_and_append_html_tag(tag_name, content, attributes, &block)
       open_tag = build_html_open_tag(tag_name, attributes)
 
       if block_given?
-        @html_slice_result_string << open_tag << ">"
+        @html_slice << open_tag << ">"
         instance_eval(&block)
-        @html_slice_result_string << "</#{tag_name}>"
+        @html_slice << "</#{tag_name}>"
       else
         if content.empty? && EMPTY_TAGS.include?(tag_name)
-          @html_slice_result_string << open_tag << "/>"
+          @html_slice << open_tag << "/>"
         else
-          @html_slice_result_string << open_tag << ">" << content << "</#{tag_name}>"
+          @html_slice << open_tag << ">" << content << "</#{tag_name}>"
         end
       end
     end
