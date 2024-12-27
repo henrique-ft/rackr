@@ -13,7 +13,7 @@ class Rackr
 
       class << self
         def check_scope_name(path)
-          return if path.is_a?(String) || path.is_a?(Symbol)
+          return if path.is_a?(String) || path.is_a?(Symbol) || path == nil
 
           raise(InvalidBranchNameError, "Route scope name must be a `string` or a `symbol`, got: '#{path}'")
         end

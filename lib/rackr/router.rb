@@ -42,6 +42,7 @@ class Rackr
       request_builder = BuildRequest.new(env, @splitted_request_path_info)
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
+      p @instance_routes
       route_instance = match_route(env)
       return call_endpoint(@not_found, request_builder.call) if route_instance.nil?
 
@@ -87,7 +88,8 @@ class Rackr
       method = :get if method == :head
 
       wildcard = (path == '*') ? true : false
-      path_with_scopes = "/#{@scopes.join('/')}#{put_path_slash(path)}"
+      path = path.sub(/\A\//, '')
+      path_with_scopes = "/#{not_empty_scopes.join('/')}#{put_path_slash(path)}"
       add_named_route(method, path_with_scopes, as)
 
       route_instance =
@@ -169,7 +171,7 @@ class Rackr
     end
 
     def push_to_scope(method, route_instance)
-      scopes_with_slash = @scopes + %i[__instances]
+      scopes_with_slash = not_empty_scopes + %i[__instances]
       push_it(@instance_routes[method], *scopes_with_slash, route_instance)
     end
 
@@ -183,10 +185,16 @@ class Rackr
     end
 
     def put_path_slash(path)
-      return '' if ['/', ''].include?(path) && @scopes != []
-      return "/#{path}" if @scopes != []
+      if not_empty_scopes != []
+        return '' if ['/', ''].include?(path)
+        return "/#{path}"
+      end
 
       path
+    end
+
+    def not_empty_scopes
+      @scopes.reject { |v| (v == '') }
     end
 
     def match_route(env, last_tail = nil, found_scopes = [])

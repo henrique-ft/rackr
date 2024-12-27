@@ -49,6 +49,32 @@ App =
       end
     end
 
+    # empty scopes
+    scope before: (lambda { |req|
+      p("empty scope")
+      req
+    }) do
+      scope "oi" do
+        scope before: (lambda { |req|
+          p("empty scope 2")
+          req
+        }) do
+          scope before: (lambda { |req|
+            p("empty scope 3")
+            req
+          }) do
+            get 'something' do
+              text('oi')
+            end
+          end
+        end
+      end
+
+      get '/something2' do
+        text("ma oe")
+      end
+    end
+
     get 'view' do
       view 'index', { name: 'Henrique' }
     end
