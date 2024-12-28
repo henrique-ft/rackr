@@ -5,10 +5,6 @@ module Actions
     class Alpine
       include Rackr::Action
       include Rackr::HTML
-      #include Rackr::HTML::Stimulus
-      #include Rackr::HTML::Alpine
-      #include Rackr::HTML::HTMX
-
       include Layout
 
       class Component
@@ -56,7 +52,7 @@ module Actions
 
           a 'click me', x_link: true, href: '/alpine/hello/world'
 
-          x_route('/alpine/hello/:name', Component.new.html)
+          route('/alpine/hello/:name', Component.new.html)
 
           @numbers.each do
             div x_data: 'incrementComponent()' do
@@ -70,7 +66,7 @@ module Actions
         end
       end
 
-      def x_route(name, html_template)
+      def route(name, html_template)
         template x_route: name do
           _ html_template
         end
