@@ -17,14 +17,14 @@ App =
     # Returns [200, {"Content-Type" => "text/html"}, ["<h1> rack http_router </h1>"]]
     get { html('<h1> rack http_router </h1>') }
 
-    r 'v1' do
-      r 'hi' do
+    scope 'v1' do
+      scope 'hi' do
         get { html('<h1> rack http_router </h1>') }
       end
     end
 
-    # Build a r /v2
-    r 'v2' do
+    # Build a scope /v2
+    scope 'v2' do
       # get /v2/hello/somename
       get 'hello/:name' do |req| # 'req' is an Rack::Request object
         # Returns [200, {"Content-Type" => "application/json"}, [Oj.dump({name: 'somename'}, compat: true)]]
@@ -99,6 +99,10 @@ use https://github.com/alexch/rerun
 #### CRSF protection:
 
 use https://github.com/baldowl/rack_csrf
+
+#### HTTP Cache:
+
+use https://github.com/rtomayko/rack-cache
 
 ## Feel free to get the idea, fork, contribute and do whatever you want!
 

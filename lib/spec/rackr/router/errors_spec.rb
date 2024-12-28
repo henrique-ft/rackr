@@ -4,14 +4,14 @@ require_relative '../../../rackr/router/errors'
 require 'byebug'
 
 RSpec.describe Rackr::Router::Errors do
-  describe 'check_branch_name' do
+  describe 'check_scope_name' do
     it do
       expect do
-        Rackr::Router::Errors.check_branch_name(1)
+        Rackr::Router::Errors.check_scope_name(1)
       end.to raise_error(Rackr::Router::Errors::InvalidBranchNameError)
 
       expect do
-        Rackr::Router::Errors.check_branch_name({})
+        Rackr::Router::Errors.check_scope_name({})
       end.to raise_error(Rackr::Router::Errors::InvalidBranchNameError)
     end
   end

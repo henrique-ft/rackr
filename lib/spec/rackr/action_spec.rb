@@ -200,12 +200,6 @@ RSpec.describe Rackr::Action do
       end
     end
 
-    context 'layout' do
-      it 'returns an layout array' do
-        expect(Rackr::Action.layout(:admin, 'index')).to eq(['layout/admin/_header', 'index', 'layout/admin/_footer'])
-      end
-    end
-
     context 'view_response' do
       before do
         allow(::File).to receive(:read).and_return('file.')
@@ -290,6 +284,32 @@ RSpec.describe Rackr::Action do
       expect(response.status).to eq(200)
       expect(response.body).to eq([])
       expect(response.headers).to eq({})
+    end
+  end
+
+  context 'head' do
+    it 'return bare status code' do
+      result = Rackr::Action.head(404)
+      expect(result).to eq([404, {}, []])
+    end
+
+    it 'can receive headers as named params' do
+      result = Rackr::Action.head(404, headers: {'some' => 'header'})
+      expect(result).to eq([404, {'some' => 'header'}, []])
+    end
+  end
+
+  context 'head_response' do
+    it 'return bare status code' do
+      response = Rackr::Action.head_response(404)
+      expect(response).to be_a(Rack::Response)
+      expect(response.status).to eq(404)
+    end
+
+    it 'can receive headers as named params' do
+      response = Rackr::Action.head_response(404, headers: {'some' => 'header'})
+      expect(response).to be_a(Rack::Response)
+      expect(response.headers).to eq({'some' => 'header'})
     end
   end
 

@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'rackr/router'
 require_relative 'rackr/action'
 require_relative 'rackr/callback'
+require_relative 'rackr/html'
+require_relative 'rackr/router/errors/dev_html'
+require_relative 'rackr/router'
 
 class Rackr
   class NotFound < StandardError; end
@@ -10,6 +12,7 @@ class Rackr
   HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH]
 
   include Action
+  include HTML
 
   def initialize(config = {}, before: [], after: [])
     @router = Router.new(config, before: before, after: after)
@@ -33,15 +36,15 @@ class Rackr
     @router.config[:db]
   end
 
-  def r(name, before: [], after: [], &block)
-    @router.append_branch(
+  def scope(name = '', before: [], after: [], &block)
+    @router.append_scope(
       name,
-      branch_befores: before,
-      branch_afters: after,
+      scope_befores: before,
+      scope_afters: after,
     )
     instance_eval(&block)
 
-    @router.clear_last_branch
+    @router.clear_last_scope
   end
 
   def not_found(endpoint = -> {}, &block)

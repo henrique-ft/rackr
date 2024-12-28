@@ -5,81 +5,123 @@ require_relative '../../rackr'
 require 'byebug'
 
 RSpec.describe Rackr::Router do
-  it 'can add routes' do
-    router = Rackr::Router.new
+  context 'can add routes' do
+    let(:router) do
+      router = Rackr::Router.new
 
-    router.add :get, 'get', double(call: 'Hey get')
-    router.add :head, 'head', double(call: 'Hey head')
-    router.add :post, 'post', double(call: 'Hey post')
-    router.add :delete, 'delete', double(call: 'Hey delete')
-    router.add :put, 'put', double(call: 'Hey put')
-    router.add :trace, 'trace', double(call: 'Hey trace')
-    router.add :options, 'options', double(call: 'Hey options')
-    router.add :patch, 'patch', double(call: 'Hey patch')
+      router.add :get, 'get', double(call: 'Hey get')
+      router.add :head, 'head', double(call: 'Hey head')
+      router.add :post, 'post', double(call: 'Hey post')
+      router.add :delete, 'delete', double(call: 'Hey delete')
+      router.add :put, 'put', double(call: 'Hey put')
+      router.add :trace, 'trace', double(call: 'Hey trace')
+      router.add :options, 'options', double(call: 'Hey options')
+      router.add :patch, 'patch', double(call: 'Hey patch')
+      router.add :get, '*', double(call: 'Hey wildcard')
+      router.add :get, '/starting_with_slash', double(call: 'Hey slash')
 
-    request =
-      {
-        'REQUEST_METHOD' => 'GET',
-        'PATH_INFO' => '/get'
-      }
+      router
+    end
 
-    expect(router.call(request)).to eq('Hey get')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'PATH_INFO' => '/any-route'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'HEAD',
-        'PATH_INFO' => '/head'
-      }
+      expect(router.call(request)).to eq('Hey wildcard')
+    end
 
-    expect(router.call(request)).to eq('Hey head')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'PATH_INFO' => '/get'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'POST',
-        'PATH_INFO' => '/post'
-      }
+      expect(router.call(request)).to eq('Hey get')
+    end
 
-    expect(router.call(request)).to eq('Hey post')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'HEAD',
+          'PATH_INFO' => '/head'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'DELETE',
-        'PATH_INFO' => '/delete'
-      }
+      expect(router.call(request)).to eq('Hey head')
+    end
 
-    expect(router.call(request)).to eq('Hey delete')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'POST',
+          'PATH_INFO' => '/post'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'PUT',
-        'PATH_INFO' => '/put'
-      }
+      expect(router.call(request)).to eq('Hey post')
+    end
 
-    expect(router.call(request)).to eq('Hey put')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'DELETE',
+          'PATH_INFO' => '/delete'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'TRACE',
-        'PATH_INFO' => '/trace'
-      }
+      expect(router.call(request)).to eq('Hey delete')
+    end
 
-    expect(router.call(request)).to eq('Hey trace')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'PUT',
+          'PATH_INFO' => '/put'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'OPTIONS',
-        'PATH_INFO' => '/options'
-      }
+      expect(router.call(request)).to eq('Hey put')
+    end
 
-    expect(router.call(request)).to eq('Hey options')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'TRACE',
+          'PATH_INFO' => '/trace'
+        }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'PATCH',
-        'PATH_INFO' => '/patch'
-      }
+      expect(router.call(request)).to eq('Hey trace')
+    end
 
-    expect(router.call(request)).to eq('Hey patch')
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'OPTIONS',
+          'PATH_INFO' => '/options'
+        }
+
+      expect(router.call(request)).to eq('Hey options')
+    end
+
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'PATCH',
+          'PATH_INFO' => '/patch'
+        }
+
+      expect(router.call(request)).to eq('Hey patch')
+    end
+
+    it do
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'PATH_INFO' => '/starting_with_slash'
+        }
+
+      expect(router.call(request)).to eq('Hey slash')
+    end
   end
 
   it 'render 404 when fails' do
@@ -144,11 +186,11 @@ RSpec.describe Rackr::Router do
     expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
   end
 
-  context 'branches' do
-    it 'can append branches' do
+  context 'scopes' do
+    it 'can append scopes' do
       router = Rackr::Router.new
 
-      router.append_branch 'admin'
+      router.append_scope 'admin'
       router.add :get, 'teste', ->(_env) { 'success' }
 
       request =
@@ -160,10 +202,10 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq('success')
     end
 
-    it 'can append named branches' do
+    it 'can append named scopes' do
       router = Rackr::Router.new
 
-      router.append_branch :name
+      router.append_scope :name
       router.add :get, 'teste', ->(_env) { 'success' }
 
       request =
@@ -176,11 +218,11 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq('success')
     end
 
-    it 'can clear the last branch' do
+    it 'can clear the last scope' do
       router = Rackr::Router.new
 
-      router.append_branch 'admin'
-      router.clear_last_branch
+      router.append_scope 'admin'
+      router.clear_last_scope
       router.add :get, 'teste', ->(_env) { 'success' }
 
       request =
@@ -192,10 +234,10 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq('success')
     end
 
-    it 'dont conflict with root path inside branches' do
+    it 'dont conflict with root path inside scopes' do
       router = Rackr::Router.new
 
-      router.append_branch 'admin'
+      router.append_scope 'admin'
       router.add :get, '', ->(_env) { 'success' }
 
       request =
@@ -205,6 +247,54 @@ RSpec.describe Rackr::Router do
         }
 
       expect(router.call(request)).to eq('success')
+    end
+
+    context 'empty scopes' do
+      it 'can append scopes' do
+        router = Rackr::Router.new
+
+        router.append_scope ''
+        router.add :get, 'teste', ->(_env) { 'success' }
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/teste'
+          }
+
+        expect(router.call(request)).to eq('success')
+      end
+
+      it 'can clear the last scope' do
+        router = Rackr::Router.new
+
+        router.append_scope ''
+        router.clear_last_scope
+        router.add :get, 'teste', ->(_env) { 'success' }
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/teste'
+          }
+
+        expect(router.call(request)).to eq('success')
+      end
+
+      it 'dont conflict with root path inside scopes' do
+        router = Rackr::Router.new
+
+        router.append_scope ''
+        router.add :get, '', ->(_env) { 'success' }
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/'
+          }
+
+        expect(router.call(request)).to eq('success')
+      end
     end
 
     context 'named_routes' do
@@ -220,7 +310,7 @@ RSpec.describe Rackr::Router do
         it do
           router = Rackr::Router.new
 
-          router.append_branch 'admin'
+          router.append_scope 'admin'
           router.add :get, 'teste', ->(_env) { 'success' }
 
           expect(router.routes.get[:admin_teste]).to eq('/admin/teste')
@@ -229,8 +319,8 @@ RSpec.describe Rackr::Router do
         it do
           router = Rackr::Router.new
 
-          router.append_branch 'admin'
-          router.append_branch 'independent'
+          router.append_scope 'admin'
+          router.append_scope 'independent'
           router.add :get, 'teste', ->(_env) { 'success' }
 
           expect(router.routes.get[:admin_independent_teste]).to eq('/admin/independent/teste')
@@ -247,8 +337,8 @@ RSpec.describe Rackr::Router do
       it 'can change a named route with as: keyword' do
         router = Rackr::Router.new
 
-        router.append_branch 'admin'
-        router.append_branch 'independent'
+        router.append_scope 'admin'
+        router.append_scope 'independent'
         router.add :get, 'teste', ->(_env) { 'success' }, as: :something
 
         expect(router.routes.get[:something]).to eq('/admin/independent/teste')
@@ -256,13 +346,13 @@ RSpec.describe Rackr::Router do
     end
 
     context 'after:' do
-      it 'can receive branches afters' do
+      it 'can receive scopes afters' do
         router = Rackr::Router.new
-        branch_after = -> (res) do
+        scope_after = -> (res) do
           expect(res).to eq('success')
         end
 
-        router.append_branch 'admin', branch_afters: branch_after
+        router.append_scope 'admin', scope_afters: scope_after
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -274,7 +364,7 @@ RSpec.describe Rackr::Router do
         router.call(request)
       end
 
-      it 'can append more than 1 branches after' do
+      it 'can append more than 1 scopes after' do
         afters_called = 0
         after_action = lambda do |res|
           afters_called += 1
@@ -282,8 +372,8 @@ RSpec.describe Rackr::Router do
 
         router = Rackr::Router.new after: after_action
 
-        router.append_branch 'admin', branch_afters: after_action
-        router.append_branch 'v1', branch_afters: after_action
+        router.append_scope 'admin', scope_afters: after_action
+        router.append_scope 'v1', scope_afters: after_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -295,14 +385,56 @@ RSpec.describe Rackr::Router do
         expect(router.call(request)).to eq('success')
         expect(afters_called).to eq(3)
       end
+
+      context 'empty scopes' do
+        it 'can receive scopes afters' do
+          router = Rackr::Router.new
+          scope_after = -> (res) do
+            expect(res).to eq('success')
+          end
+
+          router.append_scope '', scope_afters: scope_after
+          router.add :get, 'teste', ->(_env) { 'success' }
+
+          request =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/teste'
+            }
+
+          router.call(request)
+        end
+
+        it 'can append more than 1 scopes after' do
+          afters_called = 0
+          after_action = lambda do |res|
+            afters_called += 1
+          end
+
+          router = Rackr::Router.new after: after_action
+
+          router.append_scope '', scope_afters: after_action
+          router.append_scope '', scope_afters: after_action
+          router.add :get, 'teste', ->(_env) { 'success' }
+
+          request =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/teste'
+            }
+
+          expect(router.call(request)).to eq('success')
+          expect(afters_called).to eq(3)
+        end
+      end
     end
 
     context 'before:' do
-      it 'can receive branches befores' do
+      it 'can receive scopes befores' do
         router = Rackr::Router.new
         before_action = ->(_req) { 'inside before' }
 
-        router.append_branch 'admin', branch_befores: before_action
+        router.append_scope 'admin', scope_befores: before_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -314,7 +446,7 @@ RSpec.describe Rackr::Router do
         expect(router.call(request)).to eq('inside before')
       end
 
-      it 'can append more than 1 branches befores' do
+      it 'can append more than 1 scopes befores' do
         befores_called = 0
         before_action = lambda do |req|
           befores_called += 1
@@ -323,8 +455,8 @@ RSpec.describe Rackr::Router do
 
         router = Rackr::Router.new before: before_action
 
-        router.append_branch 'admin', branch_befores: before_action
-        router.append_branch 'v1', branch_befores: before_action
+        router.append_scope 'admin', scope_befores: before_action
+        router.append_scope 'v1', scope_befores: before_action
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -342,8 +474,8 @@ RSpec.describe Rackr::Router do
         before_action = ->(req) { req }
         before_action2 = ->(_req) { 'hey' }
 
-        router.append_branch 'admin', branch_befores: before_action
-        router.append_branch 'v1', branch_befores: before_action2
+        router.append_scope 'admin', scope_befores: before_action
+        router.append_scope 'v1', scope_befores: before_action2
         router.add :get, 'teste', ->(_env) { 'success' }
 
         request =
@@ -353,6 +485,47 @@ RSpec.describe Rackr::Router do
           }
 
         expect(router.call(request)).to eq('hey')
+      end
+
+      context 'empty scopes' do
+        it 'can receive scopes befores' do
+          router = Rackr::Router.new
+          before_action = ->(_req) { 'inside before' }
+
+          router.append_scope '', scope_befores: before_action
+          router.add :get, 'teste', ->(_env) { 'success' }
+
+          request =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/teste'
+            }
+
+          expect(router.call(request)).to eq('inside before')
+        end
+
+        it 'can append more than 1 scopes befores' do
+          befores_called = 0
+          before_action = lambda do |req|
+            befores_called += 1
+            req
+          end
+
+          router = Rackr::Router.new before: before_action
+
+          router.append_scope '', scope_befores: before_action
+          router.append_scope '', scope_befores: before_action
+          router.add :get, 'teste', ->(_env) { 'success' }
+
+          request =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/teste'
+            }
+
+          expect(router.call(request)).to eq('success')
+          expect(befores_called).to eq(3)
+        end
       end
     end
   end

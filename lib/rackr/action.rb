@@ -45,16 +45,30 @@ class Rackr
       end
     end
 
-    def layout(layout_path, file_path)
-      Rackr::Action.layout(layout_path, file_path)
+    def html(content = '', status: 200, headers: {}, &block)
+      if block_given? && respond_to?(:html_slice)
+        if respond_to?(:layout)
+          content = layout(&block)
+        else
+          html_slice(:root, &block)
+          content = html_slice
+        end
+      end
+
+      Rackr::Action.html(content, status: status, headers: headers, &block)
     end
 
-    def html(content, status: 200, headers: {})
-      Rackr::Action.html(content, status: status, headers: headers)
-    end
+    def html_response(content = '', status: 200, headers: {} &block)
+      if block_given? && respond_to?(:html_slice)
+        if respond_to?(:layout)
+          content = layout(&block)
+        else
+          html_slice(:root, &block)
+          content = html_slice
+        end
+      end
 
-    def html_response(content, status: 200)
-      Rackr::Action.html_response(content, status: status, headers: headers)
+      Rackr::Action.html_response(content, status: status, headers: headers, &block)
     end
 
     def json(content = {}, status: 200, headers: {})
@@ -77,12 +91,20 @@ class Rackr
       Rackr::Action.erb(content, view_params)
     end
 
+    def head(status, headers: {})
+      Rackr::Action.head(status, headers: headers)
+    end
+
+    def head_response(status, headers: {})
+      Rackr::Action.head_response(status, headers: headers)
+    end
+
     def redirect_response(url, headers: {})
-      Rackr::Action.redirect_response(url, headers: headers, headers: headers)
+      Rackr::Action.redirect_response(url, headers: headers)
     end
 
     def redirect_to(url, headers: {})
-      Rackr::Action.redirect_to(url, headers: headers, headers: headers)
+      Rackr::Action.redirect_to(url, headers: headers)
     end
 
     def response(body = nil, status = 200, headers = {})
@@ -158,19 +180,29 @@ class Rackr
         [status, { 'Content-Type' => 'text/html' }.merge(headers), [erb]]
       end
 
-      def layout(layout_path, file_path)
-        [
-          "layout/#{layout_path}/_header",
-          file_path,
-          "layout/#{layout_path}/_footer"
-        ]
-      end
+      def html(content = '', status: 200, headers: {}, &block)
+        if content == '' && block_given? && respond_to?(:html_slice)
+          if respond_to?(:layout)
+            content = layout(&block)
+          else
+            html_slice(:root, &block)
+            content = html_slice
+          end
+        end
 
-      def html(content, status: 200, headers: {})
         [status, { 'Content-Type' => 'text/html' }.merge(headers), [content]]
       end
 
-      def html_response(content, status: 200, headers: {})
+      def html_response(content = '', status: 200, headers: {}, &block)
+        if content == '' && block_given? && respond_to?(:html_slice)
+          if respond_to?(:layout)
+            content = layout(&block)
+          else
+            html_slice(:root, &block)
+            content = html_slice
+          end
+        end
+
         Rack::Response.new(content, status, { 'Content-Type' => 'text/html' }.merge(headers))
       end
 
@@ -216,6 +248,14 @@ class Rackr
 
       def redirect_to(url, headers: {})
         [302, { 'Location' => url }.merge(headers), []]
+      end
+
+      def head(status, headers: {})
+        [status, headers, []]
+      end
+
+      def head_response(status, headers: {})
+        Rack::Response.new(nil, status, headers)
       end
 
       def response(body = nil, status = 200, headers = {})
