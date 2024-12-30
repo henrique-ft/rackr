@@ -50,6 +50,8 @@ App =
     end
 
     get 'view' do
+      @name = "Albert"
+
       view 'index'
     end
 

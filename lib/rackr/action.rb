@@ -22,7 +22,7 @@ class Rackr
             status: status,
             headers: headers,
             config: config,
-            binding_value: binding
+            context: binding
           )
         end
 
@@ -35,7 +35,7 @@ class Rackr
             headers: headers,
             response_instance: response_instance,
             config: config,
-            binding_value: binding
+            context: binding
           )
         end
       end
@@ -83,8 +83,8 @@ class Rackr
       Rackr::Action.text_response(content, status: status, headers: headers)
     end
 
-    def erb(content)
-      Rackr::Action.erb(content)
+    def erb(content, context: binding, &block)
+      Rackr::Action.erb(content, context: context, &block)
     end
 
     def head(status, headers: {})
@@ -113,7 +113,7 @@ class Rackr
         status: 200,
         config: {},
         headers: {},
-        binding_value: binding
+        context: binding
       )
         view(
           paths,
@@ -121,7 +121,7 @@ class Rackr
           config: config,
           headers: headers,
           response_instance: true,
-          binding_value: binding
+          context: binding
         )
       end
 
@@ -131,7 +131,7 @@ class Rackr
         config: {},
         headers: {},
         response_instance: false,
-        binding_value: binding
+        context: binding
       )
         base_path = config.dig(:views, :path) || 'views'
 
@@ -153,7 +153,7 @@ class Rackr
             file_content,
             file_or_nil.call("#{base_path}/layout/_footer.html.erb")
           ].join,
-          binding_value: binding_value
+          context: context
         )
 
         if response_instance
@@ -218,8 +218,8 @@ class Rackr
       end
 
       # rubocop:disable Lint/UnusedMethodArgument
-      def erb(content, binding_value: binding, &block)
-        eval(Erubi::Engine.new(content).src, binding_value)
+      def erb(content, context: binding, &block)
+        eval(Erubi::Engine.new(content).src, context)
       end
       # rubocop:enable Lint/UnusedMethodArgument
 
