@@ -23,8 +23,7 @@ class Rackr
             status: status,
             headers: headers,
             config: config,
-            routes: routes,
-            db: db
+            binding_value: binding
           )
         end
 
@@ -36,10 +35,9 @@ class Rackr
             a_view_params,
             status: status,
             headers: headers,
+            response_instance: response_instance,
             config: config,
-            routes: routes,
-            db: db,
-            response_instance: response_instance
+            binding_value: binding
           )
         end
       end
@@ -116,20 +114,18 @@ class Rackr
         paths,
         view_params = {},
         status: 200,
-        headers: {},
         config: {},
-        routes: nil,
-        db: nil
+        headers: {},
+        binding_value: binding
       )
         view(
           paths,
           view_params,
           status: status,
           config: config,
-          routes: routes,
           headers: headers,
-          db: db,
-          response_instance: true
+          response_instance: true,
+          binding_value: binding
         )
       end
 
@@ -137,11 +133,10 @@ class Rackr
         paths,
         view_params = {},
         status: 200,
-        headers: {},
         config: {},
-        routes: nil,
-        db: nil,
-        response_instance: false
+        headers: {},
+        response_instance: false,
+        binding_value: binding
       )
         base_path = config.dig(:views, :path) || 'views'
 
@@ -164,9 +159,7 @@ class Rackr
             file_or_nil.call("#{base_path}/layout/_footer.html.erb")
           ].join,
           view_params,
-          config: config,
-          routes: routes,
-          db: db
+          binding_value: binding_value
         )
 
         if response_instance
@@ -231,10 +224,8 @@ class Rackr
       end
 
       # rubocop:disable Lint/UnusedMethodArgument
-      def erb(content, view_params = {}, config: nil, routes: nil, db: nil)
-        @view = OpenStruct.new(view_params)
-
-        eval(Erubi::Engine.new(content).src)
+      def erb(content, view_params = {}, binding_value: binding, &block)
+        eval(Erubi::Engine.new(content).src, binding_value)
       end
       # rubocop:enable Lint/UnusedMethodArgument
 
