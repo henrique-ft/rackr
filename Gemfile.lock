@@ -20,6 +20,7 @@ GEM
     ffi (1.17.0-x86_64-darwin)
     ffi (1.17.0-x86_64-linux-gnu)
     ffi (1.17.0-x86_64-linux-musl)
+    html_slice (0.1.0)
     json (2.9.0)
     language_server-protocol (3.17.0.3)
     listen (3.9.0)
@@ -96,6 +97,7 @@ PLATFORMS
 DEPENDENCIES
   byebug
   erubi
+  html_slice
   oj
   pry (~> 0.12.2)
   rack

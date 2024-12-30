@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 gem 'erubi'
 gem 'oj'
 gem 'rack'
+gem 'html_slice'
 
 # for small / medium projects and little memory usage
 gem 'thin'
