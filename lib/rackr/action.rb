@@ -16,10 +16,9 @@ class Rackr
           @db = config[:db]
         end
 
-        def view_response(a_path, a_view_params = {}, status: 200, headers: {})
+        def view_response(a_path, status: 200, headers: {})
           Rackr::Action.view_response(
             a_path,
-            a_view_params,
             status: status,
             headers: headers,
             config: config,
@@ -28,11 +27,10 @@ class Rackr
         end
 
         def view(
-          a_path, a_view_params = {}, status: 200, response_instance: false, headers: {}
+          a_path, status: 200, response_instance: false, headers: {}
         )
           Rackr::Action.view(
             a_path,
-            a_view_params,
             status: status,
             headers: headers,
             response_instance: response_instance,
@@ -85,8 +83,8 @@ class Rackr
       Rackr::Action.text_response(content, status: status, headers: headers)
     end
 
-    def erb(content, view_params = {})
-      Rackr::Action.erb(content, view_params)
+    def erb(content)
+      Rackr::Action.erb(content)
     end
 
     def head(status, headers: {})
@@ -112,7 +110,6 @@ class Rackr
     class << self
       def view_response(
         paths,
-        view_params = {},
         status: 200,
         config: {},
         headers: {},
@@ -120,7 +117,6 @@ class Rackr
       )
         view(
           paths,
-          view_params,
           status: status,
           config: config,
           headers: headers,
@@ -131,7 +127,6 @@ class Rackr
 
       def view(
         paths,
-        view_params = {},
         status: 200,
         config: {},
         headers: {},
@@ -158,7 +153,6 @@ class Rackr
             file_content,
             file_or_nil.call("#{base_path}/layout/_footer.html.erb")
           ].join,
-          view_params,
           binding_value: binding_value
         )
 
@@ -224,7 +218,7 @@ class Rackr
       end
 
       # rubocop:disable Lint/UnusedMethodArgument
-      def erb(content, view_params = {}, binding_value: binding, &block)
+      def erb(content, binding_value: binding, &block)
         eval(Erubi::Engine.new(content).src, binding_value)
       end
       # rubocop:enable Lint/UnusedMethodArgument

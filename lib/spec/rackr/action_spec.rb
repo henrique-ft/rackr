@@ -214,12 +214,12 @@ RSpec.describe Rackr::Action do
     end
 
     context 'erb' do
-      it 'can render view_params with success' do
+      it 'can render erb with success' do
         content = ''"
-          <%= @view.hash[:name] %>
+          <%= 'hello' %>
         "''
-        result = Rackr::Action.erb(content, { hash: { name: 'something' } })
-        expect(result).to eq("\n          something\n        ")
+        result = Rackr::Action.erb(content)
+        expect(result).to eq("\n          hello\n        ")
       end
     end
 

@@ -7,7 +7,7 @@ module Actions
       include Rackr::HTML
 
       def call(_req)
-        view 'index', { name: routes.get[:bla] }
+        view 'index'
       end
 
       def name
