@@ -151,18 +151,29 @@ RSpec.describe Rackr::Action do
         expect(::File).to have_received(:read).with('some/path/test.html.erb')
       end
 
-      it 'reads the layout in views folder' do
-        Rackr::Action.view path
+        it 'ignores the layout if not exists in views folder' do
+          result = Rackr::Action.view path
 
-        expect(::File).to have_received(:read).with('views/layout.html.erb')
-      end
+          expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.]])
+        end
 
-      it 'ignores the layout if not exists in views folder' do
-        allow(::File).to receive(:read).with('views/layout.html.erb').and_raise(Errno::ENOENT)
+      context 'with layout' do
+        before do
+          allow(::File).to receive(:read).with("views/#{path}.html.erb").and_return('some content')
+          allow(::File).to receive(:read).with("views/layout.html.erb").and_return('(( <%= yield %> ))')
+        end
 
-        result = Rackr::Action.view path
+        it 'reads the layout in views folder' do
+          Rackr::Action.view path
 
-        expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.]])
+          expect(::File).to have_received(:read).with('views/layout.html.erb')
+        end
+
+        it 'renders the content with the layout' do
+          result = Rackr::Action.view path
+
+          expect(result).to eq([200, { 'Content-Type' => 'text/html' }, ["(( some content ))"]])
+        end
       end
 
       it 'can render with different status' do
