@@ -16,18 +16,19 @@ class Rackr
           @db = config[:db]
         end
 
-        def view_response(a_path, status: 200, headers: {})
+        def view_response(a_path, status: 200, headers: {}, layout_path: 'layout')
           Rackr::Action.view_response(
             a_path,
             status: status,
             headers: headers,
             config: config,
-            context: binding
+            layout_path: layout_path,
+            binding_context: binding
           )
         end
 
         def view(
-          a_path, status: 200, response_instance: false, headers: {}
+          a_path, status: 200, response_instance: false, headers: {}, layout_path: 'layout'
         )
           Rackr::Action.view(
             a_path,
@@ -35,7 +36,8 @@ class Rackr
             headers: headers,
             response_instance: response_instance,
             config: config,
-            context: binding
+            layout_path: layout_path,
+            binding_context: binding
           )
         end
       end
@@ -83,8 +85,8 @@ class Rackr
       Rackr::Action.text_response(content, status: status, headers: headers)
     end
 
-    def erb(content, context: binding, &block)
-      Rackr::Action.erb(content, context: context, &block)
+    def erb(content, binding_context: nil, &block)
+      Rackr::Action.erb(content, binding_context: binding_context, &block)
     end
 
     def head(status, headers: {})
@@ -113,15 +115,17 @@ class Rackr
         status: 200,
         config: {},
         headers: {},
-        context: binding
+        layout_path: 'layout',
+        binding_context: binding
       )
         view(
           paths,
           status: status,
           config: config,
           headers: headers,
-          response_instance: true,
-          context: binding
+          layout_path: layout_path,
+          binding_context: binding_context,
+          response_instance: true
         )
       end
 
@@ -130,8 +134,9 @@ class Rackr
         status: 200,
         config: {},
         headers: {},
-        response_instance: false,
-        context: binding
+        layout_path: 'layout',
+        binding_context: binding,
+        response_instance: false
       )
         base_path = config.dig(:views, :path) || 'views'
 
@@ -147,24 +152,26 @@ class Rackr
                          ::File.read("#{base_path}/#{paths}.html.erb")
                        end
 
-        erb = erb(
-          [
-            file_or_nil.call("#{base_path}/layout/_header.html.erb"),
-            file_content,
-            file_or_nil.call("#{base_path}/layout/_footer.html.erb")
-          ].join,
-          context: context
-        )
+        layout_content = file_or_nil.("#{base_path}/#{layout_path}.html.erb")
+
+        parsed_erb =
+          if layout_content
+            erb(layout_content, binding_context: nil) do
+              erb(file_content, binding_context: binding_context)
+            end
+          else
+            erb(file_content, binding_context: binding_context)
+          end
 
         if response_instance
           return Rack::Response.new(
-            erb,
+            parsed_erb,
             status,
             { 'Content-Type' => 'text/html' }.merge(headers)
           )
         end
 
-        [status, { 'Content-Type' => 'text/html' }.merge(headers), [erb]]
+        [status, { 'Content-Type' => 'text/html' }.merge(headers), [parsed_erb]]
       end
 
       def html(content = '', status: 200, headers: {}, &block)
@@ -218,8 +225,8 @@ class Rackr
       end
 
       # rubocop:disable Lint/UnusedMethodArgument
-      def erb(content, context: binding, &block)
-        eval(Erubi::Engine.new(content).src, context)
+      def erb(content, binding_context: nil, &block)
+        eval(Erubi::Engine.new(content).src, binding_context)
       end
       # rubocop:enable Lint/UnusedMethodArgument
 

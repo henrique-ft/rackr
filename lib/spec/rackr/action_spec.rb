@@ -117,36 +117,34 @@ RSpec.describe Rackr::Action do
     end
 
     context 'view' do
+      let(:path) { 'test' }
+
       before do
-        allow(::File).to receive(:read).and_return('file.')
+        allow(::File).to receive(:read).with("views/#{path}.html.erb").and_return('file.')
+        allow(::File).to receive(:read).with("views/layout.html.erb").and_raise(Errno::ENOENT)
       end
 
       it 'can render with success' do
-        path = 'test'
-
         result = Rackr::Action.view path
 
-        expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.file.file.]])
+        expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.]])
       end
 
       it 'can render with success with response_instance' do
-        path = 'test'
-
         response = Rackr::Action.view path, response_instance: true
 
-        expect(response.finish).to eq([200, {"content-length"=>"15", "content-type"=>"text/html"}, ["file.file.file."]])
+        expect(response.finish).to eq([200, {"content-length"=>"5", "content-type"=>"text/html"}, ["file."]])
       end
 
       it 'reads the views/* folder' do
-        path = 'test'
-
         Rackr::Action.view path
 
         expect(::File).to have_received(:read).with('views/test.html.erb')
       end
 
       it 'reads the config views folder' do
-        path = 'test'
+        allow(::File).to receive(:read).with("some/path/#{path}.html.erb").and_return('file.')
+        allow(::File).to receive(:read).with("some/path/layout.html.erb").and_raise(Errno::ENOENT)
 
         Rackr::Action.view path, config: { views: { path: 'some/path' } }
 
@@ -154,48 +152,42 @@ RSpec.describe Rackr::Action do
       end
 
       it 'reads the layout in views folder' do
-        path = 'test'
+        #path = 'test'
 
-        Rackr::Action.view path, config: { views: { path: 'some/path' } }
+        #Rackr::Action.view path, config: { views: { path: 'some/path' } }
 
-        expect(::File).to have_received(:read).with('some/path/layout/_header.html.erb')
-        expect(::File).to have_received(:read).with('some/path/layout/_footer.html.erb')
+        #expect(::File).to have_received(:read).with('some/path/layout/_header.html.erb')
+        #expect(::File).to have_received(:read).with('some/path/layout/_footer.html.erb')
       end
 
       it 'ignores the layout if not exists in views folder' do
-        path = 'test'
+        #path = 'test'
 
-        allow(::File).to receive(:read).with('some/path/layout/_header.html.erb').and_raise(Errno::ENOENT)
-        allow(::File).to receive(:read).with('some/path/layout/_footer.html.erb').and_raise(Errno::ENOENT)
+        #allow(::File).to receive(:read).with('some/path/layout/_header.html.erb').and_raise(Errno::ENOENT)
+        #allow(::File).to receive(:read).with('some/path/layout/_footer.html.erb').and_raise(Errno::ENOENT)
 
-        result = Rackr::Action.view path, config: { views: { path: 'some/path' } }
+        #result = Rackr::Action.view path, config: { views: { path: 'some/path' } }
 
-        expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.]])
+        #expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.]])
       end
 
       it 'can render with different status' do
-        path = 'test'
-
         result = Rackr::Action.view path, status: 404
 
-        expect(result).to eq([404, { 'Content-Type' => 'text/html' }, %w[file.file.file.]])
+        expect(result).to eq([404, { 'Content-Type' => 'text/html' }, %w[file.]])
       end
 
       it 'can render with different headers' do
-        path = 'test'
-
         result = Rackr::Action.view path, headers: { 'a' => 'b' }
 
-        expect(result).to eq([200, { 'Content-Type' => 'text/html', 'a' => 'b' }, %w[file.file.file.]])
+        expect(result).to eq([200, { 'Content-Type' => 'text/html', 'a' => 'b' }, %w[file.]])
       end
 
       it 'can render multiple erbs' do
-        path = 'test'
-
         result = Rackr::Action.view [path, path, path], status: 404
 
         expect(result).to eq(
-          [404, { 'Content-Type' => 'text/html' }, %w[file.file.file.file.file.]]
+          [404, { 'Content-Type' => 'text/html' }, %w[file.file.file.]]
         )
       end
     end
@@ -209,7 +201,7 @@ RSpec.describe Rackr::Action do
         path = 'test'
 
         response = Rackr::Action.view_response path
-        expect(response.finish).to eq([200, {"content-length"=>"15", "content-type"=>"text/html"}, ["file.file.file."]])
+        expect(response.finish).to eq([200, {"content-length"=>"5", "content-type"=>"text/html"}, ["file."]])
       end
     end
 

@@ -6,18 +6,22 @@ module Actions
       include Rackr::Action
       include Rackr::HTML
 
-      def with_layout(&block)
-        base_path = config.dig(:views, :path) || 'views'
-        erb(::File.read("#{base_path}/layout.html.erb"), context: binding, &block)
-      end
-
       def call(_req)
         @name = "henrique"
 
-        html (with_layout do
-          view 'index'
-        end)
+        view 'index'
       end
+
+      #def vieww(name, layoutt: 'layout')
+        #html (with_layout layoutt  do
+          #view(name)
+        #end)
+      #end
+
+      #def with_layout(layoutt, &block)
+        #base_path = config.dig(:views, :path) || 'views'
+        #erb(::File.read("#{base_path}/#{layoutt}.html.erb"), context: binding, &block)
+      #end
     end
   end
 end
