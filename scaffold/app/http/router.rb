@@ -7,7 +7,9 @@ Router =
 
       scope :id, before: Callbacks::Foods::Assign do
         get do |req|
-          view 'foods/show', { food: req.food }
+          @food = req.food
+
+          view 'foods/show'
         end
       end
     end

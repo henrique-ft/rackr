@@ -4,7 +4,9 @@ module Actions
       include Rackr::Action
 
       def call(req)
-        view 'foods/index', { foods: Food.order(:name).all }
+        @foods = Food.order(:name).all
+
+        view 'foods/index'
       end
     end
   end
