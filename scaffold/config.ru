@@ -14,11 +14,11 @@ require_relative 'app/models/food'
 require_relative 'app/models/nutrients_table'
 require_relative 'app/models/report'
 # Callbacks
-require_relative 'app/http/callbacks/foods/assign'
+require_relative 'app/callbacks/foods/assign'
 # Actions
-require_relative 'app/http/actions/foods/index'
-# Router
-require_relative 'app/http/router'
+require_relative 'app/actions/foods/index'
+# App
+require_relative 'app/app'
 
 use Rack::Static, :urls => ["/public"]
 
@@ -28,4 +28,4 @@ use Rack::Static, :urls => ["/public"]
   #end
 #end
 
-run Router
+run App

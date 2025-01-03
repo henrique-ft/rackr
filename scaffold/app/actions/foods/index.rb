@@ -10,7 +10,7 @@ module Actions
         html do
           ul do
             @foods.each do |food|
-              li food.name
+              li food
             end
           end
         end

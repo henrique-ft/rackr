@@ -1,5 +1,5 @@
-Router =
-  Rackr.new(App::Config[:router]).call do
+App =
+  Rackr.new(App::Config).call do
     get { text('hello world') }
 
     scope 'foods' do
