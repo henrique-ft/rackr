@@ -18,7 +18,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             200,
-            { 'Content-Type' => 'text/plain' },
+            { 'content-type' => 'text/plain' },
             %w[test]
           ]
         )
@@ -29,7 +29,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             201,
-            { 'Content-Type' => 'text/plain' },
+            { 'content-type' => 'text/plain' },
             %w[test]
           ]
         )
@@ -40,7 +40,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             200,
-            {"Content-Type"=>"text/plain", "other"=>"header"},
+            {"content-type"=>"text/plain", "other"=>"header"},
             %w[test]
           ]
         )
@@ -70,7 +70,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             200,
-            { 'Content-Type' => 'text/html' },
+            { 'content-type' => 'text/html' },
             %w[test]
           ]
         )
@@ -81,7 +81,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             201,
-            { 'Content-Type' => 'text/html' },
+            { 'content-type' => 'text/html' },
             %w[test]
           ]
         )
@@ -92,7 +92,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             200,
-            {"Content-Type"=>"text/html", "other"=>"header"},
+            {"content-type"=>"text/html", "other"=>"header"},
             %w[test]
           ]
         )
@@ -127,7 +127,7 @@ RSpec.describe Rackr::Action do
       it 'can render with success' do
         result = Rackr::Action.view path
 
-        expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.]])
+        expect(result).to eq([200, { 'content-type' => 'text/html' }, %w[file.]])
       end
 
       it 'can render with success with response_instance' do
@@ -154,7 +154,7 @@ RSpec.describe Rackr::Action do
         it 'ignores the layout if not exists in views folder' do
           result = Rackr::Action.view path
 
-          expect(result).to eq([200, { 'Content-Type' => 'text/html' }, %w[file.]])
+          expect(result).to eq([200, { 'content-type' => 'text/html' }, %w[file.]])
         end
 
       context 'with layout' do
@@ -172,27 +172,27 @@ RSpec.describe Rackr::Action do
         it 'renders the content with the layout' do
           result = Rackr::Action.view path
 
-          expect(result).to eq([200, { 'Content-Type' => 'text/html' }, ["(( some content ))"]])
+          expect(result).to eq([200, { 'content-type' => 'text/html' }, ["(( some content ))"]])
         end
       end
 
       it 'can render with different status' do
         result = Rackr::Action.view path, status: 404
 
-        expect(result).to eq([404, { 'Content-Type' => 'text/html' }, %w[file.]])
+        expect(result).to eq([404, { 'content-type' => 'text/html' }, %w[file.]])
       end
 
       it 'can render with different headers' do
         result = Rackr::Action.view path, headers: { 'a' => 'b' }
 
-        expect(result).to eq([200, { 'Content-Type' => 'text/html', 'a' => 'b' }, %w[file.]])
+        expect(result).to eq([200, { 'content-type' => 'text/html', 'a' => 'b' }, %w[file.]])
       end
 
       it 'can render multiple erbs' do
         result = Rackr::Action.view [path, path, path], status: 404
 
         expect(result).to eq(
-          [404, { 'Content-Type' => 'text/html' }, %w[file.file.file.]]
+          [404, { 'content-type' => 'text/html' }, %w[file.file.file.]]
         )
       end
     end
@@ -226,7 +226,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             200,
-            { 'Content-Type' => 'application/json' },
+            { 'content-type' => 'application/json' },
             %w[{"test":"value"}]
           ]
         )
@@ -237,7 +237,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             201,
-            { 'Content-Type' => 'application/json' },
+            { 'content-type' => 'application/json' },
             %w[{"test":"value"}]
           ]
         )
@@ -248,7 +248,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             201,
-            { 'Content-Type' => 'application/json', 'a' => 'b' },
+            { 'content-type' => 'application/json', 'a' => 'b' },
             %w[{"test":"value"}]
           ]
         )
@@ -313,12 +313,12 @@ RSpec.describe Rackr::Action do
   context 'redirecting' do
     it 'can redirect' do
       result = Rackr::Action.redirect_to('/hey')
-      expect(result).to eq([302, { 'Location' => '/hey' }, []])
+      expect(result).to eq([302, { 'location' => '/hey' }, []])
     end
 
     it 'can redirect with headers' do
       result = Rackr::Action.redirect_to('/hey', headers: { 'a' => 'b' })
-      expect(result).to eq([302, { 'Location' => '/hey', 'a' => 'b' }, []])
+      expect(result).to eq([302, { 'location' => '/hey', 'a' => 'b' }, []])
     end
 
     it 'can redirect with rack response' do

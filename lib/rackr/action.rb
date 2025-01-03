@@ -167,11 +167,11 @@ class Rackr
           return Rack::Response.new(
             parsed_erb,
             status,
-            { 'Content-Type' => 'text/html' }.merge(headers)
+            { 'content-type' => 'text/html' }.merge(headers)
           )
         end
 
-        [status, { 'Content-Type' => 'text/html' }.merge(headers), [parsed_erb]]
+        [status, { 'content-type' => 'text/html' }.merge(headers), [parsed_erb]]
       end
 
       def html(content = '', status: 200, headers: {}, &block)
@@ -184,7 +184,7 @@ class Rackr
           end
         end
 
-        [status, { 'Content-Type' => 'text/html' }.merge(headers), [content]]
+        [status, { 'content-type' => 'text/html' }.merge(headers), [content]]
       end
 
       def html_response(content = '', status: 200, headers: {}, &block)
@@ -197,30 +197,30 @@ class Rackr
           end
         end
 
-        Rack::Response.new(content, status, { 'Content-Type' => 'text/html' }.merge(headers))
+        Rack::Response.new(content, status, { 'content-type' => 'text/html' }.merge(headers))
       end
 
       def json(content = {}, status: 200, headers: {})
-        [status, { 'Content-Type' => 'application/json' }.merge(headers), [Oj.dump(content, mode: :compat)]]
+        [status, { 'content-type' => 'application/json' }.merge(headers), [Oj.dump(content, mode: :compat)]]
       end
 
       def json_response(content = {}, status: 200, headers: {})
         Rack::Response.new(
           Oj.dump(content, mode: :compat),
           status,
-          { 'Content-Type' => 'application/json' }.merge(headers)
+          { 'content-type' => 'application/json' }.merge(headers)
         )
       end
 
       def text(content, status: 200, headers: {})
-        [status, { 'Content-Type' => 'text/plain' }.merge(headers), [content]]
+        [status, { 'content-type' => 'text/plain' }.merge(headers), [content]]
       end
 
       def text_response(content, status: 200, headers: {})
         Rack::Response.new(
           content,
           status,
-          { 'Content-Type' => 'text/plain' }.merge(headers)
+          { 'content-type' => 'text/plain' }.merge(headers)
         )
       end
 
@@ -234,12 +234,12 @@ class Rackr
         Rack::Response.new(
           nil,
           302,
-          { 'Location' => url }.merge(headers)
+          { 'location' => url }.merge(headers)
         )
       end
 
       def redirect_to(url, headers: {})
-        [302, { 'Location' => url }.merge(headers), []]
+        [302, { 'location' => url }.merge(headers), []]
       end
 
       def head(status, headers: {})

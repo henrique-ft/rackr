@@ -2,11 +2,18 @@ module Actions
   class Foods
     class Index
       include Rackr::Action
+      include Rackr::HTML
 
       def call(req)
         @foods = Food.order(:name).all
 
-        view 'foods/index'
+        html do
+          ul do
+            @foods.each do |food|
+              li food.name
+            end
+          end
+        end
       end
     end
   end

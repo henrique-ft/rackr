@@ -9,7 +9,9 @@ Router =
         get do |req|
           @food = req.food
 
-          view 'foods/show'
+          html do
+            h1 @food.name
+          end
         end
       end
     end
