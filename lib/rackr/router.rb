@@ -7,7 +7,7 @@ require_relative 'router/build_request'
 class Rackr
   class Router
     attr_writer :not_found
-    attr_reader :routes, :config
+    attr_reader :routes, :config, :instance_routes
 
     def initialize(config = {}, before: [], after: [])
       @instance_routes = {}
