@@ -61,7 +61,6 @@ class Rackr
             if layout_content
               erb(layout_content, binding_context: nil) do
                 # https://www.fullstackruby.dev/syntax-and-metaprogramming/2020/11/19/where-do-blocks-come-from/
-                #eval(Erubi::Engine.new(content).src, binding_context)
                 erb(file_content, binding_context: binding_context)
               end
             else
