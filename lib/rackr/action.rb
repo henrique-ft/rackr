@@ -20,15 +20,13 @@ class Rackr
           paths,
           status: 200,
           headers: {},
-          layout_path: 'layout',
-          binding_context: binding
+          layout_path: 'layout'
         )
           view(
             paths,
             status: status,
             headers: headers,
             layout_path: layout_path,
-            binding_context: binding_context,
             response_instance: true
           )
         end
@@ -38,7 +36,6 @@ class Rackr
           status: 200,
           headers: {},
           layout_path: 'layout',
-          binding_context: binding,
           response_instance: false
         )
           base_path = config.dig(:views, :path) || 'views'
@@ -59,11 +56,11 @@ class Rackr
 
           parsed_erb =
             if layout_content
-              erb(layout_content, binding_context: nil) do
-                erb(file_content, binding_context: binding_context)
+              erb(layout_content) do
+                erb(file_content, binding_context: binding)
               end
             else
-              erb(file_content, binding_context: binding_context)
+              erb(file_content, binding_context: binding)
             end
 
           if response_instance
