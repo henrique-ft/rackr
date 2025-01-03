@@ -60,7 +60,6 @@ class Rackr
           parsed_erb =
             if layout_content
               erb(layout_content, binding_context: nil) do
-                # https://www.fullstackruby.dev/syntax-and-metaprogramming/2020/11/19/where-do-blocks-come-from/
                 erb(file_content, binding_context: binding_context)
               end
             else
