@@ -7,14 +7,7 @@ module Actions
       include Rackr::HTML
 
       def call(_req)
-        @view = OpenStruct.new({name: 2})
-
-        html do
-          _ routes.inspect
-          _ config.inspect
-          _ db.class
-          _ @view.name
-        end
+        json({ name: 'something' }) # routes[:v2_hello]
       end
     end
   end

@@ -9,12 +9,6 @@ module Actions
       def call(req)
         @name = req.params[:name]
 
-        render_html
-      end
-
-      private
-
-      def render_html
         html do
           tag :p, %Q(
               welcome <b>#{@name}</b>!!!
@@ -31,6 +25,8 @@ module Actions
           a 'google link', href: 'http://www.google.com'
         end
       end
+
+      private
 
       def user_list
         users.each do |user|

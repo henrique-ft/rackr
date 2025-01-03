@@ -50,7 +50,10 @@ App =
     end
 
     get 'view' do
-      view 'index', { name: 'Henrique' }
+      @title = "Albert"
+      @name = "Einstein"
+
+      view 'index'
     end
 
     scope 'alpine' do

@@ -17,8 +17,8 @@ RSpec.describe Rackr::Router do
       router.add :trace, 'trace', double(call: 'Hey trace')
       router.add :options, 'options', double(call: 'Hey options')
       router.add :patch, 'patch', double(call: 'Hey patch')
-      router.add :get, '*', double(call: 'Hey wildcard')
       router.add :get, '/starting_with_slash', double(call: 'Hey slash')
+      router.add :get, '*', double(call: 'Hey wildcard')
 
       router
     end

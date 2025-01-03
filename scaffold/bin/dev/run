@@ -1,1 +1,0 @@
-RACK_ENV=development bundle exec rerun -- thin -p 9292 start

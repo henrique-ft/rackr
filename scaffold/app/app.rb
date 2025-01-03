@@ -1,5 +1,5 @@
-Router =
-  Rackr.new(App::Config[:router]).call do
+App =
+  Rackr.new(Config::App).call do
     get { text('hello world') }
 
     scope 'foods' do
@@ -7,7 +7,11 @@ Router =
 
       scope :id, before: Callbacks::Foods::Assign do
         get do |req|
-          view 'foods/show', { food: req.food }
+          @food = req.food
+
+          html do
+            tag :p, @food.inspect
+          end
         end
       end
     end

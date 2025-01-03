@@ -1,4 +1,8 @@
-<%= routes.inspect %>
-<%= config.inspect %>
-<%= db.class %>
-<%= @view.name %>
+<%= @name %>
+
+<%= html_slice do
+  h1 "oi"
+  tag :p, db.inspect
+  tag :p, self.inspect
+end
+%>
