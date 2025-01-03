@@ -8,6 +8,7 @@ module Actions
 
       def call(_req)
         @name = "henrique"
+        @title = "henrique"
 
         view 'index'
       end
