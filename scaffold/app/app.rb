@@ -1,5 +1,5 @@
 App =
-  Rackr.new(App::Config).call do
+  Rackr.new(Config::App).call do
     get { text('hello world') }
 
     scope 'foods' do
@@ -10,7 +10,7 @@ App =
           @food = req.food
 
           html do
-            h1 @food.name
+            tag :p, @food.inspect
           end
         end
       end
