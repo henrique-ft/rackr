@@ -43,7 +43,7 @@ run (Rackr.new.call do
   end
 end)
 ```
-As you can imagine, there are function defined for all http methods: `get`, `post`, `delete`, `put`, `trace`, `options`, `patch` and all work in the same way. The block receives a param that is just a instance of `Rack::Request` (`Rack::Request.new(env)`). But is not obrigatory if we will not use it.
+As you can imagine, there are function defined for other http methods: `get`, `post`, `delete`, `put`, `trace`, `options`, `patch` and all work in the same way. The block receives a param that is just a instance of `Rack::Request` (`Rack::Request.new(env)`). But is not obrigatory if we will not use it.
 
 This is the same Rackr application using the `html` helper:
 ```ruby
