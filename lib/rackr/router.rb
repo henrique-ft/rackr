@@ -72,7 +72,7 @@ class Rackr
     rescue Rackr::NotFound
       call_endpoint(@not_found, request_builder.call)
     rescue Exception => e
-      return @error.call(request_builder.call, e) unless @dev_mode
+      return @error.call(request_builder.call, e) if !@dev_mode || ENV['RACKR_ERROR_DEV']
 
       call_endpoint(Errors::DevHtml, env.merge({'error' => e}))
     end

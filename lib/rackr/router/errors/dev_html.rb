@@ -27,13 +27,11 @@ class Rackr
                 background-color: #191919;
                     color: white;
                         padding: 0em 2em;
-                            border: 5px solid #ffffff;
-                                border-radius: 1em;
+                            border: 5px solid #191919;
                 }
                 h1 {
                     background-color: #464646;
                         padding: 1em;
-                            border-radius: 0.2em;
                 }
               )
             end
