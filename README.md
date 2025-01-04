@@ -1,4 +1,6 @@
-# rackr ![](https://img.shields.io/badge/version-0.0.2-blue.svg)
+# rackr
+![Gem Version](https://img.shields.io/gem/v/rackr?style=social)
+
 
 A complete, simple and easy to learn web micro-framework.
 
@@ -82,7 +84,8 @@ run (Rackr.new.call do
     scope 'hello' do
       scope :name do
         get do |req|
-          html("<h1>Hello #{req.params[:name]}!</h1>") # Rackr inject request params in the Rack::Request object
+          # Rackr inject request params in the Rack::Request object
+          html("<h1>Hello #{req.params[:name]}!</h1>")
         end
       end
     end
