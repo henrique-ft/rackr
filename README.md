@@ -6,7 +6,7 @@ A complete, simple and easy to learn web micro-framework.
 
 - Rackr is designed to be what almost every one is expecting in a web micro-framework. Avoid brain gimnastics, too much magic, exotic way of doing things or hard documentations. Just ship value in a maintenable software using the language you love.
 
-- 4x faster than Sinatra 7x from Rails. If you are looking for a bunch of performance.
+- 7x faster than Sinatra and 29x from Rails. If you are looking for a bunch of performance.
 
 - Lightweight and resourceful: With just 7 well tested .rb files and almost no dependences, Rackr is a “web glue” helping we organize requests and responses the better way we can.
 
@@ -102,7 +102,7 @@ run (Rackr.new.call do
 end)
 ```
 
-If our app grows, we can create a *"rackr action"* including *Rackr::Action* module in a class and creating a `call` instance method:
+If our app grows, we can create a *"rackr action"* including `Rackr::Action` module in a class and creating a `call` instance method:
 
 ```ruby
 # config.ru
@@ -157,6 +157,12 @@ use https://github.com/baldowl/rack_csrf
 #### HTTP Cache:
 
 use https://github.com/rtomayko/rack-cache
+
+## Rackr x Sinatra x Rails
+
+![rps_3](https://github.com/user-attachments/assets/12322571-cf84-46c2-a15f-0b9dba516df7)
+![runtime_with_startup_3](https://github.com/user-attachments/assets/4867414d-6de1-47b0-9b22-f8aeb0e93100)
+![memory_3](https://github.com/user-attachments/assets/9f98f2f9-81b5-4fa3-be72-920b1aca85f6)
 
 ## Feel free to get the idea, fork, contribute and do whatever you want!
 
