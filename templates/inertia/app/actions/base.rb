@@ -5,7 +5,7 @@ module Actions
     include Rackr::Action
     include Rackr::HTML
 
-    def js_page(component, req, props = {})
+    def inertia(component, req, props = {})
       if req.has_header?('HTTP_X_INERTIA')
         json({
           component: component,
