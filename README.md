@@ -149,9 +149,13 @@ use Rack::Session::Cookie,
     :secret => ENV['MY_SECRET_KEY'] # Your secret key. 
 ```
 
-#### Auto refresh the server for development:
+#### Development: Auto refresh
 
 use https://github.com/alexch/rerun
+
+#### Development: Live reload
+
+use https://github.com/jaredmdobson/rack-livereload
 
 #### CRSF protection:
 
