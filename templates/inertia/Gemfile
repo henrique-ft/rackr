@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gem 'rackr'
+gem 'thin', '~> 1.8', '>= 1.8.2'
+gem 'sequel'
+gem 'sqlite3'
+
+group :development do
+  gem 'rerun'
+  gem 'byebug'
+  gem 'rspec'
+end
