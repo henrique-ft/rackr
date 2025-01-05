@@ -1,7 +1,7 @@
 module Actions
   class Index2 < Base
     def call(req)
-      js_page('Index2', req, props: {})
+      inertia('Index2', req)
     end
   end
 end
