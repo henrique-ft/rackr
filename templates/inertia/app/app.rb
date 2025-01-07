@@ -1,5 +1,5 @@
 App =
-  Rackr.new(AppConfig).call do
-    get IndexAction
-    get 'index2', Index2Action
+  Rackr.new(Config::App).call do
+    get Actions::Index
+    get 'index2', Actions::Index2
   end
