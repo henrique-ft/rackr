@@ -1,11 +1,11 @@
 App =
-  Rackr.new(Config::App).call do
+  Rackr.new(AppConfig).call do
     get { text('hello world') }
 
     scope 'foods' do
-      get Actions::Foods::Index
+      get Foods::IndexAction
 
-      scope :id, before: Callbacks::Foods::Assign do
+      scope :id, before: Foods::Assign do
         get do |req|
           @food = req.food
 
