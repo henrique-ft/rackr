@@ -4,7 +4,6 @@ require 'byebug' if ENV['RACK_ENV'] == 'development'
 require 'rackr'
 require 'sequel'
 require_relative 'load'
-require_relative 'app/app'
 
 use Rack::Static, :urls => ["/public"]
 
