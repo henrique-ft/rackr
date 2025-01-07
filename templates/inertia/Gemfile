@@ -6,6 +6,7 @@ gem 'rackr'
 gem 'thin', '~> 1.8', '>= 1.8.2'
 gem 'sequel'
 gem 'sqlite3'
+gem 'zeitwerk'
 
 group :development do
   gem 'rerun'
