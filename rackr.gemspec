@@ -24,4 +24,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'oj', '~> 3.15'
   s.add_runtime_dependency 'rack', '>= 2.0', '< 4.0'
   s.add_runtime_dependency 'html_slice', '>= 0.0', '< 1.0'
+  s.add_development_dependency 'dry-cli', '~> 1.1'
 end

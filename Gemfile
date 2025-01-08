@@ -6,6 +6,7 @@ gem 'erubi'
 gem 'oj'
 gem 'rack'
 gem 'html_slice'
+gem 'dry-cli'
 
 # for small / medium projects and little memory usage
 gem 'thin'
