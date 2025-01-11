@@ -1,1 +1,1 @@
-RACK_ENV=development bundle exec rerun --no-notify -- thin -p 9292 start
+RACK_ENV=development bundle exec rerun --no-notify --ignore 'public/*' --ignore 'app/assets/*' -- thin -p 9292 start
