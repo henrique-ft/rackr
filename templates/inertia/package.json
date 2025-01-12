@@ -12,11 +12,11 @@
   "license": "ISC",
   "dependencies": {
     "@inertiajs/react": "^2.0.0",
-    "esbuild": "^0.19.0",
-    "esbuild-plugin-glob-import": "^0.2.0",
-    "path": "^0.12.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.0"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
