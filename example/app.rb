@@ -49,6 +49,14 @@ App =
       end
     end
 
+    get 'error' do
+    end
+
+    get 'error2' do
+      x = y
+      view 'index'
+    end
+
     get 'view' do
       @title = "Albert"
       @name = "Einstein"

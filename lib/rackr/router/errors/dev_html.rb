@@ -9,35 +9,34 @@ class Rackr
           html do
             tag :head do
               title 'Application error'
-              tag :style, %q(
-                body {
-                    margin: 0 auto;
-                        width: 98.5%;
-                            font-size: 1.1em;
-                                background-color: #666666;
-                                    font-family: monospace;
-                                        margin-top: 1em;
-                }
-                p {
-                background-color: #000000;
-                    padding: 1em;
-                        font-size: 1.3em;
-                        }
-                div {
-                background-color: #191919;
-                    color: white;
-                        padding: 0em 2em;
-                            border: 5px solid #191919;
-                }
-                h1 {
-                    background-color: #464646;
-                        padding: 1em;
-                }
-              )
+              _ %q(<style>
+                    html * { padding:0; margin:0; }
+                    body * { padding:10px 20px; }
+                    body * * { padding:0; }
+                    body { font:small sans-serif; }
+                    body>div { border-bottom:1px solid #ddd; }
+                    h1 { font-weight:normal; }
+                    h2 { margin-bottom:.8em; }
+                    h2 span { font-size:80%; color:#666; font-weight:normal; }
+                    #summary { background: #ffc; }
+                    #summary h2 { font-weight: normal; color: #666; }
+                    pre {
+                      background: #f8f8f8;
+                      padding: 1em;
+                      margin-bottom: 1em;
+                    }
+              </style>)
             end
             tag :body do
-              div do
-                h1 env['error'].inspect
+              div id: 'summary' do
+                h1 env['error'].class.to_s
+                if env['error'].message.size > 1000
+                  h2 "#{env['error'].message.slice(0, 1000)} ..."
+                else
+                  h2 env['error'].message
+                end
+              end
+              div id: 'backtrace' do
                 backtrace(env)
               end
             end
@@ -46,8 +45,13 @@ class Rackr
 
         def backtrace(env)
           first, *tail = env['error'].backtrace
+          h2 do
+            _ 'Traceback '
+            span '(innermost first)'
+          end
 
           tag :p, first, class: "first-p"
+          br
 
           line_number = extract_line_number(first)
           match = first.match(%r{^(\/[\w\/.-]+)})
@@ -62,10 +66,9 @@ class Rackr
               "#{i+1}: #{line} \n"
             end
 
-            tag :pre, slice_around_index(lines, line_number).join("")
+            tag :pre, slice_around_index(lines, line_number).join("").chomp
           end
 
-          hr
           tag :p, tail.join("\n")
         end
 
