@@ -242,6 +242,17 @@ RSpec.describe Rackr::Action do
         )
       end
 
+      it 'can render from a string with success' do
+        result = subject.json('{"test":"value"}')
+        expect(result).to eq(
+          [
+            200,
+            { 'content-type' => 'application/json' },
+            %w[{"test":"value"}]
+          ]
+        )
+      end
+
       it 'can render json with other status' do
         result = subject.json({ test: 'value' }, status: 201)
         expect(result).to eq(

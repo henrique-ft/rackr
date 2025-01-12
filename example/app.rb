@@ -49,6 +49,14 @@ App =
       end
     end
 
+    post 'post/:foo' do |req|
+      received_json = Oj.load(req.body.read) # read the json
+      # req.params[:foo] read the route param
+      # req.params["foo"] read query params
+
+      json(received_json.merge({ post: 'ok' }))
+    end
+
     get 'error' do
     end
 

@@ -103,12 +103,14 @@ class Rackr
     end
 
     def json(content = {}, status: 200, headers: {})
-      [status, { 'content-type' => 'application/json' }.merge(headers), [Oj.dump(content, mode: :compat)]]
+      content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
+      [status, { 'content-type' => 'application/json' }.merge(headers), [content]]
     end
 
     def json_response(content = {}, status: 200, headers: {})
+      content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
       Rack::Response.new(
-        Oj.dump(content, mode: :compat),
+        content,
         status,
         { 'content-type' => 'application/json' }.merge(headers)
       )
