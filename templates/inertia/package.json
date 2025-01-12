@@ -5,7 +5,8 @@
   "main": "esbuild.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./esbuild.config.js"
+    "build": "esbuild app/js/app.jsx --bundle --minify --sourcemap --format=esm --outfile=public/js/app.js --target=esnext",
+    "build:watch": "esbuild app/js/app.jsx --bundle --minify --sourcemap --format=esm --outfile=public/js/app.js --target=esnext --watch"
   },
   "author": "",
   "license": "ISC",
