@@ -52,7 +52,7 @@ class Rackr
                            ::File.read("#{base_path}/#{paths}.html.erb")
                          end
 
-          layout_content = file_or_nil.("#{base_path}/#{layout_path}.html.erb")
+          layout_content = file_or_nil.call("#{base_path}/#{layout_path}.html.erb")
 
           parsed_erb =
             if layout_content
@@ -74,6 +74,12 @@ class Rackr
           [status, { 'content-type' => 'text/html' }.merge(headers), [parsed_erb]]
         end
       end
+    end
+
+    def load_json(val)
+      return Oj.load(val.body.read) if val.is_a?(Rack::Request)
+
+      Oj.load(val)
     end
 
     def html(content = '', status: 200, headers: {}, &block)
@@ -128,7 +134,7 @@ class Rackr
       )
     end
 
-    def erb(content, binding_context: nil, &block)
+    def erb(content, binding_context: nil)
       eval(Erubi::Engine.new(content).src, binding_context)
     end
 

@@ -13,15 +13,15 @@ class Rackr
 
       class << self
         def check_scope_name(path)
-          return if path.is_a?(String) || path.is_a?(Symbol) || path == nil
+          return if path.is_a?(String) || path.is_a?(Symbol) || path.nil?
 
           raise(InvalidBranchNameError, "Route scope name must be a `string` or a `symbol`, got: '#{path}'")
         end
 
         def check_scope_slashes(path)
-          if path.is_a?(String) && path.include?('/')
-            raise(InvalidBranchNameError, "Avoid slashes in scope name, use nested scopes instead, got: '#{path}'")
-          end
+          return unless path.is_a?(String) && path.include?('/')
+
+          raise(InvalidBranchNameError, "Avoid slashes in scope name, use nested scopes instead, got: '#{path}'")
         end
 
         def check_path(path)

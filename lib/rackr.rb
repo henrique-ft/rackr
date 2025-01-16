@@ -10,7 +10,7 @@ require_relative 'rackr/router'
 class Rackr
   class NotFound < StandardError; end
 
-  HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH]
+  HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH].freeze
 
   include Action
   include HTML
@@ -41,7 +41,7 @@ class Rackr
     @router.append_scope(
       name,
       scope_befores: before,
-      scope_afters: after,
+      scope_afters: after
     )
     instance_eval(&block)
 
