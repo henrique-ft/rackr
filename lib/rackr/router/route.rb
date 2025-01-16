@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Rackr
   class Router
     class Route

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Rackr
   class Router
     module Errors
@@ -9,7 +11,7 @@ class Rackr
           html do
             tag :head do
               title 'Application error'
-              _ %q(<style>
+              _ '<style>
                     html * { padding:0; margin:0; }
                     body * { padding:10px 20px; }
                     body * * { padding:0; }
@@ -25,7 +27,7 @@ class Rackr
                       padding: 1em;
                       margin-bottom: 1em;
                     }
-              </style>)
+              </style>'
             end
             tag :body do
               div id: 'summary' do
@@ -50,39 +52,36 @@ class Rackr
             span '(innermost first)'
           end
 
-          tag :p, first, class: "first-p"
+          tag :p, first, class: 'first-p'
           br
 
           line_number = extract_line_number(first)
-          match = first.match(%r{^(\/[\w\/.-]+)})
+          match = first.match(%r{^(/[\w/.-]+)})
           file_path = (match ? match[1] : nil)
-          if file_path != nil
+          unless file_path.nil?
             lines = []
             File.open(file_path) do |file|
               lines = file.readlines
             end
 
             lines.map!.with_index do |line, i|
-              "#{i+1}: #{line} \n"
+              "#{i + 1}: #{line} \n"
             end
 
-            tag :pre, slice_around_index(lines, line_number).join("").chomp
+            tag :pre, slice_around_index(lines, line_number).join('').chomp
           end
 
           tag :p, tail.join("\n")
         end
 
-
         def extract_line_number(input)
-          if match = input.match(/:(\d+):in/)
+          if (match = input.match(/:(\d+):in/))
             match[1].to_i
-          else
-            nil
           end
         end
 
         def slice_around_index(array, index)
-          return array if index == nil || index < 1
+          return array if index.nil? || index < 1
 
           index -= 1
           start_index = [index - 2, 0].max

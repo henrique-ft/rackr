@@ -40,11 +40,11 @@ RSpec.describe Rackr::Action do
       end
 
       it 'can render text with other headers' do
-        result = subject.text('test', headers: { 'other' => 'header'})
+        result = subject.text('test', headers: { 'other' => 'header' })
         expect(result).to eq(
           [
             200,
-            {"content-type"=>"text/plain", "other"=>"header"},
+            { 'content-type' => 'text/plain', 'other' => 'header' },
             %w[test]
           ]
         )
@@ -54,17 +54,18 @@ RSpec.describe Rackr::Action do
     context 'html_response' do
       it 'can render from string with success' do
         response = subject.text_response('test')
-        expect(response.finish).to eq([200, {"content-length"=>"4", "content-type"=>"text/plain"}, ["test"]])
+        expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']])
       end
 
       it 'can render text with other status' do
         response = subject.text_response('test', status: 201)
-        expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/plain"}, ["test"]])
+        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']])
       end
 
       it 'can render text with other headers' do
         response = subject.text_response('test', status: 201, headers: { 'other' => 'header' })
-        expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/plain", "other"=>"header"}, ["test"]])
+        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/plain', 'other' => 'header' },
+                                       ['test']])
       end
     end
 
@@ -72,10 +73,10 @@ RSpec.describe Rackr::Action do
       context 'when val is a Rack::Request' do
         let(:json_string) { '{"key":"value"}' }
         let(:rack_request) do
-          env = Rack::MockRequest::env_for(
-            "http://localhost/blog_posts",
-            :method => "POST",
-            :input => json_string
+          env = Rack::MockRequest.env_for(
+            'http://localhost/blog_posts',
+            method: 'POST',
+            input: json_string
           )
 
           Rack::Request.new(env)
@@ -139,7 +140,7 @@ RSpec.describe Rackr::Action do
         expect(result).to eq(
           [
             200,
-            {"content-type"=>"text/html", "other"=>"header"},
+            { 'content-type' => 'text/html', 'other' => 'header' },
             %w[test]
           ]
         )
@@ -149,17 +150,18 @@ RSpec.describe Rackr::Action do
     context 'html_response' do
       it 'can render from string with success' do
         response = subject.html_response('test')
-        expect(response.finish).to eq([200, {"content-length"=>"4", "content-type"=>"text/html"}, ["test"]])
+        expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/html' }, ['test']])
       end
 
       it 'can render html with other status' do
         response = subject.html_response('test', status: 201)
-        expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/html"}, ["test"]])
+        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html' }, ['test']])
       end
 
       it 'can render text with other headers' do
         response = subject.html_response('test', status: 201, headers: { 'other' => 'header' })
-        expect(response.finish).to eq([201, {"content-length"=>"4", "content-type"=>"text/html", "other"=>"header"}, ["test"]])
+        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html', 'other' => 'header' },
+                                       ['test']])
       end
     end
 
@@ -168,7 +170,7 @@ RSpec.describe Rackr::Action do
 
       before do
         allow(::File).to receive(:read).with("views/#{path}.html.erb").and_return('file.')
-        allow(::File).to receive(:read).with("views/layout.html.erb").and_raise(Errno::ENOENT)
+        allow(::File).to receive(:read).with('views/layout.html.erb').and_raise(Errno::ENOENT)
       end
 
       it 'can render with success' do
@@ -180,7 +182,7 @@ RSpec.describe Rackr::Action do
       it 'can render with success with response_instance' do
         response = subject.view path, response_instance: true
 
-        expect(response.finish).to eq([200, {"content-length"=>"5", "content-type"=>"text/html"}, ["file."]])
+        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
       end
 
       it 'reads the views/* folder' do
@@ -196,7 +198,7 @@ RSpec.describe Rackr::Action do
 
         it do
           allow(::File).to receive(:read).with("some/path/#{path}.html.erb").and_return('file.')
-          allow(::File).to receive(:read).with("some/path/layout.html.erb").and_raise(Errno::ENOENT)
+          allow(::File).to receive(:read).with('some/path/layout.html.erb').and_raise(Errno::ENOENT)
 
           subject.view path
 
@@ -204,16 +206,16 @@ RSpec.describe Rackr::Action do
         end
       end
 
-        it 'ignores the layout if not exists in views folder' do
-          result = subject.view path
+      it 'ignores the layout if not exists in views folder' do
+        result = subject.view path
 
-          expect(result).to eq([200, { 'content-type' => 'text/html' }, %w[file.]])
-        end
+        expect(result).to eq([200, { 'content-type' => 'text/html' }, %w[file.]])
+      end
 
       context 'with layout' do
         before do
           allow(::File).to receive(:read).with("views/#{path}.html.erb").and_return('some content')
-          allow(::File).to receive(:read).with("views/layout.html.erb").and_return('(( <%= yield %> ))')
+          allow(::File).to receive(:read).with('views/layout.html.erb').and_return('(( <%= yield %> ))')
         end
 
         it 'reads the layout in views folder' do
@@ -225,7 +227,7 @@ RSpec.describe Rackr::Action do
         it 'renders the content with the layout' do
           result = subject.view path
 
-          expect(result).to eq([200, { 'content-type' => 'text/html' }, ["(( some content ))"]])
+          expect(result).to eq([200, { 'content-type' => 'text/html' }, ['(( some content ))']])
         end
       end
 
@@ -259,15 +261,15 @@ RSpec.describe Rackr::Action do
         path = 'test'
 
         response = subject.view_response path
-        expect(response.finish).to eq([200, {"content-length"=>"5", "content-type"=>"text/html"}, ["file."]])
+        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
       end
     end
 
     context 'erb' do
       it 'can render erb with success' do
-        content = ''"
+        content = "
           <%= 'hello' %>
-        "''
+        "
         result = subject.erb(content)
         expect(result).to eq("\n          hello\n        ")
       end
@@ -322,17 +324,20 @@ RSpec.describe Rackr::Action do
     context 'json_response' do
       it 'can render from hash with success' do
         response = subject.json_response({ test: 'value' })
-        expect(response.finish).to eq([200, {"content-length"=>"16", "content-type"=>"application/json"}, ["{\"test\":\"value\"}"]])
+        expect(response.finish).to eq([200, { 'content-length' => '16', 'content-type' => 'application/json' },
+                                       ['{"test":"value"}']])
       end
 
       it 'can render json with other status' do
         response = subject.json_response({ test: 'value' }, status: 201)
-        expect(response.finish).to eq([201, {"content-length"=>"16", "content-type"=>"application/json"}, ["{\"test\":\"value\"}"]])
+        expect(response.finish).to eq([201, { 'content-length' => '16', 'content-type' => 'application/json' },
+                                       ['{"test":"value"}']])
       end
 
       it 'can render text with other headers' do
         response = subject.json_response({ test: 'value' }, headers: { 'a' => 'b' })
-        expect(response.finish).to eq([200, {"content-length"=>"16", "content-type"=>"application/json", 'a' => 'b' }, ["{\"test\":\"value\"}"]])
+        expect(response.finish).to eq([200, { 'content-length' => '16', 'content-type' => 'application/json', 'a' => 'b' },
+                                       ['{"test":"value"}']])
       end
     end
   end
@@ -355,8 +360,8 @@ RSpec.describe Rackr::Action do
     end
 
     it 'can receive headers as named params' do
-      result = subject.head(404, headers: {'some' => 'header'})
-      expect(result).to eq([404, {'some' => 'header'}, []])
+      result = subject.head(404, headers: { 'some' => 'header' })
+      expect(result).to eq([404, { 'some' => 'header' }, []])
     end
   end
 
@@ -368,9 +373,9 @@ RSpec.describe Rackr::Action do
     end
 
     it 'can receive headers as named params' do
-      response = subject.head_response(404, headers: {'some' => 'header'})
+      response = subject.head_response(404, headers: { 'some' => 'header' })
       expect(response).to be_a(Rack::Response)
-      expect(response.headers).to eq({'some' => 'header'})
+      expect(response.headers).to eq({ 'some' => 'header' })
     end
   end
 

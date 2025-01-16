@@ -37,7 +37,7 @@ class Rackr
     def call(env)
       @splitted_request_path_info = env['PATH_INFO'].split('/')
       @current_request_path_info =
-        (env['PATH_INFO'] == '/') ? env['PATH_INFO'] : env['PATH_INFO'].sub(/\/\z/, '') # remove trailing "/"
+        env['PATH_INFO'] == '/' ? env['PATH_INFO'] : env['PATH_INFO'].sub(%r{/\z}, '') # remove trailing "/"
 
       request_builder = BuildRequest.new(env, @splitted_request_path_info)
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
@@ -74,7 +74,7 @@ class Rackr
     rescue Exception => e
       return @error.call(request_builder.call, e) if !@dev_mode || ENV['RACKR_ERROR_DEV']
 
-      call_endpoint(Errors::DevHtml, env.merge({'error' => e}))
+      call_endpoint(Errors::DevHtml, env.merge({ 'error' => e }))
     end
 
     def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])
@@ -86,8 +86,8 @@ class Rackr
 
       method = :get if method == :head
 
-      wildcard = (path == '*') ? true : false
-      path = path.sub(/\A\//, '')
+      wildcard = path == '*'
+      path = path.sub(%r{\A/}, '')
       path_with_scopes = "/#{not_empty_scopes.join('/')}#{put_path_slash(path)}"
       add_named_route(method, path_with_scopes, as)
 
@@ -165,8 +165,8 @@ class Rackr
       return @routes.send(method.downcase)[:root] = path_with_scopes if path_with_scopes == '/'
       return @routes.send(method.downcase)[as] = path_with_scopes unless as.nil?
 
-      key = path_with_scopes.sub("/","").gsub(":","").gsub("/","_")
-      @routes.send(method.downcase)["#{key}".to_sym] = path_with_scopes
+      key = path_with_scopes.sub('/', '').gsub(':', '').gsub('/', '_')
+      @routes.send(method.downcase)[key.to_s.to_sym] = path_with_scopes
     end
 
     def push_to_scope(method, route_instance)
@@ -186,6 +186,7 @@ class Rackr
     def put_path_slash(path)
       if not_empty_scopes != []
         return '' if ['/', ''].include?(path)
+
         return "/#{path}"
       end
 
@@ -208,7 +209,7 @@ class Rackr
 
       segment, *tail = last_tail
 
-      instance_routes.each do |scope, _v|
+      instance_routes.each_key do |scope|
         next if scope == :__instances
 
         if segment == scope || scope.start_with?(':')
@@ -221,7 +222,7 @@ class Rackr
         return @instance_routes[env['REQUEST_METHOD']].dig(
           *(found_scopes << :__instances)
         )
-          &.detect { |route_instance| route_instance.match?(@current_request_path_info) }
+                                                      &.detect { |route_instance| route_instance.match?(@current_request_path_info) }
       end
 
       match_route(env, tail, found_scopes)

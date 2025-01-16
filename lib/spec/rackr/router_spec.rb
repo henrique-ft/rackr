@@ -157,9 +157,9 @@ RSpec.describe Rackr::Router do
       router = Rackr::Router.new
 
       router.add_not_found proc { [404, {}, ['Custom not found']] }
-      router.add :get, 'raise', ->(_env) do
+      router.add :get, 'raise', lambda { |_env|
         raise Rackr::NotFound
-      end
+      }
 
       request =
         {
@@ -348,7 +348,7 @@ RSpec.describe Rackr::Router do
     context 'after:' do
       it 'can receive scopes afters' do
         router = Rackr::Router.new
-        scope_after = -> (res) do
+        scope_after = lambda do |res|
           expect(res).to eq('success')
         end
 
@@ -366,7 +366,7 @@ RSpec.describe Rackr::Router do
 
       it 'can append more than 1 scopes after' do
         afters_called = 0
-        after_action = lambda do |res|
+        after_action = lambda do |_res|
           afters_called += 1
         end
 
@@ -389,7 +389,7 @@ RSpec.describe Rackr::Router do
       context 'empty scopes' do
         it 'can receive scopes afters' do
           router = Rackr::Router.new
-          scope_after = -> (res) do
+          scope_after = lambda do |res|
             expect(res).to eq('success')
           end
 
@@ -407,7 +407,7 @@ RSpec.describe Rackr::Router do
 
         it 'can append more than 1 scopes after' do
           afters_called = 0
-          after_action = lambda do |res|
+          after_action = lambda do |_res|
             afters_called += 1
           end
 
