@@ -68,6 +68,49 @@ RSpec.describe Rackr::Action do
       end
     end
 
+    context 'load_json' do
+      context 'when val is a Rack::Request' do
+        let(:json_string) { '{"key":"value"}' }
+        let(:rack_request) do
+          env = Rack::MockRequest::env_for(
+            "http://localhost/blog_posts",
+            :method => "POST",
+            :input => json_string
+          )
+
+          Rack::Request.new(env)
+        end
+
+        it 'parses the JSON from the request body' do
+          expect(subject.load_json(rack_request)).to eq({ 'key' => 'value' })
+        end
+      end
+
+      context 'when val is a JSON string' do
+        let(:json_string) { '{"key":"value"}' }
+
+        it 'parses the JSON string' do
+          expect(subject.load_json(json_string)).to eq({ 'key' => 'value' })
+        end
+      end
+
+      context 'when val is not valid JSON' do
+        let(:invalid_json) { 'not a json string' }
+
+        it 'raises an Oj::ParseError' do
+          expect { subject.load_json(invalid_json) }.to raise_error(Oj::ParseError)
+        end
+      end
+
+      context 'when val is not a Rack::Request or JSON string' do
+        let(:invalid_input) { 123 }
+
+        it 'raises an Oj::ParseError' do
+          expect { subject.load_json(invalid_input) }.to raise_error(ArgumentError)
+        end
+      end
+    end
+
     context 'html' do
       it 'can render from string with success' do
         result = subject.html('test')

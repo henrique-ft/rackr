@@ -51,6 +51,10 @@ App =
 
     post 'post/:foo' do |req|
       received_json = Oj.load(req.body.read) # read the json
+
+      test = load_json(req)
+      test = load_json('{"oi": "something"}')
+
       # req.params[:foo] read the route param
       # req.params["foo"] read query params
 

@@ -76,6 +76,12 @@ class Rackr
       end
     end
 
+    def load_json(val)
+      return Oj.load(val.body.read) if val.is_a?(Rack::Request)
+
+      Oj.load(val)
+    end
+
     def html(content = '', status: 200, headers: {}, &block)
       if content == '' && block_given? && respond_to?(:html_slice)
         if respond_to?(:layout)
