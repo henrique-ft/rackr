@@ -22,16 +22,9 @@ RSpec.describe Rackr::Router::BuildRequest do
         Rackr::Router::Route
         .new '/test/:param1/test/:param2', double(call: 'Hey test')
 
-      allow(Rack::Request)
-        .to(
-          receive(:new)
-          .and_return(rack_request)
-        )
+      request = described_class.new({}, rack_request.path.split('/')).call(route)
 
-      expect(rack_request).to receive(:update_param).with(:param1, 1)
-      expect(rack_request).to receive(:update_param).with(:param2, 2)
-
-      described_class.new({}, rack_request.path.split('/')).call(route)
+      expect(request.params).to eq({:param1=>1, :param2=>2})
     end
   end
 end
