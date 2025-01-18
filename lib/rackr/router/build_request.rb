@@ -11,38 +11,22 @@ class Rackr
       def call(route = nil)
         request = Rack::Request.new(@env)
 
-        return request if route.nil?
-        return request unless route.has_params
+        return request if route.nil? || !route.has_params
 
-        update_request_params(request, route)
-      end
-
-      private
-
-      def update_request_params(request, route)
         i = 0
-
         while i < route.splitted_path.size
           route_word = route.splitted_path[i]
           if route_word.start_with?(':')
             param = @spplited_request_path[i]
-            param = param.to_i if is_a_integer_string?(param)
+            param = param.to_i if param =~ /\A[-+]?[0-9]*\.?[0-9]+\Z/
 
-            update_request_param(request, route_word, param)
+            request.update_param(route_word[1..].to_sym, param)
           end
 
           i += 1
         end
 
         request
-      end
-
-      def is_a_integer_string?(string)
-        string =~ /\A[-+]?[0-9]*\.?[0-9]+\Z/
-      end
-
-      def update_request_param(request, word, param)
-        request.update_param(word.sub(':', '').to_sym, param)
       end
     end
   end

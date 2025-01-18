@@ -35,14 +35,16 @@ class Rackr
     end
 
     def call(env)
-      @splitted_request_path_info = env['PATH_INFO'].split('/')
+      path_info = env['PATH_INFO']
+
+      @splitted_request_path_info = path_info.split('/')
       @current_request_path_info =
-        env['PATH_INFO'] == '/' ? env['PATH_INFO'] : env['PATH_INFO'].sub(%r{/\z}, '') # remove trailing "/"
+        path_info == '/' ? path_info : path_info.chomp('/') # remove trailing "/"
 
       request_builder = BuildRequest.new(env, @splitted_request_path_info)
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
-      route_instance = match_route(env)
+      route_instance = match_route(env['REQUEST_METHOD'])
       return call_endpoint(@not_found, request_builder.call) if route_instance.nil?
 
       rack_request = request_builder.call(route_instance)
@@ -147,7 +149,7 @@ class Rackr
     def call_endpoint(endpoint, content)
       return endpoint.call(content) if endpoint.respond_to?(:call)
 
-      if endpoint.include?(Rackr::Action) || endpoint.include?(Rackr::Callback)
+      if endpoint < Rackr::Action || endpoint < Rackr::Callback
         return endpoint.new(routes: @routes, config: @config).call(content)
       end
 
@@ -197,35 +199,35 @@ class Rackr
       @scopes.reject { |v| (v == '') }
     end
 
-    def match_route(env, last_tail = nil, found_scopes = [])
+    def match_route(request_method, last_tail = nil, found_scopes = [])
       instance_routes =
         if last_tail.nil?
           last_tail = @splitted_request_path_info.drop(1)
 
-          @instance_routes[env['REQUEST_METHOD']]
+          @instance_routes[request_method]
         else
-          @instance_routes[env['REQUEST_METHOD']].dig(*found_scopes)
+          @instance_routes[request_method].dig(*found_scopes)
         end
 
-      segment, *tail = last_tail
+      segment = last_tail[0]
+      tail = last_tail[1..]
 
       instance_routes.each_key do |scope|
         next if scope == :__instances
 
         if segment == scope || scope.start_with?(':')
-          found_scopes.push(scope)
+          found_scopes << scope
           break
         end
       end
 
-      if tail.empty? || found_scopes == []
-        return @instance_routes[env['REQUEST_METHOD']].dig(
+      if tail.nil? || found_scopes == []
+        return @instance_routes[request_method].dig(
           *(found_scopes << :__instances)
-        )
-                                                      &.detect { |route_instance| route_instance.match?(@current_request_path_info) }
+        )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
       end
 
-      match_route(env, tail, found_scopes)
+      match_route(request_method, tail, found_scopes)
     end
   end
 end
