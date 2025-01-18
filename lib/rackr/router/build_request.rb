@@ -20,7 +20,7 @@ class Rackr
             param = @spplited_request_path[i]
             param = param.to_i if param =~ /\A[-+]?[0-9]*\.?[0-9]+\Z/
 
-            request.update_param(route_word[1..].to_sym, param)
+            request.params[route_word[1..].to_sym] = param
           end
 
           i += 1

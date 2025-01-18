@@ -1,5 +1,5 @@
 # frozen-string-literal: true
-require_relative '../../lib/rackr'
+require_relative '../../../lib/rackr'
 App = Rackr.new.call do
       get 'a/:a' do |req|
         html("4797-#{req.params[:a]}")

@@ -1,5 +1,5 @@
 # frozen-string-literal: true
-require_relative '../../lib/rackr'
+require_relative '../../../lib/rackr'
 App = Rackr.new.call do
   scope 'a' do
     scope ':a' do
