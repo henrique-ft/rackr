@@ -12,7 +12,7 @@ RSpec.describe Rackr::Router::BuildRequest do
   context 'given a route with params' do
     let(:rack_request) do
       double(
-        path: '/test/1/test/2',
+        path: '/test/01/test/02',
         update_param: true
       )
     end
@@ -24,7 +24,7 @@ RSpec.describe Rackr::Router::BuildRequest do
 
       request = described_class.new({}, rack_request.path.split('/')).call(route)
 
-      expect(request.params).to eq({:param1=>1, :param2=>2})
+      expect(request.params).to eq({:param1=>"01", :param2=>"02"})
     end
   end
 end
