@@ -2,10 +2,6 @@ App =
   Rackr.new(Config::App).call do
     get { text('hello world') }
 
-    get '/a/:a/a/:b/a/:c' do |req|
-      html("479747974797-#{req.params[:a]}-#{req.params[:b]}-#{req.params[:c]}")
-    end
-
     scope 'foods' do
       get Actions::Foods::Index
 
