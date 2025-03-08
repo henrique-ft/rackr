@@ -5,14 +5,18 @@ App =
     scope 'foods' do
       get Actions::Foods::Index
 
-      scope :id, before: Callbacks::Foods::Assign do
-        get do |req|
-          @food = req.food
+      get 'new', Actions::Foods::Index
+      post Actions::Foods::Create
 
-          html do
-            tag :p, @food.inspect
-          end
-        end
+      scope :id, before: Callbacks::Foods::Assign do
+        get Actions::Foods::Show
+        get 'edit', Actions::Foods::Edit
+        put Actions::Foods::Update
+        delete Actions::Foods::Delete
       end
+    end
+
+    not_found do
+      text('not found')
     end
   end

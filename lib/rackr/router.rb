@@ -89,7 +89,7 @@ class Rackr
       method = :get if method == :head
 
       wildcard = path == '*'
-      path = path.sub(%r{\A/}, '')
+      path = path.is_a?(Symbol) ? path.inspect : path.sub(%r{\A/}, '')
       path_with_scopes = "/#{not_empty_scopes.join('/')}#{put_path_slash(path)}"
       add_named_route(method, path_with_scopes, as)
 
@@ -211,15 +211,26 @@ class Rackr
 
       segment = last_tail[0]
       tail = last_tail[1..]
+      found_route = nil
 
       instance_routes.each_key do |scope|
         next if scope == :__instances
 
-        if segment == scope || scope.start_with?(':')
+        if segment == scope
+          found_scopes << scope
+          break
+        elsif scope.start_with?(':')
+          found_route = @instance_routes[request_method].dig(
+            *(found_scopes + [:__instances])
+          )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
+
+          return found_route if found_route
+
           found_scopes << scope
           break
         end
       end
+
 
       if tail.nil? || found_scopes == []
         return @instance_routes[request_method].dig(
