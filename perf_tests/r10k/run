@@ -1,1 +1,1 @@
-rake bench graphs R10K_APPS="rackr sinatra rails hanami-api" LEVELS="3"
+rake bench graphs R10K_APPS="rackr hanami-api" LEVELS="3"

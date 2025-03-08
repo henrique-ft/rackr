@@ -72,7 +72,7 @@ if ENV['CHECK']
       unless res[0] == 200
         raise "route did not return 200 status for path: #{e['PATH_INFO']}, status: #{res[0]}"
       end
-      unless res[1]['Content-Type'] =~ /text\/html/
+      unless res[1]['Content-Type'] =~ /text\/html/ || res[1]['content-type'] =~ /text\/html/
         raise "route did not use text/html content type for path: #{e['PATH_INFO']}, Content-Type: #{res[1]['Content-Type']}"
       end
       unless res[1]['Content-Length'] == expected.length.to_s

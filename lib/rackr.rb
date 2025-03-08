@@ -68,6 +68,12 @@ class Rackr
     define_method(http_method.downcase.to_sym) do |*params, before: [], after: [], as: nil, &block|
       path = params[0] || ''
       endpoint = params[1] || ''
+      scopes = []
+      if path.is_a?(String) && path.include?("/")
+        scopes = path.split("/")[0...-1]
+        path = path.split("/").pop
+      end
+      scopes.each { |scope_name| @router.append_scope(scope_name) }
 
       if block.respond_to?(:call)
         @router.add(
@@ -93,6 +99,8 @@ class Rackr
           route_afters: after
         )
       end
+
+      scopes.length.times { @router.clear_last_scope }
     end
   end
 end
