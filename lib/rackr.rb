@@ -64,6 +64,44 @@ class Rackr
     end
   end
 
+  def resources(name, id:)
+    const_name = name.to_s.capitalize
+    id = id || :id
+
+    scope 'foods' do
+      if Object.const_defined?("Actions::#{const_name}::Index")
+        get Object.const_get("Actions::#{const_name}::Index")
+      end
+      if Object.const_defined?("Actions::#{const_name}::New")
+        get 'new', Object.const_get("Actions::#{const_name}::New")
+      end
+      if Object.const_defined?("Actions::#{const_name}::Index")
+        post Object.const_get("Actions::#{const_name}::Index")
+      end
+
+      resource_actions = proc do
+        if Object.const_defined?("Actions::#{const_name}::Show")
+          get Object.const_get("Actions::#{const_name}::Show")
+        end
+        if Object.const_defined?("Actions::#{const_name}::Edit")
+          get 'edit', Object.const_get("Actions::#{const_name}::Edit")
+        end
+        if Object.const_defined?("Actions::#{const_name}::Update")
+          put Object.const_get("Actions::#{const_name}::Update")
+        end
+        if Object.const_defined?("Actions::#{const_name}::Delete")
+          delete Object.const_get("Actions::#{const_name}::Delete")
+        end
+      end
+
+      if Object.const_defined?("Callbacks::#{const_name}::Assign")
+        scope(id.to_sym, before: Object.const_get("Callbacks::#{const_name}::Assign"), &resource_actions)
+      else
+        scope(id.to_sym, &resource_actions)
+      end
+    end
+  end
+
   HTTP_METHODS.each do |http_method|
     define_method(http_method.downcase.to_sym) do |*params, before: [], after: [], as: nil, &block|
       path = params[0] || ''
