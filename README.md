@@ -167,6 +167,8 @@ use https://github.com/rtomayko/rack-cache
 
 ## Benchmarks (r10k)
 
+Running in Ruby 3.3.0
+
 ![rps_3](https://github.com/user-attachments/assets/773ce116-ccea-45f9-9503-176804cb997e)
 
 ## Feel free to get the idea, fork, contribute and do whatever you want!
