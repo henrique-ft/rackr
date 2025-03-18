@@ -6,7 +6,7 @@ A complete, simple and easy web micro-framework.
 
 ## Why??
 
-- Rackr is designed to be what almost every one is expecting in a web micro-framework. Avoid brain gimnastics, too much magic, exotic way of doing things or hard documentations. Just ship value in a maintenable software using the language you love.
+- Rackr is designed to be what almost every one is expecting in a web micro-framework. Avoid brain gimnastics, too much magic or hard documentations. Just ship value using the language you love in a easy to learn framework.
 
 - 7x faster than Sinatra, 29x from Rails and on pair with hanami-api. If you are looking for a bunch of performance.
 
