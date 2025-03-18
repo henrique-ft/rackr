@@ -64,25 +64,18 @@ class Rackr
     end
   end
 
+  # Beta
   def resources(name, id:)
     const_name = name.to_s.capitalize
-    id = id || :id
+    id ||= :id
 
-    scope 'foods' do
-      if Object.const_defined?("Actions::#{const_name}::Index")
-        get Object.const_get("Actions::#{const_name}::Index")
-      end
-      if Object.const_defined?("Actions::#{const_name}::New")
-        get 'new', Object.const_get("Actions::#{const_name}::New")
-      end
-      if Object.const_defined?("Actions::#{const_name}::Index")
-        post Object.const_get("Actions::#{const_name}::Index")
-      end
+    scope name do
+      get Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
+      get 'new', Object.const_get("Actions::#{const_name}::New") if Object.const_defined?("Actions::#{const_name}::New")
+      post Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
 
       resource_actions = proc do
-        if Object.const_defined?("Actions::#{const_name}::Show")
-          get Object.const_get("Actions::#{const_name}::Show")
-        end
+        get Object.const_get("Actions::#{const_name}::Show") if Object.const_defined?("Actions::#{const_name}::Show")
         if Object.const_defined?("Actions::#{const_name}::Edit")
           get 'edit', Object.const_get("Actions::#{const_name}::Edit")
         end
@@ -107,9 +100,9 @@ class Rackr
       path = params[0] || ''
       endpoint = params[1] || ''
       scopes = []
-      if path.is_a?(String) && path.include?("/")
-        scopes = path.split("/")[0...-1]
-        path = path.split("/").pop
+      if path.is_a?(String) && path.include?('/')
+        scopes = path.split('/')[0...-1]
+        path = path.split('/').pop
       end
       scopes.each { |scope_name| @router.append_scope(scope_name) }
 
