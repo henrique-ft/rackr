@@ -64,10 +64,47 @@ class Rackr
     end
   end
 
+  # Beta
+  def resources(name, id:)
+    const_name = name.to_s.capitalize
+    id ||= :id
+
+    scope name do
+      get Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
+      get 'new', Object.const_get("Actions::#{const_name}::New") if Object.const_defined?("Actions::#{const_name}::New")
+      post Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
+
+      resource_actions = proc do
+        get Object.const_get("Actions::#{const_name}::Show") if Object.const_defined?("Actions::#{const_name}::Show")
+        if Object.const_defined?("Actions::#{const_name}::Edit")
+          get 'edit', Object.const_get("Actions::#{const_name}::Edit")
+        end
+        if Object.const_defined?("Actions::#{const_name}::Update")
+          put Object.const_get("Actions::#{const_name}::Update")
+        end
+        if Object.const_defined?("Actions::#{const_name}::Delete")
+          delete Object.const_get("Actions::#{const_name}::Delete")
+        end
+      end
+
+      if Object.const_defined?("Callbacks::#{const_name}::Assign")
+        scope(id.to_sym, before: Object.const_get("Callbacks::#{const_name}::Assign"), &resource_actions)
+      else
+        scope(id.to_sym, &resource_actions)
+      end
+    end
+  end
+
   HTTP_METHODS.each do |http_method|
     define_method(http_method.downcase.to_sym) do |*params, before: [], after: [], as: nil, &block|
       path = params[0] || ''
       endpoint = params[1] || ''
+      scopes = []
+      if path.is_a?(String) && path.include?('/')
+        scopes = path.split('/')[0...-1]
+        path = path.split('/').pop
+      end
+      scopes.each { |scope_name| @router.append_scope(scope_name) }
 
       if block.respond_to?(:call)
         @router.add(
@@ -93,6 +130,8 @@ class Rackr
           route_afters: after
         )
       end
+
+      scopes.length.times { @router.clear_last_scope }
     end
   end
 end

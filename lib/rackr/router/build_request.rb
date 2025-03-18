@@ -18,7 +18,6 @@ class Rackr
           route_word = route.splitted_path[i]
           if route_word.start_with?(':')
             param = @spplited_request_path[i]
-            param = param.to_i if param =~ /\A[-+]?[0-9]*\.?[0-9]+\Z/
 
             request.params[route_word[1..].to_sym] = param
           end

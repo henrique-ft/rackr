@@ -89,7 +89,7 @@ class Rackr
       method = :get if method == :head
 
       wildcard = path == '*'
-      path = path.sub(%r{\A/}, '')
+      path = path.is_a?(Symbol) ? path.inspect : path.sub(%r{\A/}, '')
       path_with_scopes = "/#{not_empty_scopes.join('/')}#{put_path_slash(path)}"
       add_named_route(method, path_with_scopes, as)
 
@@ -199,35 +199,40 @@ class Rackr
       @scopes.reject { |v| (v == '') }
     end
 
-    def match_route(request_method, last_tail = nil, found_scopes = [])
-      instance_routes =
-        if last_tail.nil?
-          last_tail = @splitted_request_path_info.drop(1)
+    def match_route(request_method)
+      last_tail = @splitted_request_path_info.drop(1)
+      found_scopes = []
 
-          @instance_routes[request_method]
-        else
-          @instance_routes[request_method].dig(*found_scopes)
-        end
+      instance_routes = @instance_routes[request_method]
 
-      segment = last_tail[0]
-      tail = last_tail[1..]
+      while last_tail && !last_tail.empty?
+        segment = last_tail.shift
+        found_route = nil
 
-      instance_routes.each_key do |scope|
-        next if scope == :__instances
+        instance_routes.each_key do |scope|
+          next if scope == :__instances
 
-        if segment == scope || scope.start_with?(':')
-          found_scopes << scope
-          break
+          if segment == scope
+            found_scopes << scope
+            instance_routes = @instance_routes[request_method].dig(*found_scopes)
+            break
+          elsif scope.start_with?(':')
+            found_route = @instance_routes[request_method].dig(
+              *(found_scopes + [:__instances])
+            )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
+
+            return found_route if found_route
+
+            found_scopes << scope
+            instance_routes = @instance_routes[request_method].dig(*found_scopes)
+            break
+          end
         end
       end
 
-      if tail.nil? || found_scopes == []
-        return @instance_routes[request_method].dig(
-          *(found_scopes << :__instances)
-        )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
-      end
-
-      match_route(request_method, tail, found_scopes)
+      @instance_routes[request_method].dig(
+        *(found_scopes + [:__instances])
+      )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
     end
   end
 end

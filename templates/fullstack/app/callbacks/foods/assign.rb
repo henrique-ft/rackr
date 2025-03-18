@@ -4,7 +4,7 @@ module Callbacks
       include Rackr::Callback
 
       def call(req)
-        assign(req, { food: Food.find(id: req.params[:id]) })
+        assign(req, { food: Food.find(id: req.params[:food_id].to_i) })
       end
     end
   end
