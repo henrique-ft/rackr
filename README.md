@@ -2,7 +2,7 @@
 ![Gem Version](https://img.shields.io/gem/v/rackr?style=social)
 
 
-A complete, simple and easy web micro-framework.
+A scalable web micro-framework
 
 ## Why??
 
