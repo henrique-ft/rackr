@@ -6,15 +6,17 @@ A complete, simple and easy web micro-framework.
 
 ## Why??
 
-- Rackr is designed to be what almost every one is expecting in a web micro-framework. Avoid brain gimnastics, too much magic or hard documentations. Just ship value using the language you love in a easy to learn framework.
+- Rackr is designed to be what almost every one is expecting in a web micro-framework. Avoid brain gimnastics, too much magic or hard documentations. Just ship value using the language you love in a easy to learn and scalable framework.
 
-- 7x faster than Sinatra, 29x from Rails and on pair with hanami-api. If you are looking for a bunch of performance.
+- Faster than Hanami-Api, 7x faster than Sinatra, 29x from Rails. If you are looking for a bunch of performance.
 
-- Lightweight and resourceful: With just 7 well tested .rb files and almost no dependences, Rackr is a “web glue” helping we organize requests and responses the better way we can.
+- Lightweight and resourceful: Named routes, "before" and "after" callback filters and view rendering (with layout) are some of the features included in a framework that is just 7 well tested .rb files and almost no dependences. 
 
-- Rack first. Explicity receive Rack::Request objects and return Rack::Responses 
+- Input / Output and functional mindset: Explicity receive Rack::Request objects and return Rack::Responses 
 
-- Good documentation is one of the most important things here (in progress).
+- Good documentation is one of the most important things here (in progress)
+
+- Adaptable without missing code quality: Use Rackr from serverless functions to entire MVC applications. Plug your favorite gems.
 
 ## Installation:
 
