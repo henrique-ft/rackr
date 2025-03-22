@@ -1,7 +1,7 @@
 require 'byebug' if ENV['RACK_ENV'] == 'development'
 
-#require_relative '../../lib/rackr'
-require 'rackr'
+require_relative '../../lib/rackr'
+#require 'rackr'
 require 'sequel'
 require_relative 'load'
 

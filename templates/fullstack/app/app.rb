@@ -2,17 +2,10 @@ App =
   Rackr.new(Config::App).call do
     get { text('hello world') }
 
-    scope 'foods' do
-      get Actions::Foods::Index
+    # Beta
+    resources :foods, id: :food_id
 
-      scope :id, before: Callbacks::Foods::Assign do
-        get do |req|
-          @food = req.food
-
-          html do
-            tag :p, @food.inspect
-          end
-        end
-      end
+    not_found do
+      text('not found')
     end
   end
