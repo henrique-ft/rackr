@@ -3,7 +3,6 @@
 require_relative 'rackr/action'
 require_relative 'rackr/callback'
 require 'html_slice'
-require_relative 'rackr/html'
 require_relative 'rackr/router/errors/dev_html'
 require_relative 'rackr/router'
 
@@ -11,9 +10,7 @@ class Rackr
   class NotFound < StandardError; end
 
   HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH].freeze
-
   include Action
-  include HTML
 
   def initialize(config = {}, before: [], after: [])
     @router = Router.new(config, before: before, after: after)

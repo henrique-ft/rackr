@@ -5,10 +5,10 @@ class Rackr
     module Errors
       class DevHtml
         include Rackr::Action
-        include Rackr::HTML
+        include HtmlSlice
 
         def call(env)
-          html do
+          html(html_slice do
             tag :head do
               title 'Application error'
               _ '<style>
@@ -42,7 +42,7 @@ class Rackr
                 backtrace(env)
               end
             end
-          end
+          end)
         end
 
         def backtrace(env)
