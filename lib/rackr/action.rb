@@ -21,7 +21,7 @@ class Rackr
           status: 200,
           headers: {},
           layout_path: 'layout',
-          binding_context: binding
+          binding_context: nil
         )
           view(
             paths,
@@ -39,7 +39,7 @@ class Rackr
           headers: {},
           layout_path: 'layout',
           response_instance: false,
-          binding_context: binding
+          binding_context: nil
         )
           base_path = config.dig(:views, :path) || 'views'
 
