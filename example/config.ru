@@ -1,11 +1,10 @@
 # frozen_string_literal: true
+
+require_relative '../lib/rackr'
 require_relative 'app'
 
 use Rack::Static, :urls => ["/public"]
 run App
-
-#require_relative '../lib/rackr'
-#require 'rackr'
 
 #run (Rackr.new.call do
   #get do |req|

@@ -4,11 +4,11 @@ module Actions
   module Home
     class Alpine
       include Rackr::Action
-      include Rackr::HTML
+      include ::HtmlSlice
       include Layout
 
       class Component
-        include Rackr::HTML
+        include ::HtmlSlice
 
         def html
           html_slice do

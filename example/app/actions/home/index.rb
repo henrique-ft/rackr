@@ -4,7 +4,6 @@ module Actions
   module Home
     class Index
       include Rackr::Action
-      include Rackr::HTML
 
       def call(_req)
         @name = "henrique"
