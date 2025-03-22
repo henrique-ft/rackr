@@ -8,6 +8,7 @@ require_relative 'rackr/router'
 
 class Rackr
   class NotFound < StandardError; end
+  include HtmlSlice
 
   HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH].freeze
   include Action

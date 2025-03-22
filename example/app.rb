@@ -75,6 +75,13 @@ App =
       view 'index'
     end
 
+    get 'view2' do
+      @title = "Albert"
+      @name = "Einstein"
+
+      Rackr::Action.view_response 'index'
+    end
+
     scope 'alpine' do
       get '*', Actions::Home::Alpine
     end
