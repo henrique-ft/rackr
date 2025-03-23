@@ -1,22 +1,7 @@
 # rackr
 ![Gem Version](https://img.shields.io/gem/v/rackr?style=social)
 
-
-A scalable web micro-framework
-
-## Why??
-
-- Rackr is designed to be what almost every one is expecting in a web micro-framework. Avoid brain gimnastics, too much magic or hard documentations.
-
-- Faster than Hanami-Api, 7x faster than Sinatra, 29x from Rails in Ruby 3.3.0 benchmarks. If you are looking for a bunch of performance.
-
-- Lightweight and resourceful: Named routes, "before" and "after" callback filters and view rendering (with layout) are some of the features included in a framework that is just 7 .rb files and almost no dependences. 
-
-- Input / Output and functional mindset: Explicity receive Rack::Request objects and return Rack::Responses 
-
-- Good documentation is one of the most important things here (in progress)
-
-- Adaptable without missing code quality: Use Rackr from serverless functions to entire MVC applications. Plug your favorite gems.
+A Ruby web micro-framework built for studying purposes
 
 ## Installation:
 
