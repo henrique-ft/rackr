@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'byebug'
 require 'erubi'
 require 'oj'
 require 'rack'
@@ -9,14 +8,14 @@ class Rackr
   module Action
     RENDER = {
       html: lambda do |val, status: 200, headers: {}, html: nil|
-        [status, { 'content-type' => 'text/html', 'content-length' => val.bytesize }.merge(headers), [val]]
+        [status, { 'content-type' => 'text/html', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
       end,
       text: lambda do |val, status: 200, headers: {}, text: nil|
-        [status, { 'content-type' => 'text/plain', 'content-length' => val.bytesize }.merge(headers), [val]]
+        [status, { 'content-type' => 'text/plain', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
       end,
       json: lambda do |val, status: 200, headers: {}, json: nil|
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
-        [status, { 'content-type' => 'application/json', 'content-length' => val.bytesize }.merge(headers), [val]]
+        [status, { 'content-type' => 'application/json', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
       end
     }.freeze
 
@@ -93,7 +92,7 @@ class Rackr
             )
           end
 
-          [status, { 'content-type' => 'text/html' }.merge(headers), [parsed_erb]]
+          [status, { 'content-type' => 'text/html', 'content-length' => parsed_erb.bytesize.to_s }.merge(headers), [parsed_erb]]
         end
 
         def load_json(val)
@@ -104,7 +103,7 @@ class Rackr
 
         def html_response(content = '', status: 200, headers: {})
           Rack::Response.new(content, status,
-                             { 'content-type' => 'text/html', 'content-length' => content.bytesize }.merge(headers))
+                             { 'content-type' => 'text/html', 'content-length' => content.bytesize.to_s }.merge(headers))
         end
 
         def json_response(content = {}, status: 200, headers: {})
@@ -112,7 +111,7 @@ class Rackr
           Rack::Response.new(
             content,
             status,
-            { 'content-type' => 'application/json', 'content-length' => content.bytesize }.merge(headers)
+            { 'content-type' => 'application/json', 'content-length' => content.bytesize.to_s }.merge(headers)
           )
         end
 
@@ -120,7 +119,7 @@ class Rackr
           Rack::Response.new(
             content,
             status,
-            { 'content-type' => 'text/plain', 'content-length' => content.bytesize }.merge(headers)
+            { 'content-type' => 'text/plain', 'content-length' => content.bytesize.to_s }.merge(headers)
           )
         end
 
