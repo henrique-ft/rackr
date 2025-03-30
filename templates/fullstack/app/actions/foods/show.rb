@@ -4,9 +4,9 @@ module Actions
       def call(req)
         @food = req.food
 
-        html do
+        render html: (html_layout do
           tag :p, @food.inspect
-        end
+        end)
       end
     end
   end
