@@ -18,7 +18,7 @@ RSpec.describe Rackr::Action do
   context 'rendering content' do
     context 'text' do
       it 'can render from string with success' do
-        result = subject.render(text:'test')
+        result = subject.render(text: 'test')
         expect(result).to eq(
           [
             200,
@@ -29,7 +29,7 @@ RSpec.describe Rackr::Action do
       end
 
       it 'can render text with other status' do
-        result = subject.render(text:'test', status: 201)
+        result = subject.render(text: 'test', status: 201)
         expect(result).to eq(
           [
             201,
@@ -40,7 +40,7 @@ RSpec.describe Rackr::Action do
       end
 
       it 'can render text with other headers' do
-        result = subject.render(text:'test', headers: { 'other' => 'header' })
+        result = subject.render(text: 'test', headers: { 'other' => 'header' })
         expect(result).to eq(
           [
             200,

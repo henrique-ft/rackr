@@ -8,17 +8,17 @@ require 'rack'
 class Rackr
   module Action
     RENDER = {
-      html: lambda do |val, **opts|
-        [opts[:status] || 200, { 'content-type' => 'text/html' }.merge(opts[:headers] || {}), [val]]
+      html: lambda do |val, status: 200, headers: {}, html: nil|
+        [status, { 'content-type' => 'text/html', 'content-length' => val.bytesize }.merge(headers), [val]]
       end,
-      text: lambda do |val, **opts|
-        [opts[:status] || 200, { 'content-type' => 'text/plain' }.merge(opts[:headers] || {}), [val]]
+      text: lambda do |val, status: 200, headers: {}, text: nil|
+        [status, { 'content-type' => 'text/plain', 'content-length' => val.bytesize }.merge(headers), [val]]
       end,
-      json: lambda do |val, **opts|
+      json: lambda do |val, status: 200, headers: {}, json: nil|
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
-        [opts[:status] || 200, { 'content-type' => 'application/json' }.merge(opts[:headers] || {}), [val]]
+        [status, { 'content-type' => 'application/json', 'content-length' => val.bytesize }.merge(headers), [val]]
       end
-    }
+    }.freeze
 
     def self.included(base)
       base.class_eval do
@@ -34,7 +34,7 @@ class Rackr
           type = opts.keys.first
           content = opts[type]
 
-          Rackr::Action::RENDER[type]&.(content, **opts) || _render_view(content, **opts)
+          Rackr::Action::RENDER[type]&.call(content, **opts) || _render_view(content, **opts)
         end
 
         def view_response(
@@ -103,7 +103,8 @@ class Rackr
         end
 
         def html_response(content = '', status: 200, headers: {})
-          Rack::Response.new(content, status, { 'content-type' => 'text/html' }.merge(headers))
+          Rack::Response.new(content, status,
+                             { 'content-type' => 'text/html', 'content-length' => content.bytesize }.merge(headers))
         end
 
         def json_response(content = {}, status: 200, headers: {})
@@ -111,7 +112,7 @@ class Rackr
           Rack::Response.new(
             content,
             status,
-            { 'content-type' => 'application/json' }.merge(headers)
+            { 'content-type' => 'application/json', 'content-length' => content.bytesize }.merge(headers)
           )
         end
 
@@ -119,7 +120,7 @@ class Rackr
           Rack::Response.new(
             content,
             status,
-            { 'content-type' => 'text/plain' }.merge(headers)
+            { 'content-type' => 'text/plain', 'content-length' => content.bytesize }.merge(headers)
           )
         end
 
