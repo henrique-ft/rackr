@@ -3,7 +3,7 @@ rackr_routes = lambda do |f, level, prefix, calc_path, lvars|
   ROUTES_PER_LEVEL.times do
     if level == 1
       f.puts "  get '#{prefix}#{base}/:#{lvars.last}' do |req|"
-      f.puts "    html(\"#{RESULT.call(calc_path[1..-1] + base)}#{lvars.map{|lvar| "-\#{req.params[:#{lvar}]}"}.join}\")"
+      f.puts "    render html: \"#{RESULT.call(calc_path[1..-1] + base)}#{lvars.map{|lvar| "-\#{req.params[:#{lvar}]}"}.join}\" "
       f.puts "  end"
     else
       rackr_routes.call(f, level-1, "#{prefix}#{base}/:#{lvars.last}/", "#{calc_path}#{base}/", lvars + [lvars.last.succ])
