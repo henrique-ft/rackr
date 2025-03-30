@@ -56,7 +56,8 @@ class Rackr
           status: 200,
           headers: {},
           layout_path: 'layout',
-          response_instance: false
+          response_instance: false,
+          view: nil
         )
           base_path = config.dig(:views, :path) || 'views'
 
