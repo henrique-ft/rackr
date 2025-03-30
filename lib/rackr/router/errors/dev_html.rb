@@ -1,14 +1,16 @@
 # frozen_string_literal: true
 
+require 'html_slice'
+
 class Rackr
   class Router
     module Errors
       class DevHtml
         include Rackr::Action
-        include Rackr::HTML
+        include ::HtmlSlice
 
         def call(env)
-          html do
+          html_layout do
             tag :head do
               title 'Application error'
               _ '<style>

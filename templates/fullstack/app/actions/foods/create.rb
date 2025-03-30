@@ -2,7 +2,7 @@ module Actions
   module Foods
     class Create < Base
       def call(req)
-        text('create')
+        render text:'create'
       end
     end
   end

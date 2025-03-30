@@ -32,18 +32,18 @@ end)
 ```
 As you can imagine, there are function defined for other http methods: `get`, `post`, `delete`, `put`, `trace`, `options`, `patch` and all work in the same way. The block receives a param that is just a instance of `Rack::Request` (`Rack::Request.new(env)`). But is not obrigatory if we will not use it.
 
-This is the same Rackr application using the `html` helper:
+This is the same Rackr application using the `render` helper:
 ```ruby
 # config.ru
 require 'rackr'
 
 run (Rackr.new.call do
   get do |req|
-    html("<h1>Hello!</h1>") # [200, {'content-type' => 'text/html'}, ["<h1>Hello!</h1>"]]
+    render html: "<h1>Hello!</h1>" # [200, {'content-type' => 'text/html'}, ["<h1>Hello!</h1>"]]
   end
 end)
 ```
-In addition to `html`, there are other helpers: `json`, `head`, `text` and also `view`.
+In addition to `html:`, there are other render options: `json:`, `text:` and also `view:`.
 
 Now lets scope our get endpoint to a `'v1/hello'` path:
 ```ruby
@@ -54,7 +54,7 @@ run (Rackr.new.call do
   scope 'v1' do
     scope 'hello' do
       get do |req|
-        html("<h1>Hello!</h1>")
+        render html: "<h1>Hello!</h1>"
       end
     end
   end
@@ -72,7 +72,7 @@ run (Rackr.new.call do
       scope :name do
         get do |req|
           # Rackr inject request params in the Rack::Request object
-          html("<h1>Hello #{req.params[:name]}!</h1>")
+          render html: "<h1>Hello #{req.params[:name]}!</h1>"
         end
       end
     end
@@ -87,7 +87,7 @@ require 'rackr'
 
 run (Rackr.new.call do
   get 'v1/hello/:name' do |req|
-    html("<h1>Hello #{req.params[:name]}!</h1>")
+    render html: "<h1>Hello #{req.params[:name]}!</h1>"
   end
 end)
 ```
@@ -102,7 +102,7 @@ class HelloAction
   include Rackr::Action
 
   def call(req)
-    html("<h1>Hello #{req.params[:name]}!</h1>")
+    render html: "<h1>Hello #{req.params[:name]}!</h1>"
   end
 end
 

@@ -23,8 +23,6 @@ run (Rackr.new({
   db: Config::DB::Conn.get
 }).call do
   get do
-    html do
-      text db.inspect
-    end
+    render text: db.inspect
   end
 end)

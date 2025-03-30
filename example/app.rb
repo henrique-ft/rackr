@@ -32,7 +32,7 @@ class SayHeyHo
   include Rackr::Callback
 
   def call(_req)
-    json({ hey: 'ho' })
+    render(json: { hey: 'ho' })
   end
 end
 
@@ -58,7 +58,7 @@ App =
       # req.params[:foo] read the route param
       # req.params["foo"] read query params
 
-      json(received_json.merge({ post: 'ok' }))
+      render(json: received_json.merge({ post: 'ok' }))
     end
 
     get 'error' do
@@ -66,14 +66,14 @@ App =
 
     get 'error2' do
       x = y
-      view 'index'
+      render view: 'index'
     end
 
     get 'view' do
       @title = "Albert"
       @name = "Einstein"
 
-      view 'index'
+      render view: 'index'
     end
 
     scope 'alpine' do
@@ -81,26 +81,24 @@ App =
     end
 
     get do
-      html do
-        h1 'hello'
-      end
+      render html: '<h1>hello</h1>'
     end
 
     get 'show', Actions::Home::Show
     get 'show/:name', Actions::Home::Show
 
     get 'where-i-go', before: [SayHeyHo] do
-      text('?')
+      render text: '?'
     end
 
     scope 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
       scope 'oi'do
         get do
-          html('<h1> rack http_router </h1>')
+          render html: '<h1> rack http_router </h1>'
         end
 
         get 'bla', as: :bla do
-          html("<h1> #{routes.get[:bla]} </h1>")
+          render html: "<h1> #{routes.get[:bla]} </h1>"
         end
       end
     end
@@ -115,15 +113,15 @@ App =
         p 'ROUTE BEFORE'
         req
       } do |req|
-        json({ name: req.params[:name] }) # routes[:v2_hello]
+        render(json: { name: req.params[:name] }) # routes[:v2_hello]
       end
 
       get 'big_json' do
-        json BigJson
+        render json: BigJson
       end
 
       get 'big_json2' do
-        json BigJson2
+        render json: BigJson2
       end
     end
 
@@ -152,13 +150,11 @@ App =
       end
 
       get '/something2' do
-        text("ma oe")
+        render text: "ma oe"
       end
     end
 
     not_found do
-      html do
-        h1 'are you lost?'
-      end
+      render html: "Are you lost?"
     end
   end

@@ -2,7 +2,7 @@ module Actions
   module Foods
     class Update < Base
       def call(req)
-        text('update')
+        render text: 'update'
       end
     end
   end

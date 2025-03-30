@@ -4,12 +4,12 @@ module Actions
   module Home
     class Show
       include Rackr::Action
-      include Rackr::HTML
+      include HtmlSlice
 
       def call(req)
         @name = req.params[:name]
 
-        html do
+        render html: (html_layout do
           tag :p, %Q(
               welcome <b>#{@name}</b>!!!
           )
@@ -23,7 +23,7 @@ module Actions
           '''
           br
           a 'google link', href: 'http://www.google.com'
-        end
+        end)
       end
 
       private

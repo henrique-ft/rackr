@@ -2,7 +2,7 @@ module Actions
   module Foods
     class Delete < Base
       def call(req)
-        text('delete')
+        render text: 'delete'
       end
     end
   end

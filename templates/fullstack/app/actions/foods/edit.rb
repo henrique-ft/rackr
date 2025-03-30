@@ -2,7 +2,7 @@ module Actions
   module Foods
     class Edit < Base
       def call(req)
-        text('edit')
+        render text: 'edit'
       end
     end
   end

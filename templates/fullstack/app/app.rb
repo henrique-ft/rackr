@@ -1,11 +1,11 @@
 App =
   Rackr.new(Config::App).call do
-    get { text('hello world') }
+    get { render text: 'hello world' }
 
     # Beta
     resources :foods, id: :food_id
 
     not_found do
-      text('not found')
+      render view: 'not found'
     end
   end
