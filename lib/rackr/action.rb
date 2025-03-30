@@ -92,7 +92,8 @@ class Rackr
             )
           end
 
-          [status, { 'content-type' => 'text/html', 'content-length' => parsed_erb.bytesize.to_s }.merge(headers), [parsed_erb]]
+          [status, { 'content-type' => 'text/html', 'content-length' => parsed_erb.bytesize.to_s }.merge(headers),
+           [parsed_erb]]
         end
 
         def load_json(val)
