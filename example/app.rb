@@ -113,7 +113,7 @@ App =
         p 'ROUTE BEFORE'
         req
       } do |req|
-        render json:({ name: req.params[:name] }) # routes[:v2_hello]
+        render(json: { name: req.params[:name] }) # routes[:v2_hello]
       end
 
       get 'big_json' do

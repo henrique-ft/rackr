@@ -4,13 +4,13 @@ module Actions
   module Home
     class Index
       include Rackr::Action
-      include Rackr::HTML
+      include HtmlSlice
 
       def call(_req)
         @name = "henrique"
         @title = "henrique"
 
-        view 'index'
+        render view: 'index'
       end
     end
   end
