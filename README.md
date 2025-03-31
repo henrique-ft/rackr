@@ -152,6 +152,10 @@ use https://github.com/baldowl/rack_csrf
 
 use https://github.com/rtomayko/rack-cache
 
+#### Logs:
+
+https://www.rubydoc.info/github/rack/rack/Rack/CommonLogger
+
 ## Benchmarks (r10k)
 
 Running in Ruby 3.3.0
