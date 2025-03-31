@@ -18,35 +18,23 @@ RSpec.describe Rackr::Action do
   context 'rendering content' do
     context 'text' do
       it 'can render from string with success' do
-        result = subject.render(text:'test')
+        result = subject.render(text: 'test')
         expect(result).to eq(
-          [
-            200,
-            { 'content-type' => 'text/plain' },
-            %w[test]
-          ]
+          [200, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']]
         )
       end
 
       it 'can render text with other status' do
-        result = subject.render(text:'test', status: 201)
+        result = subject.render(text: 'test', status: 201)
         expect(result).to eq(
-          [
-            201,
-            { 'content-type' => 'text/plain' },
-            %w[test]
-          ]
+          [201, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']]
         )
       end
 
       it 'can render text with other headers' do
-        result = subject.render(text:'test', headers: { 'other' => 'header' })
+        result = subject.render(text: 'test', headers: { 'other' => 'header' })
         expect(result).to eq(
-          [
-            200,
-            { 'content-type' => 'text/plain', 'other' => 'header' },
-            %w[test]
-          ]
+          [200, { 'content-length' => '4', 'content-type' => 'text/plain', 'other' => 'header' }, ['test']]
         )
       end
     end
@@ -116,33 +104,21 @@ RSpec.describe Rackr::Action do
       it 'can render from string with success' do
         result = subject.render(html: 'test')
         expect(result).to eq(
-          [
-            200,
-            { 'content-type' => 'text/html' },
-            %w[test]
-          ]
+          [200, { 'content-length' => '4', 'content-type' => 'text/html' }, ['test']]
         )
       end
 
       it 'can render html with other status' do
         result = subject.render(html: 'test', status: 201)
         expect(result).to eq(
-          [
-            201,
-            { 'content-type' => 'text/html' },
-            %w[test]
-          ]
+          [201, { 'content-length' => '4', 'content-type' => 'text/html' }, ['test']]
         )
       end
 
       it 'can render text with other headers' do
         result = subject.render(html: 'test', headers: { 'other' => 'header' })
         expect(result).to eq(
-          [
-            200,
-            { 'content-type' => 'text/html', 'other' => 'header' },
-            %w[test]
-          ]
+          [200, { 'content-length' => '4', 'content-type' => 'text/html', 'other' => 'header' }, ['test']]
         )
       end
     end
@@ -176,7 +152,7 @@ RSpec.describe Rackr::Action do
       it 'can render with success' do
         result = subject.render(view: path)
 
-        expect(result).to eq([200, { 'content-type' => 'text/html' }, %w[file.]])
+        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
       end
 
       it 'can render with success with response_instance' do
@@ -209,7 +185,7 @@ RSpec.describe Rackr::Action do
       it 'ignores the layout if not exists in views folder' do
         result = subject.render(view: path)
 
-        expect(result).to eq([200, { 'content-type' => 'text/html' }, %w[file.]])
+        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
       end
 
       context 'with layout' do
@@ -227,27 +203,28 @@ RSpec.describe Rackr::Action do
         it 'renders the content with the layout' do
           result = subject.render(view: path)
 
-          expect(result).to eq([200, { 'content-type' => 'text/html' }, ['(( some content ))']])
+          expect(result).to eq([200, { 'content-length' => '18', 'content-type' => 'text/html' },
+                                ['(( some content ))']])
         end
       end
 
       it 'can render with different status' do
         result = subject.render(view: path, status: 404)
 
-        expect(result).to eq([404, { 'content-type' => 'text/html' }, %w[file.]])
+        expect(result).to eq([404, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
       end
 
       it 'can render with different headers' do
         result = subject.render(view: path, headers: { 'a' => 'b' })
 
-        expect(result).to eq([200, { 'content-type' => 'text/html', 'a' => 'b' }, %w[file.]])
+        expect(result).to eq([200, { 'a' => 'b', 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
       end
 
       it 'can render multiple erbs' do
         result = subject.render(view: [path, path, path], status: 404)
 
         expect(result).to eq(
-          [404, { 'content-type' => 'text/html' }, %w[file.file.file.]]
+          [404, { 'content-length' => '15', 'content-type' => 'text/html' }, ['file.file.file.']]
         )
       end
     end
@@ -279,44 +256,29 @@ RSpec.describe Rackr::Action do
       it 'can render from hash with success' do
         result = subject.render(json: { test: 'value' })
         expect(result).to eq(
-          [
-            200,
-            { 'content-type' => 'application/json' },
-            %w[{"test":"value"}]
-          ]
+          [200, { 'content-length' => '16', 'content-type' => 'application/json' }, ['{"test":"value"}']]
         )
       end
 
       it 'can render from a string with success' do
         result = subject.render(json: '{"test":"value"}')
         expect(result).to eq(
-          [
-            200,
-            { 'content-type' => 'application/json' },
-            %w[{"test":"value"}]
-          ]
+          [200, { 'content-length' => '16', 'content-type' => 'application/json' }, ['{"test":"value"}']]
         )
       end
 
       it 'can render json with other status' do
         result = subject.render(json: { test: 'value' }, status: 201)
         expect(result).to eq(
-          [
-            201,
-            { 'content-type' => 'application/json' },
-            %w[{"test":"value"}]
-          ]
+          [201, { 'content-length' => '16', 'content-type' => 'application/json' }, ['{"test":"value"}']]
         )
       end
 
       it 'can render json with other headers' do
         result = subject.render(json: { test: 'value' }, status: 201, headers: { 'a' => 'b' })
         expect(result).to eq(
-          [
-            201,
-            { 'content-type' => 'application/json', 'a' => 'b' },
-            %w[{"test":"value"}]
-          ]
+          [201, { 'a' => 'b', 'content-length' => '16', 'content-type' => 'application/json' },
+           ['{"test":"value"}']]
         )
       end
     end
