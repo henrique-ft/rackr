@@ -1,8 +1,13 @@
+# frozen_string_literal: true
+
 require_relative '../rackr'
 require_relative '../rackr/action'
 
 RSpec.describe Rackr do
-  let(:router_double) { instance_double('Rackr::Router', config: { db: :mock_db }, routes: [], add: nil, add_not_found: nil, add_error: nil, append_scope: nil, clear_last_scope: nil) }
+  let(:router_double) do
+    instance_double('Rackr::Router', config: { db: :mock_db }, routes: [], add: nil, add_not_found: nil, add_error: nil,
+                                     append_scope: nil, clear_last_scope: nil)
+  end
 
   before do
     allow(Rackr::Router).to receive(:new).and_return(router_double)
@@ -110,7 +115,8 @@ RSpec.describe Rackr do
       rackr = described_class.new
       endpoint = -> { 'posted' }
 
-      expect(router_double).to receive(:add).with('POST', 'submit', endpoint, as: nil, route_befores: [], route_afters: [])
+      expect(router_double).to receive(:add).with('POST', 'submit', endpoint, as: nil, route_befores: [],
+                                                                              route_afters: [])
 
       rackr.post 'submit', endpoint
     end

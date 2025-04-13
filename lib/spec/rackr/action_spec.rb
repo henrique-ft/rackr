@@ -369,7 +369,7 @@ RSpec.describe Rackr::Action do
 
     it 'can redirect with headers using redirect_response' do
       response = subject.redirect_response('/somewhere', headers: { 'X-Custom' => 'Yes' })
-      expect(response.finish).to eq([302, {"location" => "/somewhere", "x-custom" => "Yes"}, []])
+      expect(response.finish).to eq([302, { 'location' => '/somewhere', 'x-custom' => 'Yes' }, []])
     end
   end
 

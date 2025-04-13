@@ -144,4 +144,3 @@ class Rackr
     end
   end
 end
-
