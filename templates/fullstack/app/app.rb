@@ -3,9 +3,16 @@ App =
     get { render text: 'hello world' }
 
     # Beta
-    resources :foods, id: :food_id
+    resources :foods, id: :food_id do
+      resources :example, id: :example_id
+
+      # foods/:food_id/foo
+      get 'foo' do
+        render text: 'bar'
+      end
+    end
 
     not_found do
-      render view: 'not found'
+      render text: 'not found'
     end
   end

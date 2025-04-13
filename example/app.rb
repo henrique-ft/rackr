@@ -13,6 +13,7 @@ require_relative 'app/callbacks/some_assign'
 config = {
   db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
   views: { path: 'app/views' }
+  cache: CacheAdapter
 }
 
 BigJson = JSON.parse(File.read('./foods.json'))
@@ -66,6 +67,20 @@ App =
 
     get 'error2' do
       x = y
+
+      render markdown: """
+        # Hello
+      """
+
+      render html: (layout {
+        div {
+          a href: routes.get['view']
+        }
+        markdown """
+
+        """
+      })
+
       render view: 'index'
     end
 

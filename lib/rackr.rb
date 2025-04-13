@@ -14,6 +14,7 @@ class Rackr
 
   def initialize(config = {}, before: [], after: [])
     @router = Router.new(config, before: before, after: after)
+    @resources_names = []
   end
 
   def call(&block)
@@ -62,17 +63,27 @@ class Rackr
   end
 
   # Beta
-  def resources(name, id:)
-    const_name = name.to_s.capitalize
+  def resources(name, id:, &block)
+    name = name.to_s
+    @resources_names.push(name)
+    const_name = @resources_names.map(&:capitalize).join('::')
     id ||= :id
 
-    scope name do
-      get Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
-      get 'new', Object.const_get("Actions::#{const_name}::New") if Object.const_defined?("Actions::#{const_name}::New")
-      post Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
+    scope name.to_s do
+      if Object.const_defined?("Actions::#{const_name}::Index")
+        get Object.const_get("Actions::#{const_name}::Index")
+      end
+      if Object.const_defined?("Actions::#{const_name}::New")
+        get 'new', Object.const_get("Actions::#{const_name}::New")
+      end
+      if Object.const_defined?("Actions::#{const_name}::Create")
+        post Object.const_get("Actions::#{const_name}::Create")
+      end
 
       resource_actions = proc do
-        get Object.const_get("Actions::#{const_name}::Show") if Object.const_defined?("Actions::#{const_name}::Show")
+        if Object.const_defined?("Actions::#{const_name}::Show")
+          get Object.const_get("Actions::#{const_name}::Show")
+        end
         if Object.const_defined?("Actions::#{const_name}::Edit")
           get 'edit', Object.const_get("Actions::#{const_name}::Edit")
         end
@@ -82,6 +93,8 @@ class Rackr
         if Object.const_defined?("Actions::#{const_name}::Delete")
           delete Object.const_get("Actions::#{const_name}::Delete")
         end
+
+        instance_eval(&block) if block_given?
       end
 
       if Object.const_defined?("Callbacks::#{const_name}::Assign")
@@ -90,6 +103,7 @@ class Rackr
         scope(id.to_sym, &resource_actions)
       end
     end
+    @resources_names = @resources_names.first(@resources_names.size - 1)
   end
 
   HTTP_METHODS.each do |http_method|
