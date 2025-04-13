@@ -78,7 +78,7 @@ class Rackr
             html << "<pre>#{context}</pre>"
           end
 
-          html << "<p>#{tail.join("\n")}</p>"
+          html << "<p>#{tail.join("</br>")}</p>"
           html
         end
 
