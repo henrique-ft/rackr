@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
+require 'html_slice'
+
 module Actions
   module Home
     class Index
       include Rackr::Action
-      include HtmlSlice
+      include ::HtmlSlice
 
       def call(_req)
         @name = "henrique"

@@ -13,7 +13,6 @@ require_relative 'app/callbacks/some_assign'
 config = {
   db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
   views: { path: 'app/views' }
-  cache: CacheAdapter
 }
 
 BigJson = JSON.parse(File.read('./foods.json'))
