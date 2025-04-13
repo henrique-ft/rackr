@@ -89,16 +89,16 @@ class Rackr
         end
 
         def html_response(content = '', status: 200, headers: {})
-          response(:html, content, status, headers)
+          build_response(:html, content, status, headers)
         end
 
         def json_response(content = {}, status: 200, headers: {})
           content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
-          response(:json, content, status, headers)
+          build_response(:json, content, status, headers)
         end
 
         def text_response(content, status: 200, headers: {})
-          response(:text, content, status, headers)
+          build_response(:text, content, status, headers)
         end
 
         def load_erb(content, binding_context: nil)
@@ -127,7 +127,7 @@ class Rackr
 
         private
 
-        def response(type, content, status, headers)
+        def build_response(type, content, status, headers)
           Rack::Response.new(
             content,
             status,
