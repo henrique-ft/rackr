@@ -7,7 +7,7 @@ require_relative 'rackr/router'
 
 class Rackr
   class NotFound < StandardError; end
-
+  EMPTY_PROC = -> {}
   HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH].freeze
 
   include Action
@@ -19,130 +19,101 @@ class Rackr
 
   def call(&block)
     instance_eval(&block)
-
     @router
   end
 
-  def routes
-    @router.routes
-  end
-
-  def config
-    @router.config
-  end
-
-  def db
-    @router.config[:db]
-  end
+  def routes = @router.routes
+  def config = @router.config
+  def db = @router.config[:db]
 
   def scope(name = '', before: [], after: [], &block)
-    @router.append_scope(
-      name,
-      scope_befores: before,
-      scope_afters: after
-    )
+    @router.append_scope(name, scope_befores: before, scope_afters: after)
     instance_eval(&block)
-
     @router.clear_last_scope
   end
 
-  def not_found(endpoint = -> {}, &block)
-    if block_given?
-      @router.add_not_found(block)
-    else
-      @router.add_not_found(endpoint)
-    end
+  def not_found(endpoint = EMPTY_PROC, &block)
+    @router.add_not_found(block_given? ? block : endpoint)
   end
 
-  def error(endpoint = -> {}, &block)
-    if block_given?
-      @router.add_error(block)
-    else
-      @router.add_error(endpoint)
-    end
+  def error(endpoint = EMPTY_PROC, &block)
+    @router.add_error(block_given? ? block : endpoint)
   end
 
-  # Beta
   def resources(name, id:, &block)
     name = name.to_s
-    @resources_names.push(name)
+    @resources_names << name
     const_name = @resources_names.map(&:capitalize).join('::')
     id ||= :id
 
-    scope name.to_s do
-      if Object.const_defined?("Actions::#{const_name}::Index")
-        get Object.const_get("Actions::#{const_name}::Index")
-      end
-      if Object.const_defined?("Actions::#{const_name}::New")
-        get 'new', Object.const_get("Actions::#{const_name}::New")
-      end
-      if Object.const_defined?("Actions::#{const_name}::Create")
-        post Object.const_get("Actions::#{const_name}::Create")
+    scope(name) do
+      %w[Index New Create].each do |action|
+        const = safe_const_get("Actions::#{const_name}::#{action}")
+        send(http_method_for(action), (action == 'New' ? 'new' : const), const) if const
       end
 
       resource_actions = proc do
-        if Object.const_defined?("Actions::#{const_name}::Show")
-          get Object.const_get("Actions::#{const_name}::Show")
-        end
-        if Object.const_defined?("Actions::#{const_name}::Edit")
-          get 'edit', Object.const_get("Actions::#{const_name}::Edit")
-        end
-        if Object.const_defined?("Actions::#{const_name}::Update")
-          put Object.const_get("Actions::#{const_name}::Update")
-        end
-        if Object.const_defined?("Actions::#{const_name}::Delete")
-          delete Object.const_get("Actions::#{const_name}::Delete")
+        %w[Show Edit Update Delete].each do |action|
+          const = safe_const_get("Actions::#{const_name}::#{action}")
+          next unless const
+
+          path = action == 'Edit' ? 'edit' : ''
+          send(http_method_for(action), path, const)
         end
 
         instance_eval(&block) if block_given?
       end
 
-      if Object.const_defined?("Callbacks::#{const_name}::Assign")
-        scope(id.to_sym, before: Object.const_get("Callbacks::#{const_name}::Assign"), &resource_actions)
-      else
-        scope(id.to_sym, &resource_actions)
-      end
+      assign_callback = safe_const_get("Callbacks::#{const_name}::Assign")
+      scope(id.to_sym, before: assign_callback || [], &resource_actions)
     end
-    @resources_names = @resources_names.first(@resources_names.size - 1)
+
+    @resources_names.pop
   end
 
   HTTP_METHODS.each do |http_method|
     define_method(http_method.downcase.to_sym) do |*params, before: [], after: [], as: nil, &block|
-      path = params[0] || ''
-      endpoint = params[1] || ''
+      path, endpoint = params
+      path ||= ''
+      endpoint ||= ''
       scopes = []
-      if path.is_a?(String) && path.include?('/')
-        scopes = path.split('/')[0...-1]
-        path = path.split('/').pop
+
+      if path.is_a?(String) && (slash_index = path.index('/'))
+        parts = path.split('/')
+        scopes = parts[0...-1]
+        path = parts[-1]
       end
+
       scopes.each { |scope_name| @router.append_scope(scope_name) }
 
-      if block.respond_to?(:call)
-        @router.add(
-          http_method,
-          path,
-          block,
-          as: as,
-          route_befores: before,
-          route_afters: after
-        )
-      else
-        if path.is_a?(Module) && path.include?(Action)
-          endpoint = path
-          path = ''
-        end
+      handler = if block.respond_to?(:call)
+                  block
+                else
+                  path, endpoint = '', path if path.is_a?(Module) && path.include?(Action)
+                  endpoint
+                end
 
-        @router.add(
-          http_method,
-          path,
-          endpoint,
-          as: as,
-          route_befores: before,
-          route_afters: after
-        )
-      end
-
-      scopes.length.times { @router.clear_last_scope }
+      @router.add(http_method, path, handler, as: as, route_befores: before, route_afters: after)
+      scopes.each { @router.clear_last_scope }
     end
   end
+
+  private
+
+  def safe_const_get(name)
+    Object.const_defined?(name) ? Object.const_get(name) : nil
+  end
+
+  def http_method_for(action)
+    {
+      'Index'  => :get,
+      'New'    => :get,
+      'Create' => :post,
+      'Show'   => :get,
+      'Edit'   => :get,
+      'Update' => :put,
+      'Delete' => :delete
+    }.fetch(action)
+  end
 end
+
