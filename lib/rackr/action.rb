@@ -6,18 +6,33 @@ require 'rack'
 
 class Rackr
   module Action
+    CONTENT_TYPES = {
+      html: 'text/html',
+      text: 'text/plain',
+      json: 'application/json'
+    }.freeze
+
     RENDER = {
-      html: lambda do |val, status: 200, headers: {}, html: nil|
-        [status, { 'content-type' => 'text/html', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
+      html: lambda do |val, **opts|
+        render_basic(:html, val, opts.fetch(:status, 200), opts.fetch(:headers, {}))
       end,
-      text: lambda do |val, status: 200, headers: {}, text: nil|
-        [status, { 'content-type' => 'text/plain', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
+      text: lambda do |val, **opts|
+        render_basic(:text, val, opts.fetch(:status, 200), opts.fetch(:headers, {}))
       end,
-      json: lambda do |val, status: 200, headers: {}, json: nil|
+      json: lambda do |val, **opts|
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
-        [status, { 'content-type' => 'application/json', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
+        render_basic(:json, val, opts.fetch(:status, 200), opts.fetch(:headers, {}))
       end
     }.freeze
+
+    def self.render_basic(type, val, status, headers)
+      [
+        status,
+        { 'content-type' => CONTENT_TYPES[type], 'content-length' => val.bytesize.to_s }.merge(headers),
+        [val]
+      ]
+    end
+    private_class_method :render_basic
 
     def self.included(base)
       base.class_eval do
@@ -32,16 +47,10 @@ class Rackr
         def render(**opts)
           type = opts.keys.first
           content = opts[type]
-
-          Rackr::Action::RENDER[type]&.call(content, **opts) || _render_view(content, **opts)
+          RENDER[type]&.call(content, **opts) || _render_view(content, **opts)
         end
 
-        def view_response(
-          paths,
-          status: 200,
-          headers: {},
-          layout_path: 'layout'
-        )
+        def view_response(paths, status: 200, headers: {}, layout_path: 'layout')
           _render_view(
             paths,
             status: status,
@@ -51,77 +60,45 @@ class Rackr
           )
         end
 
-        def _render_view(
-          paths,
-          status: 200,
-          headers: {},
-          layout_path: 'layout',
-          response_instance: false,
-          view: nil
-        )
+        def _render_view(paths, status: 200, headers: {}, layout_path: 'layout', response_instance: false, view: nil)
           base_path = config.dig(:views, :path) || 'views'
 
-          file_or_nil = lambda do |path|
-            ::File.read(path)
-          rescue Errno::ENOENT
-            nil
-          end
+          file_content = Array(paths).map do |path|
+            read_file("#{base_path}/#{path}.html.erb")
+          end.join
 
-          file_content = if paths.is_a?(Array)
-                           paths.map { |path| ::File.read("#{base_path}/#{path}.html.erb") }.join
-                         else
-                           ::File.read("#{base_path}/#{paths}.html.erb")
-                         end
+          layout_content = read_file("#{base_path}/#{layout_path}.html.erb", rescue_nil: true)
 
-          layout_content = file_or_nil.call("#{base_path}/#{layout_path}.html.erb")
+          parsed_erb = if layout_content
+                         load_erb(layout_content) { load_erb(file_content, binding_context: binding) }
+                       else
+                         load_erb(file_content, binding_context: binding)
+                       end
 
-          parsed_erb =
-            if layout_content
-              load_erb(layout_content) do
-                load_erb(file_content, binding_context: binding)
-              end
-            else
-              load_erb(file_content, binding_context: binding)
-            end
+          return response(parsed_erb, status, { 'content-type' => 'text/html' }.merge(headers)) if response_instance
 
-          if response_instance
-            return Rack::Response.new(
-              parsed_erb,
-              status,
-              { 'content-type' => 'text/html' }.merge(headers)
-            )
-          end
-
-          [status, { 'content-type' => 'text/html', 'content-length' => parsed_erb.bytesize.to_s }.merge(headers),
-           [parsed_erb]]
+          [
+            status,
+            { 'content-type' => 'text/html', 'content-length' => parsed_erb.bytesize.to_s }.merge(headers),
+            [parsed_erb]
+          ]
         end
 
         def load_json(val)
-          return Oj.load(val.body.read) if val.is_a?(Rack::Request)
-
-          Oj.load(val)
+          val.is_a?(Rack::Request) ? Oj.load(val.body&.read || '') : Oj.load(val)
         end
 
         def html_response(content = '', status: 200, headers: {})
-          Rack::Response.new(content, status,
-                             { 'content-type' => 'text/html', 'content-length' => content.bytesize.to_s }.merge(headers))
+          response(:html, content, status, headers)
         end
 
         def json_response(content = {}, status: 200, headers: {})
           content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
-          Rack::Response.new(
-            content,
-            status,
-            { 'content-type' => 'application/json', 'content-length' => content.bytesize.to_s }.merge(headers)
-          )
+          response(:json, content, status, headers)
         end
 
         def text_response(content, status: 200, headers: {})
-          Rack::Response.new(
-            content,
-            status,
-            { 'content-type' => 'text/plain', 'content-length' => content.bytesize.to_s }.merge(headers)
-          )
+          response(:text, content, status, headers)
         end
 
         def load_erb(content, binding_context: nil)
@@ -137,11 +114,7 @@ class Rackr
         end
 
         def redirect_response(url, headers: {})
-          Rack::Response.new(
-            nil,
-            302,
-            { 'location' => url }.merge(headers)
-          )
+          response(nil, 302, { 'location' => url }.merge(headers))
         end
 
         def redirect_to(url, headers: {})
@@ -151,7 +124,24 @@ class Rackr
         def response(body = nil, status = 200, headers = {})
           Rack::Response.new(body, status, headers)
         end
+
+        private
+
+        def response(type, content, status, headers)
+          Rack::Response.new(
+            content,
+            status,
+            { 'content-type' => CONTENT_TYPES[type], 'content-length' => content.bytesize.to_s }.merge(headers)
+          )
+        end
+
+        def read_file(path, rescue_nil: false)
+          File.read(path)
+        rescue Errno::ENOENT
+          rescue_nil ? nil : raise
+        end
       end
     end
   end
 end
+

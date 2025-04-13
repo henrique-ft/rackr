@@ -7,9 +7,6 @@ class SomeClass
   include Rackr::Action
 end
 
-class SomeClass2
-end
-
 RSpec.describe Rackr::Action do
   let(:config) do
     {}
@@ -58,6 +55,13 @@ RSpec.describe Rackr::Action do
     end
 
     context 'load_json' do
+      it 'Rack::Request body is empty it returns nil' do
+        env = Rack::MockRequest.env_for('http://localhost/', method: 'POST')
+        req = Rack::Request.new(env)
+
+        expect(subject.load_json(req)).to be_nil
+      end
+
       context 'when val is a Rack::Request' do
         let(:json_string) { '{"key":"value"}' }
         let(:rack_request) do
@@ -165,6 +169,12 @@ RSpec.describe Rackr::Action do
         subject.render(view: path)
 
         expect(::File).to have_received(:read).with('views/test.html.erb')
+      end
+
+      it 'raises if view file is missing' do
+        allow(::File).to receive(:read).and_raise(Errno::ENOENT)
+
+        expect { subject.render(view: 'missing') }.to raise_error(Errno::ENOENT)
       end
 
       context 'reads the config views folder' do
@@ -355,6 +365,11 @@ RSpec.describe Rackr::Action do
     it 'can redirect with rack response' do
       res = subject.redirect_response('/hey')
       expect(res.finish).to eq([302, { 'location' => '/hey' }, []])
+    end
+
+    it 'can redirect with headers using redirect_response' do
+      response = subject.redirect_response('/somewhere', headers: { 'X-Custom' => 'Yes' })
+      expect(response.finish).to eq([302, {"location" => "/somewhere", "x-custom" => "Yes"}, []])
     end
   end
 
