@@ -77,23 +77,23 @@ class Rackr
       path ||= ''
       endpoint ||= ''
       scopes = []
+      has_slash = path.index('/')
 
-      if path.is_a?(String) && (slash_index = path.index('/'))
-        parts = path.split('/')
-        scopes = parts[0...-1]
-        path = parts[-1]
+      if path.is_a?(String)
+        if has_slash
+          parts = path.split('/')
+          scopes = parts[0...-1]
+          path = parts[-1]
+        elsif scopes == []
+          scopes = [path]
+          path = ''
+        end
       end
 
       scopes.each { |scope_name| @router.append_scope(scope_name) }
 
-      handler = if block.respond_to?(:call)
-                  block
-                else
-                  path, endpoint = '', path if path.is_a?(Module) && path.include?(Action)
-                  endpoint
-                end
-
-      @router.add(http_method, path, handler, as: as, route_befores: before, route_afters: after)
+      handler = block.respond_to?(:call) ? block : endpoint
+      @router.add(http_method, path, handler, as:, route_befores: before, route_afters: after)
       scopes.each { @router.clear_last_scope }
     end
   end

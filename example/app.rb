@@ -98,7 +98,11 @@ App =
       render html: '<h1>hello</h1>'
     end
 
+    # não ta funcionando
+    # Possível solução, se não tiver "/" no path, criar scope 'show' adicionar a rota como sendo root
+    # Ou se tiver scopes [] e não tiver "/" cria scope como root
     get 'show', Actions::Home::Show
+
     get 'show/:name', Actions::Home::Show
 
     get 'where-i-go', before: [SayHeyHo] do
@@ -122,7 +126,6 @@ App =
 
       req
     } do
-
       get ':name/hello', before: lambda { |req|
         p 'ROUTE BEFORE'
         req
@@ -130,7 +133,12 @@ App =
         render(json: { name: req.params[:name] }) # routes[:v2_hello]
       end
 
+      # não ta funcionando
       get 'big_json' do
+        render json: BigJson
+      end
+
+      get 'big_json/:name' do
         render json: BigJson
       end
 
