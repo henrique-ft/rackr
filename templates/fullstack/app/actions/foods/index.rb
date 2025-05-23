@@ -4,14 +4,10 @@ module Actions
       def call(req)
         @foods = Food.order(:name).all
 
-        render html: (html_layout do
-          ul do
-            @foods.each do |food|
-              li food.inspect
-            end
-          end
-        end)
+        render view: 'foods/index'
       end
+
+      def title = 'foods'
     end
   end
 end

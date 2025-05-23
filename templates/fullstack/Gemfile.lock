@@ -7,12 +7,11 @@ GEM
     diff-lcs (1.5.1)
     erubi (1.13.1)
     eventmachine (1.2.7)
-    ffi (1.17.1)
+    ffi (1.17.1-x86_64-linux-gnu)
     html_slice (0.2.1)
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
-    mini_portile2 (2.8.8)
     oj (3.16.9)
       bigdecimal (>= 3.0)
       ostruct (>= 0.2)
@@ -43,8 +42,7 @@ GEM
     rspec-support (3.13.2)
     sequel (5.88.0)
       bigdecimal
-    sqlite3 (2.5.0)
-      mini_portile2 (~> 2.8.0)
+    sqlite3 (2.5.0-x86_64-linux-gnu)
     thin (1.8.2)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
@@ -56,6 +54,7 @@ PLATFORMS
 
 DEPENDENCIES
   byebug
+  html_slice
   rackr
   rerun
   rspec

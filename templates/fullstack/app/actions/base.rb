@@ -1,6 +1,6 @@
 module Actions
   class Base
     include Rackr::Action
-    include HtmlSlice
+    include ::HtmlSlice
   end
 end
