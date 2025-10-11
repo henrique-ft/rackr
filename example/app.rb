@@ -38,126 +38,125 @@ end
 
 App =
   Rackr.new(config).call do
-    #def layout
-      #html_layout do
-        #tag :head do
-          #title "oi"
-        #end
-        #tag :body do
-          #yield
-        #end
-      #end
-    #end
+    def layout
+      html_layout do
+        tag :head do
+          title "oi"
+        end
+        tag :body do
+          yield
+        end
+      end
+    end
 
-    #post 'post/:foo' do |req|
-      #received_json = Oj.load(req.body.read) # read the json
+    post 'post/:foo' do |req|
+      received_json = Oj.load(req.body.read) # read the json
 
-      #test = load_json(req)
-      #test = load_json('{"oi": "something"}')
+      test = load_json(req)
+      test = load_json('{"oi": "something"}')
 
-      ## req.params[:foo] read the route param
-      ## req.params["foo"] read query params
+      # req.params[:foo] read the route param
+      # req.params["foo"] read query params
 
-      #render(json: received_json.merge({ post: 'ok' }))
-    #end
+      render(json: received_json.merge({ post: 'ok' }))
+    end
 
-    #get 'error' do
-    #end
+    get 'error' do
+    end
 
-    #get 'error2' do
-      #x = y
-      #render view: 'index'
-    #end
+    get 'error2' do
+      x = y
+      render view: 'index'
+    end
 
-    #get 'view' do
-      #@title = "Albert"
-      #@name = "Einstein"
+    get 'view' do
+      @title = "Albert"
+      @name = "Einstein"
 
-      #render view: 'index'
-    #end
+      render view: 'index'
+    end
 
-    #scope 'alpine' do
-      #get '*', Actions::Home::Alpine
-    #end
+    scope 'alpine' do
+      get '*', Actions::Home::Alpine
+    end
 
-    #get do
-      #render html: '<h1>hello</h1>'
-    #end
+    get do
+      render html: '<h1>hello</h1>'
+    end
 
-    # Não funciona
     get 'show', Actions::Home::Show
-    # Funciona
     get 'show/:name', Actions::Home::Show
 
-    #get 'where-i-go', before: [SayHeyHo] do
-      #render text: '?'
-    #end
+    get 'where-i-go', before: [SayHeyHo] do
+      render text: '?'
+    end
 
-    #scope 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
-      #scope 'oi'do
-        #get do
-          #render html: '<h1> rack http_router </h1>'
-        #end
+    scope 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
+      scope 'oi'do
+        get do
+          render html: '<h1> rack http_router </h1>'
+        end
 
-        #get 'bla', as: :bla do
-          #render html: "<h1> #{routes.get[:bla]} </h1>"
-        #end
-      #end
-    #end
+        get 'bla', as: :bla do
+          render html: "<h1> #{routes.get[:bla]} </h1>"
+        end
+      end
+    end
 
-    #scope 'v3', before: lambda { |req|
-      #p 'before'
+    scope 'v3', before: lambda { |req|
+      p 'before'
 
-      #req
-    #} do
+      req
+    } do
 
-      #get ':name/hello', before: lambda { |req|
-        #p 'ROUTE BEFORE'
-        #req
-      #} do |req|
-        #render(json: { name: req.params[:name] }) # routes[:v2_hello]
-      #end
+      # estourar erro caso a rota inicie com : tenha / e não seja um scope
+      get ':name/hello', before: lambda { |req|
+        p 'ROUTE BEFORE'
+        req
+      } do |req|
+        render(json: { name: req.params[:name] }) # routes[:v2_hello]
+      end
 
-      ## Não funciona
-      #get 'big_json' do
-        #render json: BigJson
-      #end
+      # Não funciona
+      get 'big_json' do
+        render json: BigJson
+      end
 
-      #get 'big_json2' do
-        #render json: BigJson2
-      #end
-    #end
+      get 'big_json2' do
+        render json: BigJson2
+      end
+    end
 
-    #get 'action', Actions::Home::Index
-    #get 'action2', Actions::Home::Index2
+    get 'action', Actions::Home::Index
+    get 'action2', Actions::Home::Index2
 
-    ## empty scopes
-    #scope before: (lambda { |req|
-      #p("empty scope")
-      #req
-    #}) do
-      #scope "oi" do
-        #scope before: (lambda { |req|
-          #p("empty scope 2")
-          #req
-        #}) do
-          #scope before: (lambda { |req|
-            #p("empty scope 3")
-            #req
-          #}) do
-            #get 'something' do
-              #head 200
-            #end
-          #end
-        #end
-      #end
+    # empty scopes
+    scope before: (lambda { |req|
+      p("empty scope")
+      req
+    }) do
+      scope "oi" do
+        scope before: (lambda { |req|
+          p("empty scope 2")
+          req
+        }) do
+          scope before: (lambda { |req|
+            p("empty scope 3")
+            req
+          }) do
+            get 'something' do
+              head 200
+            end
+          end
+        end
+      end
 
-      #get '/something2' do
-        #render text: "ma oe"
-      #end
-    #end
+      get '/something2' do
+        render text: "ma oe"
+      end
+    end
 
-    #not_found do
-      #render html: "Are you lost?"
-    #end
+    not_found do
+      render html: "Are you lost?"
+    end
   end

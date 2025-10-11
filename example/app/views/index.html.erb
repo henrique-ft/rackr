@@ -1,8 +1,4 @@
 <%= @name %>
 
-<%= html_slice do
-  h1 "oi"
-  tag :p, db.inspect
-  tag :p, self.inspect
-end
-%>
+<%= db.inspect %>
+<%= self.inspect %>
