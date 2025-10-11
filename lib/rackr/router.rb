@@ -230,9 +230,18 @@ class Rackr
         end
       end
 
-      @instance_routes[request_method].dig(
+      result_route = @instance_routes[request_method].dig(
         *(found_scopes + [:__instances])
       )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
+
+      if result_route == nil
+        found_scopes.shift
+        result_route = @instance_routes[request_method].dig(
+            *(found_scopes + [:__instances])
+        )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
+      end
+
+      result_route
     end
   end
 end
