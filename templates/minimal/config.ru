@@ -19,10 +19,18 @@ end
 
 Config::DB::Conn.init
 
-run (Rackr.new({
+App = Rackr.new({
   db: Config::DB::Conn.get
 }).call do
   get do
     render text: db.inspect
   end
-end)
+end
+
+puts "\n= Routes =============="
+App.routes.each_pair { |v| p v }
+puts "\n= Config =============="
+puts App.config
+puts "\n"
+
+run App

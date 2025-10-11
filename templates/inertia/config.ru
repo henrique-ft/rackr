@@ -13,4 +13,10 @@ use Rack::Static, :urls => ["/public"]
   #end
 #end
 
+puts "\n= Routes =============="
+App.routes.each_pair { |v| p v }
+puts "\n= Config =============="
+puts App.config
+puts "\n"
+
 run App

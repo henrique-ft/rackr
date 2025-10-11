@@ -66,7 +66,7 @@ class Rackr
     const_name = name.to_s.capitalize
     id ||= :id
 
-    scope name do
+    scope name.to_s do
       get Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
       get 'new', Object.const_get("Actions::#{const_name}::New") if Object.const_defined?("Actions::#{const_name}::New")
       post Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
