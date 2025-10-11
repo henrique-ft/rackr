@@ -200,6 +200,12 @@ class Rackr
     end
 
     def match_route(request_method)
+      find_instance_in_scope = proc do |request_method, found_scopes|
+        @instance_routes[request_method].dig(
+          *(found_scopes + [:__instances])
+        )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
+      end
+
       last_tail = @splitted_request_path_info.drop(1)
       found_scopes = []
 
@@ -217,10 +223,7 @@ class Rackr
             instance_routes = @instance_routes[request_method].dig(*found_scopes)
             break
           elsif scope.start_with?(':')
-            found_route = @instance_routes[request_method].dig(
-              *(found_scopes + [:__instances])
-            )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
-
+            found_route = find_instance_in_scope.(request_method, found_scopes)
             return found_route if found_route
 
             found_scopes << scope
@@ -230,9 +233,14 @@ class Rackr
         end
       end
 
-      @instance_routes[request_method].dig(
-        *(found_scopes + [:__instances])
-      )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
+      result_route = find_instance_in_scope.(request_method, found_scopes)
+
+      if result_route == nil && !found_scopes.empty?
+        found_scopes.shift
+        result_route = find_instance_in_scope.(request_method, found_scopes)
+      end
+
+      result_route
     end
   end
 end
