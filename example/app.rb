@@ -3,11 +3,10 @@ require 'sequel'
 require 'json'
 #require 'rackr'
 require_relative '../lib/rackr'
-require_relative 'app/layout'
 require_relative 'app/actions/home/index'
 require_relative 'app/actions/home/index2'
 require_relative 'app/actions/home/show'
-require_relative 'app/actions/home/alpine'
+require_relative 'app/actions/home/wildcard'
 require_relative 'app/callbacks/some_assign'
 
 config = {
@@ -38,17 +37,6 @@ end
 
 App =
   Rackr.new(config).call do
-    def layout
-      html_layout do
-        tag :head do
-          title "oi"
-        end
-        tag :body do
-          yield
-        end
-      end
-    end
-
     post 'post/:foo' do |req|
       received_json = Oj.load(req.body.read) # read the json
 
@@ -76,8 +64,8 @@ App =
       render view: 'index'
     end
 
-    scope 'alpine' do
-      get '*', Actions::Home::Alpine
+    scope 'wildcard' do
+      get '*', Actions::Home::Wildcard
     end
 
     get do
