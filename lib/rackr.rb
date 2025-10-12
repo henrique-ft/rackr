@@ -61,7 +61,7 @@ class Rackr
     end
   end
 
-  def resources(name, id: :id, &block)
+  def resources(name, id: :id, before: [], after: [], &block)
     const_name = name.to_s.capitalize
     get_const = ->(type, action) do
       Object.const_get("#{type}::#{const_name}::#{action}") if Object.const_defined?("#{type}::#{const_name}::#{action}")
@@ -88,7 +88,7 @@ class Rackr
       instance_eval(&block) if block_given?
     end
 
-    scope name.to_s do
+    scope(name.to_s, before:, after:) do
       actions.each do |_, definition|
         send(definition[:method], definition[:path], definition[:action]) if definition[:action]
       end
