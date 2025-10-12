@@ -67,13 +67,13 @@ class Rackr
       Object.const_get("#{type}::#{const_name}::#{action}") if Object.const_defined?("#{type}::#{const_name}::#{action}")
     end
 
-    __actions = {
+    actions = {
       index: { method: :get, path: nil, action: get_const.call('Actions', 'Index') },
       new: { method: :get, path: 'new', action: get_const.call('Actions', 'New') },
       create: { method: :post, path: nil, action: get_const.call('Actions', 'Create') },
     }
 
-    __actions_for_id = {
+    actions_for_id = {
       show: { method: :get, path: nil, action: get_const.call('Actions', 'Show') },
       edit: { method: :get, path: "edit", action: get_const.call('Actions', 'Edit') },
       update: { method: :put, path: nil, action: get_const.call('Actions', 'Update') },
@@ -81,7 +81,7 @@ class Rackr
     }
 
     block_for_id = proc do
-      __actions_for_id.each do |_, definition|
+      actions_for_id.each do |_, definition|
         send(definition[:method], definition[:path], definition[:action]) if definition[:action]
       end
 
@@ -89,7 +89,7 @@ class Rackr
     end
 
     scope name.to_s do
-      __actions.each do |_, definition|
+      actions.each do |_, definition|
         send(definition[:method], definition[:path], definition[:action]) if definition[:action]
       end
 
