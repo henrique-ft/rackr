@@ -67,28 +67,37 @@ class Rackr
       Object.const_get("#{type}::#{const_name}::#{action}") if Object.const_defined?("#{type}::#{const_name}::#{action}")
     end
 
-    resource_actions = {
+    __actions = {
       index: { method: :get, path: nil, action: get_const.call('Actions', 'Index') },
       new: { method: :get, path: 'new', action: get_const.call('Actions', 'New') },
-      create: { method: :post, path: nil, action: get_const.call('Actions', 'Index') },
-      show: { method: :get, path: id.to_sym, action: get_const.call('Actions', 'Show') },
-      edit: { method: :get, path: ":#{id}/edit", action: get_const.call('Actions', 'Edit') },
-      update: { method: :put, path: id.to_sym, action: get_const.call('Actions', 'Update') },
-      delete: { method: :delete, path: id.to_sym, action: get_const.call('Actions', 'Delete') }
+      create: { method: :post, path: nil, action: get_const.call('Actions', 'Create') },
     }
 
-    scope name.to_s do
-      resource_actions.each do |_, definition|
+    __actions_for_id = {
+      show: { method: :get, path: nil, action: get_const.call('Actions', 'Show') },
+      edit: { method: :get, path: "edit", action: get_const.call('Actions', 'Edit') },
+      update: { method: :put, path: nil, action: get_const.call('Actions', 'Update') },
+      delete: { method: :delete, path: nil, action: get_const.call('Actions', 'Delete') }
+    }
+
+    block_for_id = proc do
+      __actions_for_id.each do |_, definition|
         send(definition[:method], definition[:path], definition[:action]) if definition[:action]
       end
 
-      if block_given?
-        assign_callback = get_const.call('Callbacks', 'Assign')
-        if assign_callback
-          scope(id.to_sym, before: assign_callback, &block)
-        else
-          scope(id.to_sym, &block)
-        end
+      instance_eval(&block) if block_given?
+    end
+
+    scope name.to_s do
+      __actions.each do |_, definition|
+        send(definition[:method], definition[:path], definition[:action]) if definition[:action]
+      end
+
+      assign_callback = get_const.call('Callbacks', 'Assign')
+      if assign_callback
+        scope(id.to_sym, before: assign_callback, &block_for_id)
+      else
+        scope(id.to_sym, &block_for_id)
       end
     end
   end
