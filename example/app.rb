@@ -109,7 +109,6 @@ App =
       req
     } do
 
-      # estourar erro caso a rota inicie com : tenha / e não seja um scope
       get ':name/hello', before: lambda { |req|
         p 'ROUTE BEFORE'
         req
@@ -117,7 +116,6 @@ App =
         render(json: { name: req.params[:name] }) # routes[:v2_hello]
       end
 
-      # Não funciona
       get 'big_json' do
         render json: BigJson
       end
