@@ -61,33 +61,34 @@ class Rackr
     end
   end
 
-  # Beta
-  def resources(name, id:)
+  def resources(name, id: :id, &block)
     const_name = name.to_s.capitalize
-    id ||= :id
+    get_const = ->(type, action) do
+      Object.const_get("#{type}::#{const_name}::#{action}") if Object.const_defined?("#{type}::#{const_name}::#{action}")
+    end
+
+    resource_actions = {
+      index: { method: :get, path: nil, action: get_const.call('Actions', 'Index') },
+      new: { method: :get, path: 'new', action: get_const.call('Actions', 'New') },
+      create: { method: :post, path: nil, action: get_const.call('Actions', 'Index') },
+      show: { method: :get, path: id.to_sym, action: get_const.call('Actions', 'Show') },
+      edit: { method: :get, path: ":#{id}/edit", action: get_const.call('Actions', 'Edit') },
+      update: { method: :put, path: id.to_sym, action: get_const.call('Actions', 'Update') },
+      delete: { method: :delete, path: id.to_sym, action: get_const.call('Actions', 'Delete') }
+    }
 
     scope name.to_s do
-      get Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
-      get 'new', Object.const_get("Actions::#{const_name}::New") if Object.const_defined?("Actions::#{const_name}::New")
-      post Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
-
-      resource_actions = proc do
-        get Object.const_get("Actions::#{const_name}::Show") if Object.const_defined?("Actions::#{const_name}::Show")
-        if Object.const_defined?("Actions::#{const_name}::Edit")
-          get 'edit', Object.const_get("Actions::#{const_name}::Edit")
-        end
-        if Object.const_defined?("Actions::#{const_name}::Update")
-          put Object.const_get("Actions::#{const_name}::Update")
-        end
-        if Object.const_defined?("Actions::#{const_name}::Delete")
-          delete Object.const_get("Actions::#{const_name}::Delete")
-        end
+      resource_actions.each do |_, definition|
+        send(definition[:method], definition[:path], definition[:action]) if definition[:action]
       end
 
-      if Object.const_defined?("Callbacks::#{const_name}::Assign")
-        scope(id.to_sym, before: Object.const_get("Callbacks::#{const_name}::Assign"), &resource_actions)
-      else
-        scope(id.to_sym, &resource_actions)
+      if block_given?
+        assign_callback = get_const.call('Callbacks', 'Assign')
+        if assign_callback
+          scope(id.to_sym, before: assign_callback, &block)
+        else
+          scope(id.to_sym, &block)
+        end
       end
     end
   end
