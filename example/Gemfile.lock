@@ -21,6 +21,7 @@ GEM
     erubi (1.13.1)
     eventmachine (1.2.7)
     ffi (1.17.1-x86_64-linux-gnu)
+    html_slice (0.2.3)
     json (2.9.1)
     language_server-protocol (3.17.0.3)
     listen (3.9.0)
@@ -103,6 +104,7 @@ PLATFORMS
 DEPENDENCIES
   byebug
   capybara
+  html_slice
   pry (~> 0.12.2)
   rackr
   rerun
