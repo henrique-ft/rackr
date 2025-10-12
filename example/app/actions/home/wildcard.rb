@@ -2,14 +2,11 @@
 
 module Actions
   module Home
-    class Index
+    class Wildcard
       include Rackr::Action
 
       def call(_req)
-        @name = "henrique"
-        @title = "henrique"
-
-        render view: 'index'
+        render html: "<h4>Wildcard</h4>"
       end
     end
   end

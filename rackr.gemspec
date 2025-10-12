@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'rackr'
-  s.version     = '0.0.60'
+  s.version     = '0.0.61'
   s.summary     = 'A complete, simple and easy web micro-framework.'
   s.description = 'A complete, simple and easy web micro-framework.'
   s.authors     = ['Henrique F. Teixeira']
@@ -22,5 +22,4 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'erubi', '~> 1.12'
   s.add_runtime_dependency 'oj', '~> 3.15'
   s.add_runtime_dependency 'rack', '>= 2.0', '< 4.0'
-  s.add_runtime_dependency 'html_slice', '>= 0.0', '< 1.0'
 end
