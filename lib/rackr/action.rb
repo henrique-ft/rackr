@@ -29,7 +29,9 @@ class Rackr
           @db = config[:db]
         end
 
-        def render(**opts)
+        def render(response = nil, **opts)
+          return response.finish if response
+
           type = opts.keys.first
           content = opts[type]
 
