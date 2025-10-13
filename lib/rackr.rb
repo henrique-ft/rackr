@@ -62,9 +62,12 @@ class Rackr
   end
 
   def resources(name, id: :id, before: [], after: [], &block)
-    const_name = name.to_s.capitalize
+    @resource_namespace = (@resource_namespace || []).push([name.to_s.capitalize])
+
     get_const = ->(type, action) do
-      Object.const_get("#{type}::#{const_name}::#{action}") if Object.const_defined?("#{type}::#{const_name}::#{action}")
+      if Object.const_defined?("#{type}::#{@resource_namespace.join('::')}::#{action}")
+        Object.const_get("#{type}::#{@resource_namespace.join('::')}::#{action}")
+      end
     end
 
     actions = {
@@ -100,6 +103,8 @@ class Rackr
         scope(id.to_sym, &block_for_id)
       end
     end
+
+    @resource_namespace = @resource_namespace.first(@resource_namespace.size - 1)
   end
 
   HTTP_METHODS.each do |http_method|

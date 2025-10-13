@@ -3,7 +3,7 @@ App =
     get { render text: 'hello world' }
 
     # Beta
-    resources 'foods', id: :food_id do
+    resources 'foods', id: :food_id do |r|
       get 'oi' do
         render text: 'hello'
       end

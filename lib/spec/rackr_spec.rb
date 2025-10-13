@@ -40,6 +40,14 @@ RSpec.describe Rackr do
           class Edit; def self.call; end; end
           class Update; def self.call; end; end
           class Delete; def self.call; end; end
+
+          module Nesteds
+            module Foos
+              class Index; def self.call; end; end
+            end
+
+            class Index; def self.call; end; end
+          end
         end
       end
     end
@@ -76,6 +84,35 @@ RSpec.describe Rackr do
       end
 
       expect(app.routes.get.values).to include('/foods/:id/test')
+    end
+
+    context 'when nesting resources' do
+      it 'should nest resources routes with a block' do
+        app = Rackr.new
+        app.instance_eval do
+          resources :foods do
+            resources :nesteds do
+              resources :foos
+            end
+          end
+        end
+
+        expect(app.routes.get.values).to include('/foods/:id/nesteds')
+        expect(app.routes.get.values).to include('/foods/:id/nesteds/:id/foos')
+      end
+
+      it 'should nest deeper resources routes with a block' do
+        app = Rackr.new
+        app.instance_eval do
+          resources :foods, id: :food_id do
+            resources :nesteds, id: :nested_id do
+              resources :foos
+            end
+          end
+        end
+
+        expect(app.routes.get.values).to include('/foods/:food_id/nesteds/:nested_id/foos')
+      end
     end
   end
 end
