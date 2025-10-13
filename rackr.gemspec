@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'rackr'
-  s.version     = '0.0.61'
+  s.version     = '0.0.62'
   s.summary     = 'A complete, simple and easy web micro-framework.'
   s.description = 'A complete, simple and easy web micro-framework.'
   s.authors     = ['Henrique F. Teixeira']

@@ -18,6 +18,11 @@ class Rackr
 
   def call(&block)
     instance_eval(&block)
+    puts "\n= Routes =============="
+    routes.each_pair { |v| p v }
+    puts "\n= Config =============="
+    puts config
+    puts "\n"
 
     @router
   end
@@ -61,35 +66,50 @@ class Rackr
     end
   end
 
-  # Beta
-  def resources(name, id:)
-    const_name = name.to_s.capitalize
-    id ||= :id
+  def resources(name, id: :id, before: [], after: [], &block)
+    @resource_namespace = (@resource_namespace || []).push([name.to_s.capitalize])
 
-    scope name.to_s do
-      get Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
-      get 'new', Object.const_get("Actions::#{const_name}::New") if Object.const_defined?("Actions::#{const_name}::New")
-      post Object.const_get("Actions::#{const_name}::Index") if Object.const_defined?("Actions::#{const_name}::Index")
-
-      resource_actions = proc do
-        get Object.const_get("Actions::#{const_name}::Show") if Object.const_defined?("Actions::#{const_name}::Show")
-        if Object.const_defined?("Actions::#{const_name}::Edit")
-          get 'edit', Object.const_get("Actions::#{const_name}::Edit")
-        end
-        if Object.const_defined?("Actions::#{const_name}::Update")
-          put Object.const_get("Actions::#{const_name}::Update")
-        end
-        if Object.const_defined?("Actions::#{const_name}::Delete")
-          delete Object.const_get("Actions::#{const_name}::Delete")
-        end
-      end
-
-      if Object.const_defined?("Callbacks::#{const_name}::Assign")
-        scope(id.to_sym, before: Object.const_get("Callbacks::#{const_name}::Assign"), &resource_actions)
-      else
-        scope(id.to_sym, &resource_actions)
+    get_const = ->(type, action) do
+      if Object.const_defined?("#{type}::#{@resource_namespace.join('::')}::#{action}")
+        Object.const_get("#{type}::#{@resource_namespace.join('::')}::#{action}")
       end
     end
+
+    actions = {
+      index: { method: :get, path: nil, action: get_const.call('Actions', 'Index') },
+      new: { method: :get, path: 'new', action: get_const.call('Actions', 'New') },
+      create: { method: :post, path: nil, action: get_const.call('Actions', 'Create') },
+    }
+
+    actions_for_id = {
+      show: { method: :get, path: nil, action: get_const.call('Actions', 'Show') },
+      edit: { method: :get, path: "edit", action: get_const.call('Actions', 'Edit') },
+      update: { method: :put, path: nil, action: get_const.call('Actions', 'Update') },
+      delete: { method: :delete, path: nil, action: get_const.call('Actions', 'Delete') }
+    }
+
+    block_for_id = proc do
+      actions_for_id.each do |_, definition|
+        send(definition[:method], definition[:path], definition[:action]) if definition[:action]
+      end
+
+      instance_eval(&block) if block_given?
+    end
+
+    scope(name.to_s, before:, after:) do
+      actions.each do |_, definition|
+        send(definition[:method], definition[:path], definition[:action]) if definition[:action]
+      end
+
+      assign_callback = get_const.call('Callbacks', 'Assign')
+      if assign_callback
+        scope(id.to_sym, before: assign_callback, &block_for_id)
+      else
+        scope(id.to_sym, &block_for_id)
+      end
+    end
+
+    @resource_namespace = @resource_namespace.first(@resource_namespace.size - 1)
   end
 
   HTTP_METHODS.each do |http_method|

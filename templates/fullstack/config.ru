@@ -3,6 +3,7 @@ require 'byebug' if ENV['RACK_ENV'] == 'development'
 require_relative '../../lib/rackr'
 #require 'rackr'
 require 'sequel'
+require 'html_slice'
 require_relative 'load'
 
 use Rack::Static, :urls => ["/public"]
@@ -12,11 +13,5 @@ use Rack::Static, :urls => ["/public"]
     #[username, password] == ['some_username', 'some_password']
   #end
 #end
-
-puts "\n= Routes =============="
-App.routes.each_pair { |v| p v }
-puts "\n= Config =============="
-puts App.config
-puts "\n"
 
 run App
