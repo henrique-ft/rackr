@@ -49,6 +49,11 @@ App =
       render(json: received_json.merge({ post: 'ok' }))
     end
 
+    get 'view_response' do |request|
+      response = view_response('index', headers: {})
+      render response:
+    end
+
     get 'error' do
     end
 
