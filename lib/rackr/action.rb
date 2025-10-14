@@ -16,6 +16,16 @@ class Rackr
       json: lambda do |val, status: 200, headers: {}, json: nil|
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
         [status, { 'content-type' => 'application/json', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
+      end,
+      res: lambda do |val, status: nil, headers: nil, res: nil|
+        val.status = status if status
+        headers.each { |h, v| val.set_header(h, v) } if headers
+        val.finish
+      end,
+      response: lambda do |val, status: nil, headers: nil, response: nil|
+        val.status = status if status
+        headers.each { |h, v| val.set_header(h, v) } if headers
+        val.finish
       end
     }.freeze
 
@@ -29,9 +39,7 @@ class Rackr
           @db = config[:db]
         end
 
-        def render(response = nil, **opts)
-          return response.finish if response
-
+        def render(**opts)
           type = opts.keys.first
           content = opts[type]
 

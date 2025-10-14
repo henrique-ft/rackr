@@ -6,7 +6,11 @@ module Actions
       include Rackr::Action
 
       def call(_req)
-        render html: "<h4>Wildcard</h4>"
+        render res:
+      end
+
+      def res
+        html_response("<h4>Wildcard</h4>")
       end
     end
   end
