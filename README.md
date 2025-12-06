@@ -116,7 +116,7 @@ end)
 #### Rack Docs
 
 - [Rack::Request](https://www.rubydoc.info/github/rack/rack/Rack/Request)
-- [Rack::Session](https://www.rubydoc.info/github/rack/rack/Rack/Session)
+- [Rack::Session](https://github.com/rack/rack-session)
 - [Rack::Utils](https://www.rubydoc.info/github/rack/rack/Rack/Utils)
 
 ### How to
