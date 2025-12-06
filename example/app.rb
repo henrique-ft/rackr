@@ -37,6 +37,17 @@ end
 
 App =
   Rackr.new(config).call do
+    get do |req|
+      req.session['visitas'] ||= 0
+
+      res = text_response(
+        "#{req.session['visitas'] += 1} #{req.cookies['x']}"
+      )
+      res.set_cookie('x', req.cookies['x'] += 'a')
+
+      render res:
+    end
+
     post 'post/:foo' do |req|
       received_json = Oj.load(req.body.read) # read the json
 
@@ -71,10 +82,6 @@ App =
 
     scope 'wildcard' do
       get '*', Actions::Home::Wildcard
-    end
-
-    get do
-      render html: '<h1>hello</h1>'
     end
 
     get 'show', Actions::Home::Show

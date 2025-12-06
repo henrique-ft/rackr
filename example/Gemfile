@@ -3,6 +3,7 @@
 source 'https://rubygems.org'
 
 gem 'rackr'
+gem 'rack-session'
 # for small / medium projects and little memory usage
 gem 'thin'
 # database
