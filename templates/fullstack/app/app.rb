@@ -3,12 +3,12 @@ App =
     get { render text: 'hello world' }
 
     # Beta
-    resources 'foods', id: :food_id do |r|
+    resources :foods, id: :food_id do |r|
       get 'oi' do
         render text: 'hello'
       end
 
-      resources 'inner'
+      resources :inner
     end
 
     not_found do
