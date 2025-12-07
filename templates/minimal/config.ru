@@ -1,7 +1,7 @@
 require 'rackr'
 require 'sequel'
 
-module Config
+module Deps
   module DB
     class Conn
       def self.init
@@ -17,10 +17,12 @@ module Config
   end
 end
 
-Config::DB::Conn.init
+Deps::DB::Conn.init
 
 App = Rackr.new({
-  db: Config::DB::Conn.get
+  deps: {
+    db: Deps::DB::Conn.get
+  }
 }).call do
   get do
     render text: db.inspect

@@ -1,5 +1,5 @@
 App =
-  Rackr.new(Config::App).call do
+  Rackr.new(Config.get).call do
     get { render text: 'hello world' }
 
     # Beta

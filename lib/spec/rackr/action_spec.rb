@@ -372,11 +372,12 @@ RSpec.describe Rackr::Action do
 
   context 'including' do
     let(:routes) { 'routes' }
-    let(:config) { { some_config: 'a', db: 'db' } }
+    let(:config) { { some_config: 'a', deps: { db: 'db' } } }
     let(:included) { SomeClass.new(routes: routes, config: config) }
 
     it { expect(included.routes).to eq(routes) }
     it { expect(included.config).to eq(config) }
-    it { expect(included.db).to eq(config[:db]) }
+    it { expect(included.deps).to eq(config[:deps]) }
+    it { expect(included.db).to eq(config[:deps][:db]) }
   end
 end
