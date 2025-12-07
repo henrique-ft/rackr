@@ -36,7 +36,7 @@ class Rackr
         def initialize(routes: nil, config: nil)
           @routes = routes
           @config = config
-          @db = config[:db]
+          @db = config.dig(:deps, :db)
         end
 
         def render(**opts)

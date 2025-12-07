@@ -1,4 +1,4 @@
-module Config
+module Deps
   module DB
     class Conn
       def self.init

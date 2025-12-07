@@ -36,7 +36,7 @@ class Rackr
   end
 
   def db
-    @router.config[:db]
+    @router.config.dig(:deps, :db)
   end
 
   def scope(name = '', before: [], after: [], &block)
