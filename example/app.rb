@@ -10,7 +10,9 @@ require_relative 'app/actions/home/wildcard'
 require_relative 'app/callbacks/some_assign'
 
 config = {
-  db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
+  deps: {
+    db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
+  }
   views: { path: 'app/views' }
 }
 
