@@ -20,6 +20,14 @@ RSpec.describe Rackr do
     end
   end
 
+  context '.deps' do
+    it do
+      deps = { test: 'test dep' }
+      app = Rackr.new({ deps: })
+      expect(app.deps).to eq(deps)
+    end
+  end
+
   context '.db' do
     it do
       db = 'some db'

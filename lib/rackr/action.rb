@@ -31,11 +31,12 @@ class Rackr
 
     def self.included(base)
       base.class_eval do
-        attr_reader :routes, :config, :db if self != Rackr
+        attr_reader :routes, :config, :deps, :db if self != Rackr
 
         def initialize(routes: nil, config: nil)
           @routes = routes
           @config = config
+          @deps = config[:deps]
           @db = config.dig(:deps, :db)
         end
 

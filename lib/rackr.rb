@@ -35,6 +35,10 @@ class Rackr
     @router.config
   end
 
+  def deps
+    @router.config[:deps]
+  end
+
   def db
     @router.config.dig(:deps, :db)
   end
