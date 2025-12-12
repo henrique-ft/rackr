@@ -48,11 +48,12 @@ class Rackr
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
       route_instance, found_scopes = match_route(env['REQUEST_METHOD'])
-      return call_endpoint(@default_not_found.endpoint, request_builder.call) if route_instance.nil?
-
-      rack_request = request_builder.call(route_instance)
 
       begin
+        return call_endpoint(@default_not_found.endpoint, request_builder.call) if route_instance.nil?
+
+        rack_request = request_builder.call(route_instance)
+
         befores = route_instance.befores
         before_result = nil
         i = 0
@@ -187,23 +188,23 @@ class Rackr
 
     def push_to_scope(method, route_instance)
       scopes_with_slash = not_empty_scopes + %i[__instances]
-      push_value(@path_routes_instances[method], *scopes_with_slash, route_instance)
+      deep_hash_push(@path_routes_instances[method], *scopes_with_slash, route_instance)
     end
 
-    def push_value(hash, first_key, *rest_keys, val)
+    def deep_hash_push(hash, first_key, *rest_keys, val)
       if rest_keys.empty?
         (hash[first_key] ||= []) << val
       else
-        hash[first_key] = push_value(hash[first_key] ||= {}, *rest_keys, val)
+        hash[first_key] = deep_hash_push(hash[first_key] ||= {}, *rest_keys, val)
       end
       hash
     end
 
     def set_not_found_to_scope(route_instance)
-      set_value(@not_founds_instances, not_empty_scopes, route_instance)
+      deep_hash_set(@not_founds_instances, not_empty_scopes, route_instance)
     end
 
-    def set_value(hash, keys, value)
+    def deep_hash_set(hash, keys, value)
       *path, last = keys
       node = path.inject(hash) { |h, k| h[k] ||= {} }
       node[last] = value
