@@ -169,19 +169,36 @@ RSpec.describe Rackr::Router do
 
       expect(router.call(request)).to eq([404, {}, ['Custom not found']])
     end
+
+    it 'catches Rackr::NotFound with custom not found in scope' do
+      router = Rackr::Router.new
+
+      router.add_not_found proc { [404, {}, ['Not found']] }
+      router.append_scope 'test'
+      router.add_not_found proc { [404, {}, ['Inside scope not found']] }
+      router.add :get, 'raise', lambda { |_env|
+        raise Rackr::NotFound
+      }
+
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'PATH_INFO' => '/test/raise'
+        }
+
+      expect(router.call(request)).to eq([404, {}, ['Inside scope not found']])
+    end
   end
 
   it 'render custom error when exception happen' do
     router = Rackr::Router.new
-
-    allow_any_instance_of(Rackr::Router::PathRoute).to receive(:match?).and_raise(Exception)
 
     request =
       {
         'REQUEST_METHOD' => 'GET',
         'PATH_INFO' => '/teste'
       }
-    router.add :get, 'teste', double(call: 'Hey test')
+    router.add :get, 'teste', lambda { raise Exception }
     router.add_error proc { |_req, _e| [500, {}, ['Custom internal server error']] }
     expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
   end

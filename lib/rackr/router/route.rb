@@ -16,6 +16,8 @@ class Rackr
         @afters = afters
         @has_afters = afters != []
       end
+
+      def match? = true
     end
   end
 end
