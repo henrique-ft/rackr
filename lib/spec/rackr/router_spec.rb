@@ -160,12 +160,12 @@ RSpec.describe Rackr::Router do
         router.add_not_found proc { [404, {}, ['Not found']] }
         router.append_scope 'test'
         router.add_not_found proc { [404, {}, ['Inside scope not found']] }
-        router.add :get, 'unmatched-route', lambda { |_env| [200, {}, ''] }
+        router.add :get, 'some-thing', lambda { |_env| [200, {}, ''] }
 
         request_a =
           {
             'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => '/test/fail'
+            'PATH_INFO' => '/test/dont-exist'
           }
         request_b =
           {
