@@ -19,7 +19,7 @@ RSpec.describe Rackr::Router::BuildRequest do
 
     it 'it can match the route params' do
       route =
-        Rackr::Router::Route
+        Rackr::Router::PathRoute
         .new '/test/:param1/test/:param2', double(call: 'Hey test')
 
       request = described_class.new({}, rack_request.path.split('/')).call(route)

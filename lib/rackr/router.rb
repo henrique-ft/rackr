@@ -2,11 +2,12 @@
 
 require_relative 'router/errors'
 require_relative 'router/route'
+require_relative 'router/path_route'
 require_relative 'router/build_request'
 
 class Rackr
   class Router
-    attr_writer :not_found
+    attr_writer :default_not_found
     attr_reader :routes, :config
 
     def initialize(config = {}, before: [], after: [])
@@ -29,7 +30,7 @@ class Rackr
       @afters = ensure_array(after)
       @scopes_afters = {}
       @error = proc { |_req, e| raise e }
-      @not_found = proc { [404, {}, ['Not found']] }
+      @default_not_found = proc { [404, {}, ['Not found']] }
       @splitted_request_path_info = []
       @current_request_path_info = nil
     end
@@ -45,7 +46,7 @@ class Rackr
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
       route_instance = match_route(env['REQUEST_METHOD'])
-      return call_endpoint(@not_found, request_builder.call) if route_instance.nil?
+      return call_endpoint(@default_not_found, request_builder.call) if route_instance.nil?
 
       rack_request = request_builder.call(route_instance)
 
@@ -72,7 +73,7 @@ class Rackr
 
       endpoint_result
     rescue Rackr::NotFound
-      call_endpoint(@not_found, request_builder.call)
+      call_endpoint(@default_not_found, request_builder.call)
     rescue Exception => e
       return @error.call(request_builder.call, e) if !@dev_mode || ENV['RACKR_ERROR_DEV']
 
@@ -94,7 +95,7 @@ class Rackr
       add_named_route(method, path_with_scopes, as)
 
       route_instance =
-        Route.new(
+        PathRoute.new(
           path_with_scopes,
           endpoint,
           befores: @befores + ensure_array(route_befores),
@@ -110,7 +111,7 @@ class Rackr
     def add_not_found(endpoint)
       Errors.check_endpoint(endpoint, 'not_found')
 
-      @not_found = endpoint
+      @default_not_found = endpoint
     end
 
     def add_error(endpoint)
@@ -236,8 +237,7 @@ class Rackr
       result_route = find_instance_in_scope.(request_method, found_scopes)
 
       if result_route == nil && !found_scopes.empty?
-        found_scopes.shift
-        result_route = find_instance_in_scope.(request_method, found_scopes)
+        result_route = find_instance_in_scope.(request_method, found_scopes[..-2])
       end
 
       result_route

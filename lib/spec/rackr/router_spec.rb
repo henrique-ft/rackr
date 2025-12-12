@@ -174,7 +174,7 @@ RSpec.describe Rackr::Router do
   it 'render custom error when exception happen' do
     router = Rackr::Router.new
 
-    allow_any_instance_of(Rackr::Router::Route).to receive(:match?).and_raise(Exception)
+    allow_any_instance_of(Rackr::Router::PathRoute).to receive(:match?).and_raise(Exception)
 
     request =
       {
