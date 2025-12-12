@@ -264,8 +264,6 @@ class Rackr
       not_found_route = nil
 
       while not_found_route == nil && found_scopes != []
-        # o problema ta no deep_hash_set
-        # vai precisar de uma meta chave igual ao __instanc
         not_found_route = @not_founds_instances&.dig(*(found_scopes + [:__instance]))
         found_scopes.pop
       end
