@@ -51,12 +51,11 @@ class Rackr
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
       route_instance, found_scopes = match_route(env['REQUEST_METHOD'])
+      rack_request = request_builder.call(route_instance)
+      befores = route_instance.befores
+      before_result = nil
 
       begin
-        rack_request = request_builder.call(route_instance)
-
-        befores = route_instance.befores
-        before_result = nil
         i = 0
         while i < befores.size
           before_result = call_endpoint(befores[i], rack_request)
@@ -69,14 +68,17 @@ class Rackr
 
         endpoint_result = call_endpoint(route_instance.endpoint, before_result || rack_request)
 
-        afters = route_instance.afters
-        i = 0
-        while i < afters.size
-          call_endpoint(afters[i], endpoint_result)
-          i += 1
-        end
+        call_afters(route_instance, endpoint_result)
       rescue Rackr::NotFound
-        return call_endpoint(match_not_found_route(found_scopes).endpoint, request_builder.call)
+        endpoint_result =
+          call_endpoint(
+            match_not_found_route(found_scopes).endpoint,
+            before_result || rack_request
+          )
+
+        call_afters(route_instance, endpoint_result)
+
+        return endpoint_result
       rescue Exception => e
         return @error.call(request_builder.call, e) if !@dev_mode || ENV['RACKR_ERROR_DEV']
 
@@ -84,6 +86,15 @@ class Rackr
       end
 
       endpoint_result
+    end
+
+    def call_afters(route_instance, endpoint_result)
+      afters = route_instance.afters
+      i = 0
+      while i < afters.size
+        call_endpoint(afters[i], endpoint_result)
+        i += 1
+      end
     end
 
     def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])
@@ -121,7 +132,7 @@ class Rackr
         Route.new(
           endpoint,
           befores: @befores,
-          afters: @afters,
+          afters: @afters
         )
 
       return set_not_found_to_scope(route_instance) if @scopes.size >= 1
@@ -233,7 +244,7 @@ class Rackr
             path_routes_instances = @path_routes_instances[request_method].dig(*found_scopes)
             break
           elsif scope.start_with?(':')
-            found_route = find_instance_in_scope.(request_method, found_scopes)
+            found_route = find_instance_in_scope.call(request_method, found_scopes)
             return found_route if found_route
 
             found_scopes << scope
@@ -243,15 +254,13 @@ class Rackr
         end
       end
 
-      result_route = find_instance_in_scope.(request_method, found_scopes)
+      result_route = find_instance_in_scope.call(request_method, found_scopes)
 
-      if result_route == nil && !found_scopes.empty?
-        result_route = find_instance_in_scope.(request_method, found_scopes[..-2])
+      if result_route.nil? && !found_scopes.empty?
+        result_route = find_instance_in_scope.call(request_method, found_scopes[..-2])
       end
 
-      if result_route == nil
-        result_route = match_not_found_route(found_scopes)
-      end
+      result_route = match_not_found_route(found_scopes) if result_route.nil?
 
       [result_route, found_scopes]
     end
@@ -259,12 +268,12 @@ class Rackr
     def match_not_found_route(found_scopes)
       not_found_route = nil
 
-      while not_found_route == nil && found_scopes != []
+      while not_found_route.nil? && found_scopes != []
         not_found_route = @not_founds_instances&.dig(*(found_scopes + [:__instance]))
         found_scopes.pop
       end
 
-      return @default_not_found if not_found_route == nil
+      return @default_not_found if not_found_route.nil?
 
       not_found_route
     end

@@ -315,15 +315,15 @@ RSpec.describe Rackr::Action do
     end
 
     it 'can render a rack response with response:' do
-      result = subject.render(response: subject.response('body', 404, {'some' => 'header'}))
+      result = subject.render(response: subject.response('body', 404, { 'some' => 'header' }))
 
-      expect(result).to eq([404, {"content-length" => "4", "some" => "header"}, ["body"]])
+      expect(result).to eq([404, { 'content-length' => '4', 'some' => 'header' }, ['body']])
     end
 
     it 'can render a rack response with res:' do
-      result = subject.render(res: subject.response('body', 404, {'some' => 'header'}))
+      result = subject.render(res: subject.response('body', 404, { 'some' => 'header' }))
 
-      expect(result).to eq([404, {"content-length" => "4", "some" => "header"}, ["body"]])
+      expect(result).to eq([404, { 'content-length' => '4', 'some' => 'header' }, ['body']])
     end
   end
 
