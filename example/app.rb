@@ -12,7 +12,7 @@ require_relative 'app/callbacks/some_assign'
 config = {
   deps: {
     db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
-  }
+  },
   views: { path: 'app/views' }
 }
 
@@ -102,6 +102,10 @@ App =
         get 'bla', as: :bla do
           render html: "<h1> #{routes.get[:bla]} </h1>"
         end
+      end
+
+      not_found do
+        render html: "not found inside v2"
       end
     end
 
