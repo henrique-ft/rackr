@@ -40,10 +40,6 @@ class Rackr
       @current_request_path_info = nil
     end
 
-    #- [ ] Resolver os befores e afters
-    #- [ ] Testes ^
-    #- [ ] Adicionar not found na resolução da rota (ao invés de só na exception)
-    #- [ ] Testes
     def call(env)
       path_info = env['PATH_INFO']
 

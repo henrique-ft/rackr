@@ -159,7 +159,7 @@ RSpec.describe Rackr::Router do
 
         router.add_not_found proc { [404, {}, ['Not found']] }
         router.append_scope 'test'
-        router.add_not_found proc { [404, {}, ['Inside scope not found']] }
+        router.add_not_found proc { |req| [404, {}, ["Inside scope not found"]] }
         router.add :get, 'some-thing', lambda { |_env| [200, {}, ''] }
 
         request_a =
@@ -173,8 +173,29 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/foo'
           }
 
-        expect(router.call(request_a)).to eq([404, {}, ['Inside scope not found']])
+        expect(router.call(request_a)).to eq([404, {}, ["Inside scope not found"]])
         expect(router.call(request_b)).to eq([404, {}, ['Not found']])
+      end
+
+      it 'renders custom 404 executing before' do
+        router = Rackr::Router.new
+        test_name = 'van halen'
+
+        router.add_not_found proc { [404, {}, ['Not found']] }
+        router.append_scope 'test', scope_befores: [proc { |req|
+          req.params[:name] = test_name
+          req
+        }]
+        router.add_not_found proc { |req| [404, {}, ["Inside scope not found, name: #{req.params[:name]}"]] }
+        router.add :get, 'some-thing', lambda { |_env| [200, {}, ''] }
+
+        request_a =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/test/dont-exist'
+          }
+
+        expect(router.call(request_a)).to eq([404, {}, ["Inside scope not found, name: #{test_name}"]])
       end
 
       context 'catching Rackr::NotFound' do
