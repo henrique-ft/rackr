@@ -192,12 +192,11 @@ class Rackr
     end
 
     def push_to_scope(method, route_instance)
-      scopes_with_slash = not_empty_scopes + %i[__instances]
-      deep_hash_push(@path_routes_instances[method], *scopes_with_slash, route_instance)
+      deep_hash_push(@path_routes_instances[method], *(not_empty_scopes + %i[__instances]), route_instance)
     end
 
     def set_not_found_to_scope(route_instance)
-      deep_hash_set(@not_founds_instances, not_empty_scopes, route_instance)
+      deep_hash_set(@not_founds_instances, (not_empty_scopes + %i[__instance]), route_instance)
     end
 
     def put_path_slash(path)
@@ -219,10 +218,6 @@ class Rackr
         @path_routes_instances[request_method].dig(
           *(found_scopes + [:__instances])
         )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
-      end
-
-      find_not_found_in_scope = proc do |found_scopes|
-        @not_founds_instances.dig(*found_scopes)
       end
 
       last_tail = @splitted_request_path_info.drop(1)
@@ -269,8 +264,10 @@ class Rackr
       not_found_route = nil
 
       while not_found_route == nil && found_scopes != []
-        not_found_route = @not_founds_instances&.dig(*found_scopes)
-        found_scopes.shift
+        # o problema ta no deep_hash_set
+        # vai precisar de uma meta chave igual ao __instanc
+        not_found_route = @not_founds_instances&.dig(*(found_scopes + [:__instance]))
+        found_scopes.pop
       end
 
       return @default_not_found if not_found_route == nil

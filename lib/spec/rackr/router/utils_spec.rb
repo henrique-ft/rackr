@@ -57,6 +57,13 @@ RSpec.describe Rackr::Router::Utils do
       expect(hash).to eq({ a: { b: { c: 2 } } })
     end
 
+    it 'merges an existing value at a deep key' do
+      hash = { a: { b: { c: 1 } } }
+      utils.deep_hash_set(hash, [:a, :b, :d, :e], 2)
+      utils.deep_hash_set(hash, [:a, :i], 4)
+      expect(hash).to eq({ a: { b: { c: 1, d: { e: 2 } }, i: 4  }})
+    end
+
     it 'sets a value when part of the path already exists' do
       hash = { a: { b: {} } }
       utils.deep_hash_set(hash, [:a, :b, :c], 1)
