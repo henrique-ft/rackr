@@ -122,7 +122,7 @@ class Rackr
           afters: @afters,
         )
 
-      return push_not_found_to_scope(route_instance) if @scopes.size >= 1
+      return set_not_found_to_scope(route_instance) if @scopes.size >= 1
 
       @default_not_found = route_instance
     end
@@ -187,20 +187,26 @@ class Rackr
 
     def push_to_scope(method, route_instance)
       scopes_with_slash = not_empty_scopes + %i[__instances]
-      push_it(@path_routes_instances[method], *scopes_with_slash, route_instance)
+      push_value(@path_routes_instances[method], *scopes_with_slash, route_instance)
     end
 
-    def push_not_found_to_scope(route_instance)
-      push_it(@not_founds_instances, *not_empty_scopes, route_instance)
-    end
-
-    def push_it(hash, first_key, *rest_keys, val)
+    def push_value(hash, first_key, *rest_keys, val)
       if rest_keys.empty?
         (hash[first_key] ||= []) << val
       else
-        hash[first_key] = push_it(hash[first_key] ||= {}, *rest_keys, val)
+        hash[first_key] = push_value(hash[first_key] ||= {}, *rest_keys, val)
       end
       hash
+    end
+
+    def set_not_found_to_scope(route_instance)
+      set_value(@not_founds_instances, not_empty_scopes, route_instance)
+    end
+
+    def set_value(hash, keys, value)
+      *path, last = keys
+      node = path.inject(hash) { |h, k| h[k] ||= {} }
+      node[last] = value
     end
 
     def put_path_slash(path)
@@ -268,7 +274,8 @@ class Rackr
       not_found_route = nil
 
       while not_found_route == nil && found_scopes != []
-        not_found_route = @not_founds_instances.dig(*found_scopes).first
+        #debugger
+        not_found_route = @not_founds_instances&.dig(*found_scopes)
         found_scopes.shift
       end
 
