@@ -18,6 +18,8 @@ class Rackr
       end
 
       def match? = true
+      def splitted_path = []
+      def has_params = false
     end
   end
 end

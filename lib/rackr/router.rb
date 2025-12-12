@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'router/utils'
 require_relative 'router/errors'
 require_relative 'router/route'
 require_relative 'router/path_route'
@@ -7,6 +8,8 @@ require_relative 'router/build_request'
 
 class Rackr
   class Router
+    include Utils
+
     attr_writer :default_not_found
     attr_reader :routes, :config
 
@@ -37,6 +40,10 @@ class Rackr
       @current_request_path_info = nil
     end
 
+    #- [ ] Resolver os befores e afters
+    #- [ ] Testes ^
+    #- [ ] Adicionar not found na resolução da rota (ao invés de só na exception)
+    #- [ ] Testes
     def call(env)
       path_info = env['PATH_INFO']
 
@@ -50,8 +57,6 @@ class Rackr
       route_instance, found_scopes = match_route(env['REQUEST_METHOD'])
 
       begin
-        return call_endpoint(@default_not_found.endpoint, request_builder.call) if route_instance.nil?
-
         rack_request = request_builder.call(route_instance)
 
         befores = route_instance.befores
@@ -191,23 +196,8 @@ class Rackr
       deep_hash_push(@path_routes_instances[method], *scopes_with_slash, route_instance)
     end
 
-    def deep_hash_push(hash, first_key, *rest_keys, val)
-      if rest_keys.empty?
-        (hash[first_key] ||= []) << val
-      else
-        hash[first_key] = deep_hash_push(hash[first_key] ||= {}, *rest_keys, val)
-      end
-      hash
-    end
-
     def set_not_found_to_scope(route_instance)
       deep_hash_set(@not_founds_instances, not_empty_scopes, route_instance)
-    end
-
-    def deep_hash_set(hash, keys, value)
-      *path, last = keys
-      node = path.inject(hash) { |h, k| h[k] ||= {} }
-      node[last] = value
     end
 
     def put_path_slash(path)
@@ -268,6 +258,10 @@ class Rackr
         result_route = find_instance_in_scope.(request_method, found_scopes[..-2])
       end
 
+      if result_route == nil
+        result_route = match_not_found_route(found_scopes)
+      end
+
       [result_route, found_scopes]
     end
 
@@ -275,7 +269,6 @@ class Rackr
       not_found_route = nil
 
       while not_found_route == nil && found_scopes != []
-        #debugger
         not_found_route = @not_founds_instances&.dig(*found_scopes)
         found_scopes.shift
       end
