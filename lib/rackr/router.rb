@@ -71,49 +71,16 @@ class Rackr
 
         call_afters(route_instance, endpoint_result)
       rescue Rackr::NotFound
-        return fallback(
-          found_scopes,
-          @not_found_instances,
-          @default_not_found,
-          route_instance,
-          before_result || rack_request
-        )
-      rescue Exception => e
+        return not_found_fallback(found_scopes, route_instance, before_result || rack_request)
+      rescue Exception => error
         if !@dev_mode || ENV['RACKR_ERROR_DEV']
-          return fallback(
-            found_scopes,
-            @error_instances,
-            @default_error,
-            route_instance,
-            before_result || rack_request
-          )
+          return error_fallback(found_scopes, route_instance, before_result || rack_request, error)
         end
 
-        return call_endpoint(Errors::DevHtml, env.merge({ 'error' => e }))
+        return call_endpoint(Errors::DevHtml, env.merge({ 'error' => error }))
       end
 
       endpoint_result
-    end
-
-    def fallback(found_scopes, instances, default, route_instance, request)
-      endpoint_result =
-        call_endpoint(
-          match_route(found_scopes, instances, default).endpoint,
-          request
-        )
-
-      call_afters(route_instance, endpoint_result)
-
-      return endpoint_result
-    end
-
-    def call_afters(route_instance, endpoint_result)
-      afters = route_instance.afters
-      i = 0
-      while i < afters.size
-        call_endpoint(afters[i], endpoint_result)
-        i += 1
-      end
     end
 
     def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])
@@ -159,6 +126,33 @@ class Rackr
 
         instance_variable_set("@default_#{v}", route_instance)
       end
+
+      define_method("#{v}_fallback") do |found_scopes, route_instance, request, error = nil|
+        args = [
+          match_route(
+            found_scopes,
+            send("#{v}_instances"),
+            instance_variable_get("@default_#{v}")
+          ).endpoint,
+          request,
+        ]
+        args << error if error
+
+        endpoint_result = call_endpoint(*args)
+
+        call_afters(route_instance, endpoint_result)
+
+        return endpoint_result
+      end
+    end
+
+    def call_afters(route_instance, endpoint_result)
+      afters = route_instance.afters
+      i = 0
+      while i < afters.size
+        call_endpoint(afters[i], endpoint_result)
+        i += 1
+      end
     end
 
     def append_scope(name, scope_befores: [], scope_afters: [])
@@ -188,21 +182,18 @@ class Rackr
 
     private
 
-    def call_endpoint(endpoint, content)
-      return endpoint.call(content) if endpoint.respond_to?(:call)
+    def call_endpoint(endpoint, content, error = nil)
+      target =
+        if endpoint.respond_to?(:call)
+          endpoint
+        elsif endpoint < Rackr::Action || endpoint < Rackr::Callback
+          endpoint.new(routes: @routes, config: @config)
+        else
+          endpoint.new
+        end
 
-      if endpoint < Rackr::Action || endpoint < Rackr::Callback
-        return endpoint.new(routes: @routes, config: @config).call(content)
-      end
-
-      endpoint.new.call(content)
-    end
-
-    def ensure_array(list)
-      return [] if list.nil?
-      return list if list.is_a?(Array)
-
-      [list]
+      return target.call(content, error) if error
+      target.call(content)
     end
 
     def add_named_route(method, path_with_scopes, as)

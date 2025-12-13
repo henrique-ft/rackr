@@ -279,17 +279,45 @@ RSpec.describe Rackr::Router do
     end
   end
 
-  it 'render custom error when exception happen' do
-    router = Rackr::Router.new
+  context 'custom errors' do
+    it 'render custom error when exception happen' do
+      router = Rackr::Router.new
 
-    request =
-      {
-        'REQUEST_METHOD' => 'GET',
-        'PATH_INFO' => '/teste'
-      }
-    router.add :get, 'teste', -> { raise StandardError }
-    router.add_error proc { |_req, _e| [500, {}, ['Custom internal server error']] }
-    expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
+      request =
+        {
+          'REQUEST_METHOD' => 'GET',
+          'PATH_INFO' => '/teste'
+        }
+      router.add :get, 'teste', -> { raise StandardError }
+      router.add_error proc { |_req, _e| [500, {}, ['Custom internal server error']] }
+      expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
+    end
+
+    context 'when using scopes' do
+      it 'renders custom error' do
+        router = Rackr::Router.new
+
+        router.add_error proc { |_req, e| [500, {}, ["Error: #{e.class}"]] }
+        router.add :get, 'foo', proc { raise StandardError }
+        router.append_scope 'test'
+        router.add_error proc { |_req, e| [500, {}, ["Inside scope error: #{e.class}"]] }
+        router.add :get, 'bar', proc { raise StandardError }
+
+        request_a =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/foo'
+          }
+        request_b =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/test/bar'
+          }
+
+        expect(router.call(request_a)).to eq([500, {}, ['Error: StandardError']])
+        expect(router.call(request_b)).to eq([500, {}, ['Inside scope error: StandardError']])
+      end
+    end
   end
 
   context 'scopes' do

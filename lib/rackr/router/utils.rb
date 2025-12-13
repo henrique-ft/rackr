@@ -12,6 +12,13 @@ class Rackr
         hash
       end
 
+      def ensure_array(list)
+        return [] if list.nil?
+        return list if list.is_a?(Array)
+
+        [list]
+      end
+
       def deep_hash_set(hash, keys, value)
         *path, last = keys
         node = path.inject(hash) { |h, k| h[k] ||= {} }
