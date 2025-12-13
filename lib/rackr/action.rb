@@ -6,7 +6,7 @@ require 'rack'
 
 class Rackr
   module Action
-    RENDER = {
+    @@render = {
       html: lambda do |val, status: 200, headers: {}, html: nil|
         [status, { 'content-type' => 'text/html', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
       end,
@@ -44,7 +44,7 @@ class Rackr
           type = opts.keys.first
           content = opts[type]
 
-          Rackr::Action::RENDER[type]&.call(content, **opts) || _render_view(content, **opts)
+          @@render[type]&.call(content, **opts) || _render_view(content, **opts)
         end
 
         def view_response(
