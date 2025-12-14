@@ -42,8 +42,8 @@ App =
     get do |req|
       req.session['visitas'] ||= 0
 
-      res = text_response(
-        "#{req.session['visitas'] += 1} #{req.cookies['x']}"
+      res = build_response(
+        text: "#{req.session['visitas'] += 1} #{req.cookies['x']}"
       )
       res.set_cookie('x', req.cookies['x'] += 'a')
 
@@ -63,7 +63,7 @@ App =
     end
 
     get 'view_response' do |request|
-      response = view_response('index', headers: {})
+      response = build_response(view: 'index', headers: {})
       render response:
     end
 

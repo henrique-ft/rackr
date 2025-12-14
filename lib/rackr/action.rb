@@ -48,6 +48,29 @@ class Rackr
       end
     }.freeze
 
+    @@build_response = {
+      html: lambda do |val = '', status: 200, headers: {}, html: nil|
+        Rack::Response.new(val, status, @@default_headers_for.call('text/html; charset=utf-8', headers, val))
+      end,
+      text: lambda do |val, status: 200, headers: {}, text: nil|
+        Rack::Response.new(val, status, @@default_headers_for.call('text/plain', headers, val))
+      end,
+      json: lambda do |val = {}, status: 200, headers: {}, json: nil|
+        val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
+        Rack::Response.new(val, status, @@default_headers_for.call('application/json', headers, val))
+      end,
+      head: lambda do |status, headers: {}, head: nil|
+        Rack::Response.new(nil, status, headers)
+      end,
+      redirect_to: lambda do |url, headers: {}, redirect_to:|
+        Rack::Response.new(
+          nil,
+          302,
+          { 'location' => url }.merge(headers)
+        )
+      end
+    }
+
     def self.included(base)
       base.class_eval do
         attr_reader :routes, :config, :deps, :db if self != Rackr
@@ -66,11 +89,19 @@ class Rackr
           @@render[type]&.call(content, **opts) || _render_view(content, **opts)
         end
 
-        def view_response(
+        def build_response(**opts)
+          type = opts.keys.first
+          content = opts[type]
+
+          @@build_response[type]&.call(content, **opts) || _view_response(content, **opts)
+        end
+
+        def _view_response(
           paths,
           status: 200,
           headers: {},
-          layout_path: 'layout'
+          layout_path: 'layout',
+          view: nil
         )
           _render_view(
             paths,
@@ -135,37 +166,12 @@ class Rackr
           Oj.load(val)
         end
 
-        def html_response(content = '', status: 200, headers: {})
-          Rack::Response.new(content, status, @@default_headers_for.call('text/html; charset=utf-8', headers, content))
-        end
-
-        def json_response(content = {}, status: 200, headers: {})
-          content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
-          Rack::Response.new(content, status, @@default_headers_for.call('application/json', headers, content))
-        end
-
-        def text_response(content, status: 200, headers: {})
-          Rack::Response.new(content, status, @@default_headers_for.call('text/plain', headers, content))
-        end
-
         def load_erb(content, binding_context: nil)
           eval(Erubi::Engine.new(content).src, binding_context)
         end
 
         def head(status, headers: {})
           [status, headers, []]
-        end
-
-        def head_response(status, headers: {})
-          Rack::Response.new(nil, status, headers)
-        end
-
-        def redirect_response(url, headers: {})
-          Rack::Response.new(
-            nil,
-            302,
-            { 'location' => url }.merge(headers)
-          )
         end
 
         def redirect_to(url, headers: {})

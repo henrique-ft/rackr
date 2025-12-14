@@ -41,17 +41,17 @@ RSpec.describe Rackr::Action do
 
     context 'html_response' do
       it 'can render from string with success' do
-        response = subject.text_response('test')
+        response = subject.build_response(text: 'test')
         expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']])
       end
 
       it 'can render text with other status' do
-        response = subject.text_response('test', status: 201)
+        response = subject.build_response(text: 'test', status: 201)
         expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']])
       end
 
       it 'can render text with other headers' do
-        response = subject.text_response('test', status: 201, headers: { 'other' => 'header' })
+        response = subject.build_response(text: 'test', status: 201, headers: { 'other' => 'header' })
         expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/plain', 'other' => 'header' },
                                        ['test']])
       end
@@ -126,19 +126,19 @@ RSpec.describe Rackr::Action do
 
     context 'html_response' do
       it 'can render from string with success' do
-        response = subject.html_response('test')
+        response = subject.build_response(html: 'test')
         expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' },
                                        ['test']])
       end
 
       it 'can render html with other status' do
-        response = subject.html_response('test', status: 201)
+        response = subject.build_response(html: 'test', status: 201)
         expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' },
                                        ['test']])
       end
 
       it 'can render text with other headers' do
-        response = subject.html_response('test', status: 201, headers: { 'other' => 'header' })
+        response = subject.build_response(html: 'test', status: 201, headers: { 'other' => 'header' })
         expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8', 'other' => 'header' },
                                        ['test']])
       end
@@ -245,7 +245,7 @@ RSpec.describe Rackr::Action do
       it 'can render with success with response_instance' do
         path = 'test'
 
-        response = subject.view_response path
+        response = subject.build_response(view: path)
         expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
                                        ['file.']])
       end
@@ -294,19 +294,19 @@ RSpec.describe Rackr::Action do
 
     context 'json_response' do
       it 'can render from hash with success' do
-        response = subject.json_response({ test: 'value' })
+        response = subject.build_response(json: { test: 'value' })
         expect(response.finish).to eq([200, { 'content-length' => '16', 'content-type' => 'application/json' },
                                        ['{"test":"value"}']])
       end
 
       it 'can render json with other status' do
-        response = subject.json_response({ test: 'value' }, status: 201)
+        response = subject.build_response(json: { test: 'value' }, status: 201)
         expect(response.finish).to eq([201, { 'content-length' => '16', 'content-type' => 'application/json' },
                                        ['{"test":"value"}']])
       end
 
       it 'can render text with other headers' do
-        response = subject.json_response({ test: 'value' }, headers: { 'a' => 'b' })
+        response = subject.build_response(json: { test: 'value' }, headers: { 'a' => 'b' })
         expect(response.finish).to eq([200, { 'content-length' => '16', 'content-type' => 'application/json', 'a' => 'b' },
                                        ['{"test":"value"}']])
       end
@@ -350,13 +350,13 @@ RSpec.describe Rackr::Action do
 
   context 'head_response' do
     it 'return bare status code' do
-      response = subject.head_response(404)
+      response = subject.build_response(head: 404)
       expect(response).to be_a(Rack::Response)
       expect(response.status).to eq(404)
     end
 
     it 'can receive headers as named params' do
-      response = subject.head_response(404, headers: { 'some' => 'header' })
+      response = subject.build_response(head: 404, headers: { 'some' => 'header' })
       expect(response).to be_a(Rack::Response)
       expect(response.headers).to eq({ 'some' => 'header' })
     end
@@ -374,7 +374,7 @@ RSpec.describe Rackr::Action do
     end
 
     it 'can redirect with rack response' do
-      res = subject.redirect_response('/hey')
+      res = subject.build_response(redirect_to: '/hey')
       expect(res.finish).to eq([302, { 'location' => '/hey' }, []])
     end
   end
