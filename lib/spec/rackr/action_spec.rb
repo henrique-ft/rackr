@@ -381,13 +381,22 @@ RSpec.describe Rackr::Action do
 
   context 'including' do
     let(:routes) { 'routes' }
-    let(:config) { { some_config: 'a', deps: { db: 'db' } } }
+    let(:deps) {
+      {
+        db: 'db',
+        log: 'log',
+        cache: 'cache'
+      }
+    }
+    let(:config) { { some_config: 'a', deps: } }
     let(:included) { SomeClass.new(routes: routes, config: config) }
 
     it { expect(included.routes).to eq(routes) }
     it { expect(included.config).to eq(config) }
     it { expect(included.deps).to eq(config[:deps]) }
     it { expect(included.db).to eq(config[:deps][:db]) }
+    it { expect(included.log).to eq(config[:deps][:log]) }
+    it { expect(included.cache).to eq(config[:deps][:cache]) }
     it { expect { included.not_found! }.to raise_error(Rackr::NotFound) }
   end
 end

@@ -73,13 +73,15 @@ class Rackr
 
     def self.included(base)
       base.class_eval do
-        attr_reader :routes, :config, :deps, :db if self != Rackr
+        attr_reader :routes, :config, :deps, :db, :log, :cache if self != Rackr
 
         def initialize(routes: nil, config: nil)
           @routes = routes
           @config = config
           @deps = config[:deps]
           @db = config.dig(:deps, :db)
+          @log = config.dig(:deps, :log)
+          @cache = config.dig(:deps, :cache)
         end
 
         def render(**opts)
