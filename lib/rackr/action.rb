@@ -3,11 +3,12 @@
 require 'erubi'
 require 'oj'
 require 'rack'
+
 class Rackr
   module Action
     @@default_headers_for = lambda { |content_type, headers, content|
       {
-        'content-type' => "#{content_type}",
+        'content-type' => content_type,
         'content-length' => content.bytesize.to_s
       }.merge(headers)
     }
@@ -16,7 +17,7 @@ class Rackr
       html: lambda do |val, status: 200, headers: {}, html: nil|
         [
           status,
-          @@default_headers_for.('text/html', headers, val),
+          @@default_headers_for.('text/html; charset=utf-8', headers, val),
           [val]
         ]
       end,
@@ -117,11 +118,11 @@ class Rackr
             return Rack::Response.new(
               parsed_erb,
               status,
-              @@default_headers_for.('text/html', headers, parsed_erb)
+              @@default_headers_for.('text/html; charset=utf-8', headers, parsed_erb)
             )
           end
 
-          [status, @@default_headers_for.('text/html', headers, parsed_erb), [parsed_erb]]
+          [status, @@default_headers_for.('text/html; charset=utf-8', headers, parsed_erb), [parsed_erb]]
         end
 
         def load_json(val)
@@ -131,7 +132,7 @@ class Rackr
         end
 
         def html_response(content = '', status: 200, headers: {})
-          Rack::Response.new(content, status, @@default_headers_for.('text/html', headers, content))
+          Rack::Response.new(content, status, @@default_headers_for.('text/html; charset=utf-8', headers, content))
         end
 
         def json_response(content = {}, status: 200, headers: {})
