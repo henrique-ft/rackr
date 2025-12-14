@@ -73,12 +73,12 @@ class Rackr
         call_afters(route_instance, endpoint_result)
       rescue Rackr::NotFound
         return not_found_fallback(found_scopes, route_instance, before_result || rack_request)
-      rescue Exception => error
+      rescue Exception => e
         if !@dev_mode || ENV['RACKR_ERROR_DEV']
-          return error_fallback(found_scopes, route_instance, before_result || rack_request, error)
+          return error_fallback(found_scopes, route_instance, before_result || rack_request, e)
         end
 
-        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => error }))
+        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => e }))
       end
 
       endpoint_result
@@ -112,7 +112,7 @@ class Rackr
       @path_routes_instances[method.to_s.upcase][:__instances].push(route_instance)
     end
 
-    [:error, :not_found].each do |v|
+    %i[error not_found].each do |v|
       define_method("add_#{v}") do |endpoint|
         Errors.check_endpoint(endpoint, v)
 
@@ -135,7 +135,7 @@ class Rackr
             send("#{v}_instances"),
             instance_variable_get("@default_#{v}")
           ).endpoint,
-          request,
+          request
         ]
         args << error if error
 
@@ -143,7 +143,7 @@ class Rackr
 
         call_afters(route_instance, endpoint_result)
 
-        return endpoint_result
+        endpoint_result
       end
     end
 

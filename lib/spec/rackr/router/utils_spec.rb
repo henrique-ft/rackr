@@ -69,19 +69,19 @@ RSpec.describe Rackr::Router::Utils do
 
     it 'sets a value with multiple keys, creating the nested structure' do
       hash = {}
-      utils.deep_hash_set(hash, [:a, :b, :c], 1)
+      utils.deep_hash_set(hash, %i[a b c], 1)
       expect(hash).to eq({ a: { b: { c: 1 } } })
     end
 
     it 'overwrites an existing value at a deep key' do
       hash = { a: { b: { c: 1 } } }
-      utils.deep_hash_set(hash, [:a, :b, :c], 2)
+      utils.deep_hash_set(hash, %i[a b c], 2)
       expect(hash).to eq({ a: { b: { c: 2 } } })
     end
 
     it 'sets a value when part of the path already exists' do
       hash = { a: { b: {} } }
-      utils.deep_hash_set(hash, [:a, :b, :c], 1)
+      utils.deep_hash_set(hash, %i[a b c], 1)
       expect(hash).to eq({ a: { b: { c: 1 } } })
     end
   end

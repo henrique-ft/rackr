@@ -17,14 +17,14 @@ class Rackr
       html: lambda do |val, status: 200, headers: {}, html: nil|
         [
           status,
-          @@default_headers_for.('text/html; charset=utf-8', headers, val),
+          @@default_headers_for.call('text/html; charset=utf-8', headers, val),
           [val]
         ]
       end,
       text: lambda do |val, status: 200, headers: {}, text: nil|
         [
           status,
-          @@default_headers_for.('text/plain', headers, val),
+          @@default_headers_for.call('text/plain', headers, val),
           [val]
         ]
       end,
@@ -32,7 +32,7 @@ class Rackr
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
         [
           status,
-          @@default_headers_for.('application/json', headers, val),
+          @@default_headers_for.call('application/json', headers, val),
           [val]
         ]
       end,
@@ -118,11 +118,11 @@ class Rackr
             return Rack::Response.new(
               parsed_erb,
               status,
-              @@default_headers_for.('text/html; charset=utf-8', headers, parsed_erb)
+              @@default_headers_for.call('text/html; charset=utf-8', headers, parsed_erb)
             )
           end
 
-          [status, @@default_headers_for.('text/html; charset=utf-8', headers, parsed_erb), [parsed_erb]]
+          [status, @@default_headers_for.call('text/html; charset=utf-8', headers, parsed_erb), [parsed_erb]]
         end
 
         def load_json(val)
@@ -132,16 +132,16 @@ class Rackr
         end
 
         def html_response(content = '', status: 200, headers: {})
-          Rack::Response.new(content, status, @@default_headers_for.('text/html; charset=utf-8', headers, content))
+          Rack::Response.new(content, status, @@default_headers_for.call('text/html; charset=utf-8', headers, content))
         end
 
         def json_response(content = {}, status: 200, headers: {})
           content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
-          Rack::Response.new(content, status, @@default_headers_for.('application/json', headers, content))
+          Rack::Response.new(content, status, @@default_headers_for.call('application/json', headers, content))
         end
 
         def text_response(content, status: 200, headers: {})
-          Rack::Response.new(content, status, @@default_headers_for.('text/plain', headers, content))
+          Rack::Response.new(content, status, @@default_headers_for.call('text/plain', headers, content))
         end
 
         def load_erb(content, binding_context: nil)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Rackr
   class Router
     module Endpoint
@@ -12,6 +14,7 @@ class Rackr
           end
 
         return instance.call(content, error) if error
+
         instance.call(content)
       end
     end

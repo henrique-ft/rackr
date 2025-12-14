@@ -118,7 +118,8 @@ RSpec.describe Rackr::Action do
       it 'can render text with other headers' do
         result = subject.render(html: 'test', headers: { 'other' => 'header' })
         expect(result).to eq(
-          [200, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8', 'other' => 'header' }, ['test']]
+          [200, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8', 'other' => 'header' },
+           ['test']]
         )
       end
     end
@@ -126,12 +127,14 @@ RSpec.describe Rackr::Action do
     context 'html_response' do
       it 'can render from string with success' do
         response = subject.html_response('test')
-        expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' }, ['test']])
+        expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' },
+                                       ['test']])
       end
 
       it 'can render html with other status' do
         response = subject.html_response('test', status: 201)
-        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' }, ['test']])
+        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' },
+                                       ['test']])
       end
 
       it 'can render text with other headers' do
@@ -152,13 +155,15 @@ RSpec.describe Rackr::Action do
       it 'can render with success' do
         result = subject.render(view: path)
 
-        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' }, ['file.']])
+        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                              ['file.']])
       end
 
       it 'can render with success with response_instance' do
         response = subject.render(view: path, response_instance: true)
 
-        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' }, ['file.']])
+        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                                       ['file.']])
       end
 
       it 'reads the views/* folder' do
@@ -185,7 +190,8 @@ RSpec.describe Rackr::Action do
       it 'ignores the layout if not exists in views folder' do
         result = subject.render(view: path)
 
-        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' }, ['file.']])
+        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                              ['file.']])
       end
 
       context 'with layout' do
@@ -211,13 +217,15 @@ RSpec.describe Rackr::Action do
       it 'can render with different status' do
         result = subject.render(view: path, status: 404)
 
-        expect(result).to eq([404, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' }, ['file.']])
+        expect(result).to eq([404, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                              ['file.']])
       end
 
       it 'can render with different headers' do
         result = subject.render(view: path, headers: { 'a' => 'b' })
 
-        expect(result).to eq([200, { 'a' => 'b', 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' }, ['file.']])
+        expect(result).to eq([200,
+                              { 'a' => 'b', 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' }, ['file.']])
       end
 
       it 'can render multiple erbs' do
@@ -238,7 +246,8 @@ RSpec.describe Rackr::Action do
         path = 'test'
 
         response = subject.view_response path
-        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' }, ['file.']])
+        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                                       ['file.']])
       end
     end
 
