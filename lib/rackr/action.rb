@@ -6,7 +6,7 @@ require 'rack'
 
 class Rackr
   module Action
-    @@default_headers_for = lambda { |content_type, headers, content|
+    @@default_headers = lambda { |content_type, headers, content|
       {
         'content-type' => content_type,
         'content-length' => content.bytesize.to_s
@@ -17,14 +17,14 @@ class Rackr
       html: lambda do |val = '', status: 200, headers: {}, html: nil|
         [
           status,
-          @@default_headers_for.call('text/html; charset=utf-8', headers, val),
+          @@default_headers.call('text/html; charset=utf-8', headers, val),
           [val]
         ]
       end,
       text: lambda do |val = '', status: 200, headers: {}, text: nil|
         [
           status,
-          @@default_headers_for.call('text/plain', headers, val),
+          @@default_headers.call('text/plain', headers, val),
           [val]
         ]
       end,
@@ -32,7 +32,7 @@ class Rackr
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
         [
           status,
-          @@default_headers_for.call('application/json', headers, val),
+          @@default_headers.call('application/json', headers, val),
           [val]
         ]
       end,
@@ -46,18 +46,19 @@ class Rackr
         headers.each { |h, v| val.set_header(h, v) } if headers
         val.finish
       end
-    }.freeze
+    }.merge().freeze
 
     @@build_response = {
       html: lambda do |val = '', status: 200, headers: {}, html: nil|
-        Rack::Response.new(val, status, @@default_headers_for.call('text/html; charset=utf-8', headers, val))
+        Rack::Response.new(val, status, @@default_headers.call('text/html; charset=utf-8', headers, val))
       end,
       text: lambda do |val = '', status: 200, headers: {}, text: nil|
-        Rack::Response.new(val, status, @@default_headers_for.call('text/plain', headers, val))
+        Rack::Response.new(val, status, @@default_headers.call('text/plain', headers, val))
       end,
+
       json: lambda do |val = {}, status: 200, headers: {}, json: nil|
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
-        Rack::Response.new(val, status, @@default_headers_for.call('application/json', headers, val))
+        Rack::Response.new(val, status, @@default_headers.call('application/json', headers, val))
       end,
       head: lambda do |status, headers: {}, head: nil|
         Rack::Response.new(nil, status, headers)
@@ -151,11 +152,11 @@ class Rackr
             return Rack::Response.new(
               parsed_erb,
               status,
-              @@default_headers_for.call('text/html; charset=utf-8', headers, parsed_erb)
+              @@default_headers.call('text/html; charset=utf-8', headers, parsed_erb)
             )
           end
 
-          [status, @@default_headers_for.call('text/html; charset=utf-8', headers, parsed_erb), [parsed_erb]]
+          [status, @@default_headers.call('text/html; charset=utf-8', headers, parsed_erb), [parsed_erb]]
         end
 
         def not_found!
