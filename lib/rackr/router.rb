@@ -1,19 +1,27 @@
 # frozen_string_literal: true
 
+require_relative 'router/utils'
 require_relative 'router/errors'
+require_relative 'router/endpoint'
 require_relative 'router/route'
+require_relative 'router/path_route'
 require_relative 'router/build_request'
 
 class Rackr
   class Router
-    attr_writer :not_found
-    attr_reader :routes, :config
+    include Utils
+
+    attr_writer :default_not_found
+    attr_reader :routes, :config, :not_found_instances, :error_instances
 
     def initialize(config = {}, before: [], after: [])
-      @instance_routes = {}
+      @path_routes_instances = {}
       %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
-        @instance_routes[method] = { __instances: [] }
+        @path_routes_instances[method] = { __instances: [] }
       end
+      @not_found_instances = {}
+      @error_instances = {}
+
       http_methods = HTTP_METHODS.map { |m| m.downcase.to_sym }
       @routes = Struct.new(*http_methods).new
       http_methods.each do |method|
@@ -28,8 +36,8 @@ class Rackr
       @scopes_befores = {}
       @afters = ensure_array(after)
       @scopes_afters = {}
-      @error = proc { |_req, e| raise e }
-      @not_found = proc { [404, {}, ['Not found']] }
+      @default_error = Route.new(proc { |_req, e| raise e })
+      @default_not_found = Route.new(proc { [404, {}, ['Not found']] })
       @splitted_request_path_info = []
       @current_request_path_info = nil
     end
@@ -44,39 +52,36 @@ class Rackr
       request_builder = BuildRequest.new(env, @splitted_request_path_info)
       env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
 
-      route_instance = match_route(env['REQUEST_METHOD'])
-      return call_endpoint(@not_found, request_builder.call) if route_instance.nil?
-
+      route_instance, found_scopes = match_path_route(env['REQUEST_METHOD'])
       rack_request = request_builder.call(route_instance)
-
       befores = route_instance.befores
       before_result = nil
-      i = 0
-      while i < befores.size
-        before_result = call_endpoint(befores[i], rack_request)
-        return before_result unless before_result.is_a?(Rack::Request)
 
-        rack_request = before_result
+      begin
+        i = 0
+        while i < befores.size
+          before_result = Endpoint.call(befores[i], rack_request)
+          return before_result unless before_result.is_a?(Rack::Request)
 
-        i += 1
-      end
+          rack_request = before_result
 
-      endpoint_result = call_endpoint(route_instance.endpoint, before_result || rack_request)
+          i += 1
+        end
 
-      afters = route_instance.afters
-      i = 0
-      while i < afters.size
-        call_endpoint(afters[i], endpoint_result)
-        i += 1
+        endpoint_result = Endpoint.call(route_instance.endpoint, before_result || rack_request)
+
+        call_afters(route_instance, endpoint_result)
+      rescue Rackr::NotFound
+        return not_found_fallback(found_scopes, route_instance, before_result || rack_request)
+      rescue Exception => e
+        if !@dev_mode || ENV['RACKR_ERROR_DEV']
+          return error_fallback(found_scopes, route_instance, before_result || rack_request, e)
+        end
+
+        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => e }))
       end
 
       endpoint_result
-    rescue Rackr::NotFound
-      call_endpoint(@not_found, request_builder.call)
-    rescue Exception => e
-      return @error.call(request_builder.call, e) if !@dev_mode || ENV['RACKR_ERROR_DEV']
-
-      call_endpoint(Errors::DevHtml, env.merge({ 'error' => e }))
     end
 
     def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])
@@ -94,7 +99,7 @@ class Rackr
       add_named_route(method, path_with_scopes, as)
 
       route_instance =
-        Route.new(
+        PathRoute.new(
           path_with_scopes,
           endpoint,
           befores: @befores + ensure_array(route_befores),
@@ -104,19 +109,51 @@ class Rackr
 
       return push_to_scope(method.to_s.upcase, route_instance) if @scopes.size >= 1
 
-      @instance_routes[method.to_s.upcase][:__instances].push(route_instance)
+      @path_routes_instances[method.to_s.upcase][:__instances].push(route_instance)
     end
 
-    def add_not_found(endpoint)
-      Errors.check_endpoint(endpoint, 'not_found')
+    %i[error not_found].each do |v|
+      define_method("add_#{v}") do |endpoint|
+        Errors.check_endpoint(endpoint, v)
 
-      @not_found = endpoint
+        route_instance =
+          Route.new(
+            endpoint,
+            befores: @befores,
+            afters: @afters
+          )
+
+        return set_to_scope(send("#{v}_instances"), route_instance) if @scopes.size >= 1
+
+        instance_variable_set("@default_#{v}", route_instance)
+      end
+
+      define_method("#{v}_fallback") do |found_scopes, route_instance, request, error = nil|
+        args = [
+          match_route(
+            found_scopes,
+            send("#{v}_instances"),
+            instance_variable_get("@default_#{v}")
+          ).endpoint,
+          request
+        ]
+        args << error if error
+
+        endpoint_result = Endpoint.call(*args)
+
+        call_afters(route_instance, endpoint_result)
+
+        endpoint_result
+      end
     end
 
-    def add_error(endpoint)
-      Errors.check_endpoint(endpoint, 'error')
-
-      @error = endpoint
+    def call_afters(route_instance, endpoint_result)
+      afters = route_instance.afters
+      i = 0
+      while i < afters.size
+        Endpoint.call(afters[i], endpoint_result)
+        i += 1
+      end
     end
 
     def append_scope(name, scope_befores: [], scope_afters: [])
@@ -146,23 +183,6 @@ class Rackr
 
     private
 
-    def call_endpoint(endpoint, content)
-      return endpoint.call(content) if endpoint.respond_to?(:call)
-
-      if endpoint < Rackr::Action || endpoint < Rackr::Callback
-        return endpoint.new(routes: @routes, config: @config).call(content)
-      end
-
-      endpoint.new.call(content)
-    end
-
-    def ensure_array(list)
-      return [] if list.nil?
-      return list if list.is_a?(Array)
-
-      [list]
-    end
-
     def add_named_route(method, path_with_scopes, as)
       return @routes.send(method.downcase)[:root] = path_with_scopes if path_with_scopes == '/'
       return @routes.send(method.downcase)[as] = path_with_scopes unless as.nil?
@@ -172,17 +192,11 @@ class Rackr
     end
 
     def push_to_scope(method, route_instance)
-      scopes_with_slash = not_empty_scopes + %i[__instances]
-      push_it(@instance_routes[method], *scopes_with_slash, route_instance)
+      deep_hash_push(@path_routes_instances[method], *(not_empty_scopes + %i[__instances]), route_instance)
     end
 
-    def push_it(hash, first_key, *rest_keys, val)
-      if rest_keys.empty?
-        (hash[first_key] ||= []) << val
-      else
-        hash[first_key] = push_it(hash[first_key] ||= {}, *rest_keys, val)
-      end
-      hash
+    def set_to_scope(instances, route_instance)
+      deep_hash_set(instances, (not_empty_scopes + %i[__instance]), route_instance)
     end
 
     def put_path_slash(path)
@@ -199,9 +213,9 @@ class Rackr
       @scopes.reject { |v| (v == '') }
     end
 
-    def match_route(request_method)
+    def match_path_route(request_method)
       find_instance_in_scope = proc do |request_method, found_scopes|
-        @instance_routes[request_method].dig(
+        @path_routes_instances[request_method].dig(
           *(found_scopes + [:__instances])
         )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
       end
@@ -209,38 +223,58 @@ class Rackr
       last_tail = @splitted_request_path_info.drop(1)
       found_scopes = []
 
-      instance_routes = @instance_routes[request_method]
+      path_routes_instances = @path_routes_instances[request_method]
 
       while last_tail && !last_tail.empty?
         segment = last_tail.shift
         found_route = nil
 
-        instance_routes.each_key do |scope|
+        path_routes_instances.each_key do |scope|
           next if scope == :__instances
 
           if segment == scope
             found_scopes << scope
-            instance_routes = @instance_routes[request_method].dig(*found_scopes)
+            path_routes_instances = @path_routes_instances[request_method].dig(*found_scopes)
             break
           elsif scope.start_with?(':')
-            found_route = find_instance_in_scope.(request_method, found_scopes)
+            found_route = find_instance_in_scope.call(request_method, found_scopes)
             return found_route if found_route
 
             found_scopes << scope
-            instance_routes = @instance_routes[request_method].dig(*found_scopes)
+            path_routes_instances = @path_routes_instances[request_method].dig(*found_scopes)
             break
           end
         end
       end
 
-      result_route = find_instance_in_scope.(request_method, found_scopes)
+      result_route = find_instance_in_scope.call(request_method, found_scopes)
 
-      if result_route == nil && !found_scopes.empty?
-        found_scopes.shift
-        result_route = find_instance_in_scope.(request_method, found_scopes)
+      if result_route.nil? && !found_scopes.empty?
+        result_route = find_instance_in_scope.call(request_method, found_scopes[..-2])
       end
 
-      result_route
+      if result_route.nil?
+        result_route = match_route(
+          found_scopes,
+          @not_found_instances,
+          @default_not_found
+        )
+      end
+
+      [result_route, found_scopes]
+    end
+
+    def match_route(found_scopes, instances, default_instance)
+      route_instance = nil
+
+      while route_instance.nil? && found_scopes != []
+        route_instance = instances&.dig(*(found_scopes + [:__instance]))
+        found_scopes.pop
+      end
+
+      return default_instance if route_instance.nil?
+
+      route_instance
     end
   end
 end

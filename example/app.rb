@@ -12,7 +12,7 @@ require_relative 'app/callbacks/some_assign'
 config = {
   deps: {
     db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
-  }
+  },
   views: { path: 'app/views' }
 }
 
@@ -96,12 +96,18 @@ App =
     scope 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
       scope 'oi'do
         get do
+          not_found!
+
           render html: '<h1> rack http_router </h1>'
         end
 
         get 'bla', as: :bla do
           render html: "<h1> #{routes.get[:bla]} </h1>"
         end
+      end
+
+      not_found do |req|
+        render html: "not found inside v2"
       end
     end
 

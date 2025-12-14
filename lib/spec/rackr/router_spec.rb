@@ -138,7 +138,7 @@ RSpec.describe Rackr::Router do
     expect(router.call(request)).to eq([404, {}, ['Not found']])
   end
 
-  context 'when not found' do
+  context 'when customizing not found' do
     it 'renders custom 404' do
       router = Rackr::Router.new
 
@@ -153,37 +153,171 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq([404, {}, ['Custom not found']])
     end
 
-    it 'catches Rackr::NotFound' do
-      router = Rackr::Router.new
+    context 'when using scopes' do
+      it 'renders custom 404' do
+        router = Rackr::Router.new
 
-      router.add_not_found proc { [404, {}, ['Custom not found']] }
-      router.add :get, 'raise', lambda { |_env|
-        raise Rackr::NotFound
-      }
+        router.add_not_found proc { [404, {}, ['Not found']] }
+        router.append_scope 'test'
+        router.add_not_found proc { |_req| [404, {}, ['Inside scope not found']] }
+        router.add :get, 'some-thing', ->(_env) { [200, {}, ''] }
+
+        request_a =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/test/dont-exist'
+          }
+        request_b =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/foo'
+          }
+
+        expect(router.call(request_a)).to eq([404, {}, ['Inside scope not found']])
+        expect(router.call(request_b)).to eq([404, {}, ['Not found']])
+      end
+
+      it 'renders custom 404 executing before' do
+        router = Rackr::Router.new
+        test_name = 'van halen'
+
+        router.add_not_found proc { [404, {}, ['Not found']] }
+        router.append_scope 'test', scope_befores: [proc { |req|
+          req.params[:name] = test_name
+          req
+        }]
+        router.add_not_found proc { |req| [404, {}, ["Inside scope not found, name: #{req.params[:name]}"]] }
+        router.add :get, 'some-thing', ->(_env) { [200, {}, ''] }
+
+        request_a =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/test/dont-exist'
+          }
+
+        expect(router.call(request_a)).to eq([404, {}, ["Inside scope not found, name: #{test_name}"]])
+      end
+
+      context 'catching Rackr::NotFound' do
+        it 'catches' do
+          router = Rackr::Router.new
+
+          router.add_not_found proc { [404, {}, ['Custom not found']] }
+          router.add :get, 'raise', lambda { |_env|
+            raise Rackr::NotFound
+          }
+
+          request =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/raise'
+            }
+
+          expect(router.call(request)).to eq([404, {}, ['Custom not found']])
+        end
+
+        it 'with custom not found' do
+          router = Rackr::Router.new
+
+          router.add_not_found proc { [404, {}, ['Not found']] }
+          router.append_scope 'test'
+          router.add_not_found proc { [404, {}, ['Inside scope not found']] }
+          router.add :get, 'raise', lambda { |_env|
+            raise Rackr::NotFound
+          }
+
+          request =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/test/raise'
+            }
+
+          expect(router.call(request)).to eq([404, {}, ['Inside scope not found']])
+        end
+
+        it 'with custom not found with scope param' do
+          router = Rackr::Router.new
+
+          router.add_not_found proc { [404, {}, ['Not found']] }
+          router.append_scope 'test'
+          router.append_scope :id
+          router.add_not_found proc { [404, {}, ['Inside scope not found']] }
+          router.add :get, 'raise', lambda { |_env|
+            raise Rackr::NotFound
+          }
+
+          request =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/test/:id/raise'
+            }
+
+          expect(router.call(request)).to eq([404, {}, ['Inside scope not found']])
+        end
+
+        it 'with custom not found in another scope level' do
+          router = Rackr::Router.new
+
+          router.add_not_found proc { [404, {}, ['Not found']] }
+          router.append_scope 'test'
+          router.append_scope :id
+          router.add_not_found proc { [404, {}, ['Inside scope not found']] }
+          router.append_scope 'something'
+          router.add :get, 'raise', lambda { |_env|
+            raise Rackr::NotFound
+          }
+
+          request =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/test/:id/something/raise'
+            }
+
+          expect(router.call(request)).to eq([404, {}, ['Inside scope not found']])
+        end
+      end
+    end
+  end
+
+  context 'custom errors' do
+    it 'render custom error when exception happen' do
+      router = Rackr::Router.new
 
       request =
         {
           'REQUEST_METHOD' => 'GET',
-          'PATH_INFO' => '/raise'
+          'PATH_INFO' => '/teste'
         }
-
-      expect(router.call(request)).to eq([404, {}, ['Custom not found']])
+      router.add :get, 'teste', -> { raise StandardError }
+      router.add_error proc { |_req, _e| [500, {}, ['Custom internal server error']] }
+      expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
     end
-  end
 
-  it 'render custom error when exception happen' do
-    router = Rackr::Router.new
+    context 'when using scopes' do
+      it 'renders custom error' do
+        router = Rackr::Router.new
 
-    allow_any_instance_of(Rackr::Router::Route).to receive(:match?).and_raise(Exception)
+        router.add_error proc { |_req, e| [500, {}, ["Error: #{e.class}"]] }
+        router.add :get, 'foo', proc { raise StandardError }
+        router.append_scope 'test'
+        router.add_error proc { |_req, e| [500, {}, ["Inside scope error: #{e.class}"]] }
+        router.add :get, 'bar', proc { raise StandardError }
 
-    request =
-      {
-        'REQUEST_METHOD' => 'GET',
-        'PATH_INFO' => '/teste'
-      }
-    router.add :get, 'teste', double(call: 'Hey test')
-    router.add_error proc { |_req, _e| [500, {}, ['Custom internal server error']] }
-    expect(router.call(request)).to eq([500, {}, ['Custom internal server error']])
+        request_a =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/foo'
+          }
+        request_b =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/test/bar'
+          }
+
+        expect(router.call(request_a)).to eq([500, {}, ['Error: StandardError']])
+        expect(router.call(request_b)).to eq([500, {}, ['Inside scope error: StandardError']])
+      end
+    end
   end
 
   context 'scopes' do

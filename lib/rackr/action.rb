@@ -6,16 +6,35 @@ require 'rack'
 
 class Rackr
   module Action
-    RENDER = {
+    @@default_headers_for = lambda { |content_type, headers, content|
+      {
+        'content-type' => content_type,
+        'content-length' => content.bytesize.to_s
+      }.merge(headers)
+    }
+
+    @@render = {
       html: lambda do |val, status: 200, headers: {}, html: nil|
-        [status, { 'content-type' => 'text/html', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
+        [
+          status,
+          @@default_headers_for.call('text/html; charset=utf-8', headers, val),
+          [val]
+        ]
       end,
       text: lambda do |val, status: 200, headers: {}, text: nil|
-        [status, { 'content-type' => 'text/plain', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
+        [
+          status,
+          @@default_headers_for.call('text/plain', headers, val),
+          [val]
+        ]
       end,
       json: lambda do |val, status: 200, headers: {}, json: nil|
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
-        [status, { 'content-type' => 'application/json', 'content-length' => val.bytesize.to_s }.merge(headers), [val]]
+        [
+          status,
+          @@default_headers_for.call('application/json', headers, val),
+          [val]
+        ]
       end,
       res: lambda do |val, status: nil, headers: nil, res: nil|
         val.status = status if status
@@ -44,7 +63,7 @@ class Rackr
           type = opts.keys.first
           content = opts[type]
 
-          Rackr::Action::RENDER[type]&.call(content, **opts) || _render_view(content, **opts)
+          @@render[type]&.call(content, **opts) || _render_view(content, **opts)
         end
 
         def view_response(
@@ -99,12 +118,15 @@ class Rackr
             return Rack::Response.new(
               parsed_erb,
               status,
-              { 'content-type' => 'text/html' }.merge(headers)
+              @@default_headers_for.call('text/html; charset=utf-8', headers, parsed_erb)
             )
           end
 
-          [status, { 'content-type' => 'text/html', 'content-length' => parsed_erb.bytesize.to_s }.merge(headers),
-           [parsed_erb]]
+          [status, @@default_headers_for.call('text/html; charset=utf-8', headers, parsed_erb), [parsed_erb]]
+        end
+
+        def not_found!
+          raise Rackr::NotFound
         end
 
         def load_json(val)
@@ -114,25 +136,16 @@ class Rackr
         end
 
         def html_response(content = '', status: 200, headers: {})
-          Rack::Response.new(content, status,
-                             { 'content-type' => 'text/html', 'content-length' => content.bytesize.to_s }.merge(headers))
+          Rack::Response.new(content, status, @@default_headers_for.call('text/html; charset=utf-8', headers, content))
         end
 
         def json_response(content = {}, status: 200, headers: {})
           content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
-          Rack::Response.new(
-            content,
-            status,
-            { 'content-type' => 'application/json', 'content-length' => content.bytesize.to_s }.merge(headers)
-          )
+          Rack::Response.new(content, status, @@default_headers_for.call('application/json', headers, content))
         end
 
         def text_response(content, status: 200, headers: {})
-          Rack::Response.new(
-            content,
-            status,
-            { 'content-type' => 'text/plain', 'content-length' => content.bytesize.to_s }.merge(headers)
-          )
+          Rack::Response.new(content, status, @@default_headers_for.call('text/plain', headers, content))
         end
 
         def load_erb(content, binding_context: nil)

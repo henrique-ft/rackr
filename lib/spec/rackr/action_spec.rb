@@ -104,21 +104,22 @@ RSpec.describe Rackr::Action do
       it 'can render from string with success' do
         result = subject.render(html: 'test')
         expect(result).to eq(
-          [200, { 'content-length' => '4', 'content-type' => 'text/html' }, ['test']]
+          [200, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' }, ['test']]
         )
       end
 
       it 'can render html with other status' do
         result = subject.render(html: 'test', status: 201)
         expect(result).to eq(
-          [201, { 'content-length' => '4', 'content-type' => 'text/html' }, ['test']]
+          [201, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' }, ['test']]
         )
       end
 
       it 'can render text with other headers' do
         result = subject.render(html: 'test', headers: { 'other' => 'header' })
         expect(result).to eq(
-          [200, { 'content-length' => '4', 'content-type' => 'text/html', 'other' => 'header' }, ['test']]
+          [200, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8', 'other' => 'header' },
+           ['test']]
         )
       end
     end
@@ -126,17 +127,19 @@ RSpec.describe Rackr::Action do
     context 'html_response' do
       it 'can render from string with success' do
         response = subject.html_response('test')
-        expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/html' }, ['test']])
+        expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' },
+                                       ['test']])
       end
 
       it 'can render html with other status' do
         response = subject.html_response('test', status: 201)
-        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html' }, ['test']])
+        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' },
+                                       ['test']])
       end
 
       it 'can render text with other headers' do
         response = subject.html_response('test', status: 201, headers: { 'other' => 'header' })
-        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html', 'other' => 'header' },
+        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8', 'other' => 'header' },
                                        ['test']])
       end
     end
@@ -152,13 +155,15 @@ RSpec.describe Rackr::Action do
       it 'can render with success' do
         result = subject.render(view: path)
 
-        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
+        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                              ['file.']])
       end
 
       it 'can render with success with response_instance' do
         response = subject.render(view: path, response_instance: true)
 
-        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
+        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                                       ['file.']])
       end
 
       it 'reads the views/* folder' do
@@ -185,7 +190,8 @@ RSpec.describe Rackr::Action do
       it 'ignores the layout if not exists in views folder' do
         result = subject.render(view: path)
 
-        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
+        expect(result).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                              ['file.']])
       end
 
       context 'with layout' do
@@ -203,7 +209,7 @@ RSpec.describe Rackr::Action do
         it 'renders the content with the layout' do
           result = subject.render(view: path)
 
-          expect(result).to eq([200, { 'content-length' => '18', 'content-type' => 'text/html' },
+          expect(result).to eq([200, { 'content-length' => '18', 'content-type' => 'text/html; charset=utf-8' },
                                 ['(( some content ))']])
         end
       end
@@ -211,20 +217,22 @@ RSpec.describe Rackr::Action do
       it 'can render with different status' do
         result = subject.render(view: path, status: 404)
 
-        expect(result).to eq([404, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
+        expect(result).to eq([404, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                              ['file.']])
       end
 
       it 'can render with different headers' do
         result = subject.render(view: path, headers: { 'a' => 'b' })
 
-        expect(result).to eq([200, { 'a' => 'b', 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
+        expect(result).to eq([200,
+                              { 'a' => 'b', 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' }, ['file.']])
       end
 
       it 'can render multiple erbs' do
         result = subject.render(view: [path, path, path], status: 404)
 
         expect(result).to eq(
-          [404, { 'content-length' => '15', 'content-type' => 'text/html' }, ['file.file.file.']]
+          [404, { 'content-length' => '15', 'content-type' => 'text/html; charset=utf-8' }, ['file.file.file.']]
         )
       end
     end
@@ -238,7 +246,8 @@ RSpec.describe Rackr::Action do
         path = 'test'
 
         response = subject.view_response path
-        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html' }, ['file.']])
+        expect(response.finish).to eq([200, { 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' },
+                                       ['file.']])
       end
     end
 
@@ -315,15 +324,15 @@ RSpec.describe Rackr::Action do
     end
 
     it 'can render a rack response with response:' do
-      result = subject.render(response: subject.response('body', 404, {'some' => 'header'}))
+      result = subject.render(response: subject.response('body', 404, { 'some' => 'header' }))
 
-      expect(result).to eq([404, {"content-length" => "4", "some" => "header"}, ["body"]])
+      expect(result).to eq([404, { 'content-length' => '4', 'some' => 'header' }, ['body']])
     end
 
     it 'can render a rack response with res:' do
-      result = subject.render(res: subject.response('body', 404, {'some' => 'header'}))
+      result = subject.render(res: subject.response('body', 404, { 'some' => 'header' }))
 
-      expect(result).to eq([404, {"content-length" => "4", "some" => "header"}, ["body"]])
+      expect(result).to eq([404, { 'content-length' => '4', 'some' => 'header' }, ['body']])
     end
   end
 
@@ -379,5 +388,6 @@ RSpec.describe Rackr::Action do
     it { expect(included.config).to eq(config) }
     it { expect(included.deps).to eq(config[:deps]) }
     it { expect(included.db).to eq(config[:deps][:db]) }
+    it { expect { included.not_found! }.to raise_error(Rackr::NotFound) }
   end
 end
