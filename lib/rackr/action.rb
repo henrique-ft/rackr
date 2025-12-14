@@ -46,7 +46,7 @@ class Rackr
         headers.each { |h, v| val.set_header(h, v) } if headers
         val.finish
       end
-    }.merge().freeze
+    }.freeze
 
     @@build_response = {
       html: lambda do |val = '', status: 200, headers: {}, html: nil|
@@ -55,7 +55,6 @@ class Rackr
       text: lambda do |val = '', status: 200, headers: {}, text: nil|
         Rack::Response.new(val, status, @@default_headers.call('text/plain', headers, val))
       end,
-
       json: lambda do |val = {}, status: 200, headers: {}, json: nil|
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
         Rack::Response.new(val, status, @@default_headers.call('application/json', headers, val))
