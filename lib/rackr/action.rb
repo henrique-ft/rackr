@@ -14,21 +14,21 @@ class Rackr
     }
 
     @@render = {
-      html: lambda do |val, status: 200, headers: {}, html: nil|
+      html: lambda do |val = '', status: 200, headers: {}, html: nil|
         [
           status,
           @@default_headers_for.call('text/html; charset=utf-8', headers, val),
           [val]
         ]
       end,
-      text: lambda do |val, status: 200, headers: {}, text: nil|
+      text: lambda do |val = '', status: 200, headers: {}, text: nil|
         [
           status,
           @@default_headers_for.call('text/plain', headers, val),
           [val]
         ]
       end,
-      json: lambda do |val, status: 200, headers: {}, json: nil|
+      json: lambda do |val = {}, status: 200, headers: {}, json: nil|
         val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
         [
           status,
@@ -52,7 +52,7 @@ class Rackr
       html: lambda do |val = '', status: 200, headers: {}, html: nil|
         Rack::Response.new(val, status, @@default_headers_for.call('text/html; charset=utf-8', headers, val))
       end,
-      text: lambda do |val, status: 200, headers: {}, text: nil|
+      text: lambda do |val = '', status: 200, headers: {}, text: nil|
         Rack::Response.new(val, status, @@default_headers_for.call('text/plain', headers, val))
       end,
       json: lambda do |val = {}, status: 200, headers: {}, json: nil|
