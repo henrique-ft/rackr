@@ -2,6 +2,7 @@
 
 require_relative 'router/utils'
 require_relative 'router/errors'
+require_relative 'router/endpoint'
 require_relative 'router/route'
 require_relative 'router/path_route'
 require_relative 'router/build_request'
@@ -59,7 +60,7 @@ class Rackr
       begin
         i = 0
         while i < befores.size
-          before_result = call_endpoint(befores[i], rack_request)
+          before_result = Endpoint.call(befores[i], rack_request)
           return before_result unless before_result.is_a?(Rack::Request)
 
           rack_request = before_result
@@ -67,7 +68,7 @@ class Rackr
           i += 1
         end
 
-        endpoint_result = call_endpoint(route_instance.endpoint, before_result || rack_request)
+        endpoint_result = Endpoint.call(route_instance.endpoint, before_result || rack_request)
 
         call_afters(route_instance, endpoint_result)
       rescue Rackr::NotFound
@@ -77,7 +78,7 @@ class Rackr
           return error_fallback(found_scopes, route_instance, before_result || rack_request, error)
         end
 
-        return call_endpoint(Errors::DevHtml, env.merge({ 'error' => error }))
+        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => error }))
       end
 
       endpoint_result
@@ -138,7 +139,7 @@ class Rackr
         ]
         args << error if error
 
-        endpoint_result = call_endpoint(*args)
+        endpoint_result = Endpoint.call(*args)
 
         call_afters(route_instance, endpoint_result)
 
@@ -150,7 +151,7 @@ class Rackr
       afters = route_instance.afters
       i = 0
       while i < afters.size
-        call_endpoint(afters[i], endpoint_result)
+        Endpoint.call(afters[i], endpoint_result)
         i += 1
       end
     end
@@ -181,20 +182,6 @@ class Rackr
     end
 
     private
-
-    def call_endpoint(endpoint, content, error = nil)
-      target =
-        if endpoint.respond_to?(:call)
-          endpoint
-        elsif endpoint < Rackr::Action || endpoint < Rackr::Callback
-          endpoint.new(routes: @routes, config: @config)
-        else
-          endpoint.new
-        end
-
-      return target.call(content, error) if error
-      target.call(content)
-    end
 
     def add_named_route(method, path_with_scopes, as)
       return @routes.send(method.downcase)[:root] = path_with_scopes if path_with_scopes == '/'
