@@ -125,6 +125,10 @@ class Rackr
           [status, @@default_headers_for.call('text/html; charset=utf-8', headers, parsed_erb), [parsed_erb]]
         end
 
+        def not_found!
+          raise Rackr::NotFound
+        end
+
         def load_json(val)
           return Oj.load(val.body.read) if val.is_a?(Rack::Request)
 

@@ -388,5 +388,6 @@ RSpec.describe Rackr::Action do
     it { expect(included.config).to eq(config) }
     it { expect(included.deps).to eq(config[:deps]) }
     it { expect(included.db).to eq(config[:deps][:db]) }
+    it { expect { included.not_found! }.to raise_error(Rackr::NotFound) }
   end
 end
