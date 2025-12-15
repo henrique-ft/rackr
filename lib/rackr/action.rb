@@ -97,7 +97,7 @@ class Rackr
       html: proc do |content, status, headers|
         Rack::Response.new(content, status, @@default_headers.call("text/html; charset=utf-8", headers, content))
       end,
-      head: proc do |_content, status, headers|
+      head: proc do |status, _empty, headers|
         Rack::Response.new(nil, status, headers)
       end,
       redirect_to: proc do |content, _status, headers|
