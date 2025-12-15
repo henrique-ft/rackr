@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative '../../rackr'
 require_relative '../../rackr/action'
 require 'byebug'
 

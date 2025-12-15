@@ -62,64 +62,52 @@ class Rackr
       zip: "application/zip"
     }.freeze
 
-    @@default_headers = proc { |content_type, headers, content|
+    @@default_headers = proc do |content_type, headers, content|
       {
         'content-type' => content_type,
         'content-length' => content.bytesize.to_s
       }.merge(headers)
-    }
+    end
 
     @@render = {
-      res: proc do |val, status: nil, headers: nil|
-        val.status = status if status
-        headers.each { |h, v| val.set_header(h, v) } if headers
-        val.finish
+      json: proc do |content, status, headers|
+        content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
+        [status || 200, @@default_headers.call("application/json", headers, content), [content]]
       end,
-      response: proc do |val, status: nil, headers: nil|
-        val.status = status if status
-        headers.each { |h, v| val.set_header(h, v) } if headers
-        val.finish
+      html: proc do |content, status, headers|
+        [status || 200, @@default_headers.call("text/html; charset=utf-8", headers, content), [content]]
+      end,
+      res: proc do |content, status, headers|
+        content.status = status if status
+        content.headers['content-length'] ||= content.body.join.bytesize.to_s
+        content.finish
+      end,
+      response: proc do |content, status, headers|
+        content.status = status if status
+        content.headers['content-length'] ||= content.body.join.bytesize.to_s
+        content.finish
       end
-    }.merge(
-      MIME_TYPES.transform_values do |mime|
-        if mime == MIME_TYPES[:json]
-          proc do |val = '', status: 200, headers: {}|
-            val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
-            [ status, @@default_headers.call(mime, headers, val), [val] ]
-          end
-        else
-          proc do |val = '', status: 200, headers: {}|
-            [ status, @@default_headers.call(mime, headers, val), [val] ]
-          end
-        end
-      end
-    ).freeze
+    }
 
     @@build_response = {
-      head: proc do |status, headers: {}|
+      json: proc do |content, status, headers|
+        content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
+        Rack::Response.new(content, status, @@default_headers.call("application/json", headers, content))
+      end,
+      html: proc do |content, status, headers|
+        Rack::Response.new(content, status, @@default_headers.call("text/html; charset=utf-8", headers, content))
+      end,
+      head: proc do |_content, status, headers|
         Rack::Response.new(nil, status, headers)
       end,
-      redirect_to: proc do |url, headers: {}|
+      redirect_to: proc do |content, _status, headers|
         Rack::Response.new(
           nil,
           302,
-          { 'location' => url }.merge(headers)
+          { 'location' => content }.merge(headers)
         )
       end
-    }.merge(
-      MIME_TYPES.transform_values do |mime|
-        if mime == MIME_TYPES[:json]
-          proc do |val = '', status: 200, headers: {}|
-            val = Oj.dump(val, mode: :compat) unless val.is_a?(String)
-            Rack::Response.new(val, status, @@default_headers.call(mime, headers, val))
-          end
-        else
-          proc do |val = '', status: 200, headers: {}|
-            Rack::Response.new(val, status, @@default_headers.call(mime, headers, val))
-          end
-        end
-      end
-    ).freeze
+    }
 
     def self.included(base)
       base.class_eval do
@@ -137,17 +125,48 @@ class Rackr
         def render(**opts)
           type = opts.keys.first
           content = opts[type]
-          keyword_args = opts.except(type)
+          status = opts[:status]
+          headers = opts[:headers] || {}
 
-          @@render[type]&.call(content, **keyword_args) || _render_view(content, **keyword_args)
+          if (renderer = @@render[type])
+            return renderer.call(content, opts[:status], headers)
+          end
+
+          if (mime = MIME_TYPES[type])
+            return [status || 200, @@default_headers.call(mime, headers, content), [content]]
+          end
+
+          _render_view(
+            content,
+            status: status || 200,
+            headers: headers,
+            layout_path: opts[:layout_path] || 'layout',
+            view: opts[:view],
+            response_instance: opts[:response_instance] || false
+          )
         end
 
         def build_response(**opts)
           type = opts.keys.first
           content = opts[type]
-          keyword_args = opts.except(type)
+          status = opts[:status] || 200
+          headers = opts[:headers] || {}
 
-          @@build_response[type]&.call(content, **keyword_args) || _view_response(content, **keyword_args)
+          if (builder = @@build_response[type])
+            return builder.call(content, status, headers)
+          end
+
+          if (mime = MIME_TYPES[type])
+            return Rack::Response.new(content, status, @@default_headers.call(mime, headers, content))
+          end
+
+          _view_response(
+            content,
+            status: status,
+            headers: headers,
+            layout_path: opts[:layout_path] || 'layout',
+            view: opts[:view]
+          )
         end
 
         def _view_response(
