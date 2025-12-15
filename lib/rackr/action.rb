@@ -128,10 +128,10 @@ class Rackr
         def initialize(routes: nil, config: nil)
           @routes = routes
           @config = config
-          @deps = config[:deps]
-          @db = config.dig(:deps, :db)
-          @log = config.dig(:deps, :log)
-          @cache = config.dig(:deps, :cache)
+          @deps = config&.dig(:deps)
+          @db = config&.dig(:deps, :db)
+          @log = config&.dig(:deps, :log)
+          @cache = config&.dig(:deps, :cache)
         end
 
         def render(**opts)
