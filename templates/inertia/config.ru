@@ -21,3 +21,9 @@ puts App.config
 puts "\n"
 
 run App
+
+puts "\nRoutes:"
+App.routes.each_pair { |v| p(v) }
+puts "\nConfig:"
+puts App.config
+puts "\n"

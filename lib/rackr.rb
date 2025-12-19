@@ -18,11 +18,6 @@ class Rackr
 
   def call(&block)
     instance_eval(&block)
-    #puts "\n= Routes =============="
-    #routes.each_pair { |v| p v }
-    #puts "\n= Config =============="
-    #puts config
-    #puts "\n"
 
     @router
   end
