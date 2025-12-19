@@ -51,15 +51,12 @@ App =
     end
 
     post 'post/:foo' do |req|
-      received_json = Oj.load(req.body.read) # read the json
-
-      test = load_json(req)
-      test = load_json('{"oi": "something"}')
-
-      # req.params[:foo] read the route param
-      # req.params["foo"] read query params
-
-      render(json: received_json.merge({ post: 'ok' }))
+      render(json: {
+        foo: {
+          symbol: req.params[:foo], # params from path
+          string: req.params['foo'] # query string and body
+        }
+      })
     end
 
     get 'view_response' do |request|

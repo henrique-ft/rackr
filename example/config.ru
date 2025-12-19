@@ -2,6 +2,7 @@
 
 require_relative 'app'
 require 'rack/session'
+require 'rack/parser'
 
 #use Rack::Session::Cookie,
   #:domain => 'mywebsite.com',
@@ -16,7 +17,9 @@ use(
     secret: 'a2f8d6e5b4c1a0g7h3i9j2k1l3m4n5o6p7q8r9sa2f8d6e5b4c1a0g7h3i9j2k1l3m4n5o6p7q8r9s0t0t'
 )
 
+use Rack::Parser
 use Rack::Static, :urls => ["/public"]
+
 run App
 
 #require_relative '../lib/rackr'

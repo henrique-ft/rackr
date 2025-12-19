@@ -233,12 +233,6 @@ class Rackr
           raise Rackr::NotFound
         end
 
-        def load_json(val)
-          return Oj.load(val.body.read) if val.is_a?(Rack::Request)
-
-          Oj.load(val)
-        end
-
         def load_erb(content, binding_context: nil)
           eval(Erubi::Engine.new(content).src, binding_context)
         end

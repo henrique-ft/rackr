@@ -6,6 +6,7 @@ require 'sequel'
 require 'html_slice'
 require_relative 'load'
 
+use Rack::Parser
 use Rack::Static, :urls => ["/public"]
 
 #if ENV['RACK_ENV'] != 'development'
