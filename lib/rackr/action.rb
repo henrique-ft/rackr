@@ -125,21 +125,27 @@ class Rackr
         def render(**opts)
           type = opts.keys.first
           content = opts[type]
-          status = opts[:status]
-          headers = opts[:headers] || {}
 
           if (renderer = @@render[type])
-            return renderer.call(content, opts[:status], headers)
+            return renderer.call(
+              content,
+              opts[:status],
+              opts[:headers] || {}
+            )
           end
 
           if (mime = MIME_TYPES[type])
-            return [status || 200, @@default_headers.call(mime, headers, content), [content]]
+            return [
+              opts[:status] || 200,
+              @@default_headers.call(mime, opts[:headers] || {}, content),
+              [content]
+            ]
           end
 
           _render_view(
             content,
-            status: status || 200,
-            headers: headers,
+            status: opts[:status] || 200,
+            headers: opts[:headers] || {},
             layout_path: opts[:layout_path] || 'layout',
             view: opts[:view],
             response_instance: opts[:response_instance] || false
@@ -149,21 +155,27 @@ class Rackr
         def build_response(**opts)
           type = opts.keys.first
           content = opts[type]
-          status = opts[:status] || 200
-          headers = opts[:headers] || {}
 
           if (builder = @@build_response[type])
-            return builder.call(content, status, headers)
+            return builder.call(
+              content,
+              opts[:status] || 200,
+              opts[:headers] || {}
+            )
           end
 
           if (mime = MIME_TYPES[type])
-            return Rack::Response.new(content, status, @@default_headers.call(mime, headers, content))
+            return Rack::Response.new(
+              content,
+              opts[:status] || 200,
+              @@default_headers.call(mime, opts[:headers] || {}, content)
+            )
           end
 
           _view_response(
             content,
-            status: status,
-            headers: headers,
+            status: opts[:status] || 200,
+            headers: opts[:headers] || {},
             layout_path: opts[:layout_path] || 'layout',
             view: opts[:view]
           )
