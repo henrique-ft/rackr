@@ -357,4 +357,80 @@ RSpec.describe Rackr::Action do
     it { expect(included.cache).to eq(config[:deps][:cache]) }
     it { expect { included.not_found! }.to raise_error(Rackr::NotFound) }
   end
+
+  context 'with charset option' do
+    context 'when rendering' do
+      it 'defaults to utf-8 for html' do
+        result = subject.render(html: 'test')
+        expect(result[1]['content-type']).to eq('text/html; charset=utf-8')
+      end
+
+      it 'respects custom charset for html' do
+        result = subject.render(html: 'test', charset: 'iso-8859-1')
+        expect(result[1]['content-type']).to eq('text/html; charset=iso-8859-1')
+      end
+
+      it 'defaults to utf-8 for json' do
+        result = subject.render(json: {a: 1})
+        expect(result[1]['content-type']).to eq('application/json; charset=utf-8')
+      end
+
+      it 'respects custom charset for json' do
+        result = subject.render(json: {a: 1}, charset: 'iso-8859-1')
+        expect(result[1]['content-type']).to eq('application/json; charset=iso-8859-1')
+      end
+
+      it 'defaults to utf-8 for generic mime types' do
+        result = subject.render(text: 'test')
+        expect(result[1]['content-type']).to eq('text/plain; charset=utf-8')
+      end
+
+      it 'respects custom charset for generic mime types' do
+        result = subject.render(text: 'test', charset: 'iso-8859-1')
+        expect(result[1]['content-type']).to eq('text/plain; charset=iso-8859-1')
+      end
+
+      it 'applies charset to non-text mime types' do
+        result = subject.render(zip: 'test', charset: 'binary')
+        expect(result[1]['content-type']).to eq('application/zip; charset=binary')
+      end
+    end
+
+    context 'when building response' do
+      it 'defaults to utf-8 for html' do
+        response = subject.build_response(html: 'test')
+        expect(response.headers['content-type']).to eq('text/html; charset=utf-8')
+      end
+
+      it 'respects custom charset for html' do
+        response = subject.build_response(html: 'test', charset: 'iso-8859-1')
+        expect(response.headers['content-type']).to eq('text/html; charset=iso-8859-1')
+      end
+
+      it 'defaults to utf-8 for json' do
+        response = subject.build_response(json: {a: 1})
+        expect(response.headers['content-type']).to eq('application/json; charset=utf-8')
+      end
+
+      it 'respects custom charset for json' do
+        response = subject.build_response(json: {a: 1}, charset: 'iso-8859-1')
+        expect(response.headers['content-type']).to eq('application/json; charset=iso-8859-1')
+      end
+
+      it 'defaults to utf-8 for generic mime types' do
+        response = subject.build_response(text: 'test')
+        expect(response.headers['content-type']).to eq('text/plain; charset=utf-8')
+      end
+
+      it 'respects custom charset for generic mime types' do
+        response = subject.build_response(text: 'test', charset: 'iso-8859-1')
+        expect(response.headers['content-type']).to eq('text/plain; charset=iso-8859-1')
+      end
+
+      it 'applies charset to non-text mime types' do
+        response = subject.build_response(zip: 'test', charset: 'binary')
+        expect(response.headers['content-type']).to eq('application/zip; charset=binary')
+      end
+    end
+  end
 end
