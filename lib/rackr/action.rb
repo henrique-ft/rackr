@@ -138,7 +138,11 @@ class Rackr
           if (mime = MIME_TYPES[type])
             return [
               opts[:status] || 200,
-              @@default_headers.call(mime, opts[:headers] || {}, content),
+              @@default_headers.call(
+                "#{mime}; charset=#{opts[:charset] || 'utf-8'}",
+                opts[:headers] || {},
+                content
+              ),
               [content]
             ]
           end
@@ -171,7 +175,11 @@ class Rackr
             return Rack::Response.new(
               content,
               opts[:status] || 200,
-              @@default_headers.call(mime, opts[:headers] || {}, content),
+              @@default_headers.call(
+                "#{mime}; charset=#{opts[:charset] || 'utf-8'}",
+                opts[:headers] || {},
+                content
+              )
             )
           end
 

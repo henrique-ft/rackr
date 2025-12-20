@@ -21,21 +21,21 @@ RSpec.describe Rackr::Action do
       it 'can render from string with success' do
         result = subject.render(text: 'test')
         expect(result).to eq(
-          [200, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']]
+          [200, { 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8' }, ['test']]
         )
       end
 
       it 'can render text with other status' do
         result = subject.render(text: 'test', status: 201)
         expect(result).to eq(
-          [201, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']]
+          [201, { 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8' }, ['test']]
         )
       end
 
       it 'can render text with other headers' do
         result = subject.render(text: 'test', headers: { 'other' => 'header' })
         expect(result).to eq(
-          [200, { 'content-length' => '4', 'content-type' => 'text/plain', 'other' => 'header' }, ['test']]
+          [200, { 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8', 'other' => 'header' }, ['test']]
         )
       end
     end
@@ -43,17 +43,17 @@ RSpec.describe Rackr::Action do
     context 'html_response' do
       it 'can render from string with success' do
         response = subject.build_response(text: 'test')
-        expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']])
+        expect(response.finish).to eq([200, { 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8' }, ['test']])
       end
 
       it 'can render text with other status' do
         response = subject.build_response(text: 'test', status: 201)
-        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/plain' }, ['test']])
+        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8' }, ['test']])
       end
 
       it 'can render text with other headers' do
         response = subject.build_response(text: 'test', status: 201, headers: { 'other' => 'header' })
-        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/plain', 'other' => 'header' },
+        expect(response.finish).to eq([201, { 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8', 'other' => 'header' },
                                        ['test']])
       end
     end
