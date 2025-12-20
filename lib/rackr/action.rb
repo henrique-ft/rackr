@@ -77,13 +77,21 @@ class Rackr
       html: proc do |content, status, headers, charset|
         [status || 200, @@default_headers.call("text/html; charset=#{charset}", headers, content), [content]]
       end,
-      res: proc do |content, status, headers|
+      res: proc do |content, status, headers, charset|
         content.status = status if status
+        if charset
+          content.content_type =
+            (content.content_type || 'charset=utf-8').sub(/charset=\S+/, "charset=#{charset}")
+        end
         content.headers['content-length'] ||= content.body.join.bytesize.to_s
         content.finish
       end,
-      response: proc do |content, status, headers|
+      response: proc do |content, status, headers, charset|
         content.status = status if status
+        if charset
+          content.content_type =
+            (content.content_type || 'charset=utf-8').sub(/charset=\S+/, "charset=#{charset}")
+        end
         content.headers['content-length'] ||= content.body.join.bytesize.to_s
         content.finish
       end

@@ -284,13 +284,13 @@ RSpec.describe Rackr::Action do
     it 'can render a rack response with response:' do
       result = subject.render(response: subject.response('body', 404, { 'some' => 'header' }))
 
-      expect(result).to eq([404, { 'content-length' => '4', 'some' => 'header' }, ['body']])
+      expect(result).to eq([404, { 'content-length' => '4', "content-type"=>"charset=utf-8", 'some' => 'header' }, ['body']])
     end
 
     it 'can render a rack response with res:' do
       result = subject.render(res: subject.response('body', 404, { 'some' => 'header' }))
 
-      expect(result).to eq([404, { 'content-length' => '4', 'some' => 'header' }, ['body']])
+      expect(result).to eq([404, { 'content-length' => '4', "content-type"=>"charset=utf-8", 'some' => 'header' }, ['body']])
     end
   end
 
@@ -360,6 +360,20 @@ RSpec.describe Rackr::Action do
 
   context 'with charset option' do
     context 'when rendering' do
+      context 'on render response' do
+        it 'override using res:' do
+          res = subject.build_response(html: 'test')
+          result = subject.render(res:, charset: 'custom')
+          expect(result[1]['content-type']).to eq('text/html; charset=custom')
+        end
+
+        it 'override using response:' do
+          response = subject.build_response(html: 'test')
+          result = subject.render(response:, charset: 'custom')
+          expect(result[1]['content-type']).to eq('text/html; charset=custom')
+        end
+      end
+
       it 'defaults to utf-8 for html' do
         result = subject.render(html: 'test')
         expect(result[1]['content-type']).to eq('text/html; charset=utf-8')
