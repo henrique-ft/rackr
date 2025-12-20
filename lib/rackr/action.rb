@@ -8,7 +8,7 @@ class Rackr
   module Action
     MIME_TYPES = {
       text: "text/plain",
-      html: "text/html; charset=utf-8",
+      html: "text/html",
       json: "application/json",
       manifest: "text/cache-manifest",
       atom: "application/atom+xml",
@@ -70,12 +70,12 @@ class Rackr
     end
 
     @@render = {
-      json: proc do |content, status, headers|
+      json: proc do |content, status, headers, charset|
         content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
-        [status || 200, @@default_headers.call("application/json", headers, content), [content]]
+        [status || 200, @@default_headers.call("application/json; charset=#{charset}", headers, content), [content]]
       end,
-      html: proc do |content, status, headers|
-        [status || 200, @@default_headers.call("text/html; charset=utf-8", headers, content), [content]]
+      html: proc do |content, status, headers, charset|
+        [status || 200, @@default_headers.call("text/html; charset=#{charset}", headers, content), [content]]
       end,
       res: proc do |content, status, headers|
         content.status = status if status
@@ -90,12 +90,12 @@ class Rackr
     }
 
     @@build_response = {
-      json: proc do |content, status, headers|
+      json: proc do |content, status, headers, charset|
         content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
-        Rack::Response.new(content, status, @@default_headers.call("application/json", headers, content))
+        Rack::Response.new(content, status, @@default_headers.call("application/json; charset=#{charset}", headers, content))
       end,
-      html: proc do |content, status, headers|
-        Rack::Response.new(content, status, @@default_headers.call("text/html; charset=utf-8", headers, content))
+      html: proc do |content, status, headers, charset|
+        Rack::Response.new(content, status, @@default_headers.call("text/html; charset=#{charset}", headers, content))
       end,
       head: proc do |status, _empty, headers|
         Rack::Response.new(nil, status, headers)
@@ -130,7 +130,8 @@ class Rackr
             return renderer.call(
               content,
               opts[:status],
-              opts[:headers] || {}
+              opts[:headers] || {},
+              opts[:charset] || 'utf-8'
             )
           end
 
@@ -148,7 +149,8 @@ class Rackr
             headers: opts[:headers] || {},
             layout_path: opts[:layout_path] || 'layout',
             view: opts[:view],
-            response_instance: opts[:response_instance] || false
+            response_instance: opts[:response_instance] || false,
+            charset: opts[:charset] || 'utf-8'
           )
         end
 
@@ -160,7 +162,8 @@ class Rackr
             return builder.call(
               content,
               opts[:status] || 200,
-              opts[:headers] || {}
+              opts[:headers] || {},
+              opts[:charset] || 'utf-8'
             )
           end
 
@@ -168,42 +171,29 @@ class Rackr
             return Rack::Response.new(
               content,
               opts[:status] || 200,
-              @@default_headers.call(mime, opts[:headers] || {}, content)
+              @@default_headers.call(mime, opts[:headers] || {}, content),
             )
           end
 
-          _view_response(
+          _render_view(
             content,
             status: opts[:status] || 200,
             headers: opts[:headers] || {},
             layout_path: opts[:layout_path] || 'layout',
-            view: opts[:view]
-          )
-        end
-
-        def _view_response(
-          paths,
-          status: 200,
-          headers: {},
-          layout_path: 'layout',
-          view: nil
-        )
-          _render_view(
-            paths,
-            status: status,
-            headers: headers,
-            layout_path: layout_path,
-            response_instance: true
+            view: opts[:view],
+            response_instance: true,
+            charset: opts[:charset] || 'utf-8'
           )
         end
 
         def _render_view(
           paths,
-          status: 200,
-          headers: {},
-          layout_path: 'layout',
-          response_instance: false,
-          view: nil
+          status:,
+          headers:,
+          layout_path:,
+          response_instance:,
+          view:,
+          charset:
         )
           base_path = config.dig(:views, :path) || 'views'
 
@@ -234,11 +224,11 @@ class Rackr
             return Rack::Response.new(
               parsed_erb,
               status,
-              @@default_headers.call('text/html; charset=utf-8', headers, parsed_erb)
+              @@default_headers.call("text/html; charset=#{charset}", headers, parsed_erb)
             )
           end
 
-          [status, @@default_headers.call('text/html; charset=utf-8', headers, parsed_erb), [parsed_erb]]
+          [status, @@default_headers.call("text/html; charset=#{charset}", headers, parsed_erb), [parsed_erb]]
         end
 
         def not_found!

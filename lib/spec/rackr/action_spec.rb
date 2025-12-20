@@ -223,28 +223,28 @@ RSpec.describe Rackr::Action do
       it 'can render from hash with success' do
         result = subject.render(json: { test: 'value' })
         expect(result).to eq(
-          [200, { 'content-length' => '16', 'content-type' => 'application/json' }, ['{"test":"value"}']]
+          [200, { 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' }, ['{"test":"value"}']]
         )
       end
 
       it 'can render from a string with success' do
         result = subject.render(json: '{"test":"value"}')
         expect(result).to eq(
-          [200, { 'content-length' => '16', 'content-type' => 'application/json' }, ['{"test":"value"}']]
+          [200, { 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' }, ['{"test":"value"}']]
         )
       end
 
       it 'can render json with other status' do
         result = subject.render(json: { test: 'value' }, status: 201)
         expect(result).to eq(
-          [201, { 'content-length' => '16', 'content-type' => 'application/json' }, ['{"test":"value"}']]
+          [201, { 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' }, ['{"test":"value"}']]
         )
       end
 
       it 'can render json with other headers' do
         result = subject.render(json: { test: 'value' }, status: 201, headers: { 'a' => 'b' })
         expect(result).to eq(
-          [201, { 'a' => 'b', 'content-length' => '16', 'content-type' => 'application/json' },
+          [201, { 'a' => 'b', 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' },
            ['{"test":"value"}']]
         )
       end
@@ -253,19 +253,19 @@ RSpec.describe Rackr::Action do
     context 'json_response' do
       it 'can render from hash with success' do
         response = subject.build_response(json: { test: 'value' })
-        expect(response.finish).to eq([200, { 'content-length' => '16', 'content-type' => 'application/json' },
+        expect(response.finish).to eq([200, { 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' },
                                        ['{"test":"value"}']])
       end
 
       it 'can render json with other status' do
         response = subject.build_response(json: { test: 'value' }, status: 201)
-        expect(response.finish).to eq([201, { 'content-length' => '16', 'content-type' => 'application/json' },
+        expect(response.finish).to eq([201, { 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' },
                                        ['{"test":"value"}']])
       end
 
       it 'can render text with other headers' do
         response = subject.build_response(json: { test: 'value' }, headers: { 'a' => 'b' })
-        expect(response.finish).to eq([200, { 'content-length' => '16', 'content-type' => 'application/json', 'a' => 'b' },
+        expect(response.finish).to eq([200, { 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8', 'a' => 'b' },
                                        ['{"test":"value"}']])
       end
     end
