@@ -36,6 +36,22 @@ RSpec.describe Rackr do
     end
   end
 
+  context '.cache' do
+    it do
+      cache = 'some cache'
+      app = Rackr.new({ deps: { cache: } })
+      expect(app.cache).to eq(cache)
+    end
+  end
+
+  context '.log' do
+    it do
+      log = 'some log'
+      app = Rackr.new({ deps: { log: } })
+      expect(app.log).to eq(log)
+    end
+  end
+
   context '.resources' do
     before do
       # Define dummy classes for the actions
