@@ -3,6 +3,8 @@
 class Rackr
   class Router
     class PathRoute < Route
+      # Path route is a route that has a path value that can be matched, and may have path params
+
       attr_reader :splitted_path,
                   :has_params
 

@@ -3,6 +3,8 @@
 class Rackr
   class Router
     class Route
+      # A Route for Rackr is an object that has endpoint and callbacks (before and after)
+
       attr_reader :endpoint,
                   :befores,
                   :has_befores,
