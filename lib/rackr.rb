@@ -35,7 +35,15 @@ class Rackr
   end
 
   def db
-    @router.config.dig(:deps, :db)
+    @router.config&.dig(:deps, :db)
+  end
+
+  def log
+    @router.config&.dig(:deps, :log)
+  end
+
+  def cache
+    @router.config&.dig(:deps, :cache)
   end
 
   def scope(name = '', before: [], after: [], &block)
