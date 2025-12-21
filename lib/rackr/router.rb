@@ -9,7 +9,7 @@ require_relative 'router/build_request'
 
 class Rackr
   class Router
-    # This is the core class of Rackr. This class aggregate the route tree, callbacks (before and after) and scopes
+    # This is the core class of Rackr. This class aggregate the route instance tree, callbacks (before and after) and scopes
     # then, using the building blocks, match the request and call the endpoints
 
     include Utils

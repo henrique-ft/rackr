@@ -65,22 +65,22 @@ class Rackr
       zip: 'application/zip'
     }.freeze
 
-    # These are class variables for performance reasons
+    # These are constant (not methods) for better performance
 
-    @@default_headers = proc do |content_type, headers, content|
+    DEFAULT_HEADERS = (proc do |content_type, headers, content|
       {
         'content-type' => content_type,
         'content-length' => content.bytesize.to_s
       }.merge(headers)
-    end
+    end).freeze
 
-    @@render = {
+    RENDER = {
       json: proc do |content, status, headers, charset|
         content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
-        [status || 200, @@default_headers.call("application/json; charset=#{charset}", headers, content), [content]]
+        [status || 200, DEFAULT_HEADERS.call("application/json; charset=#{charset}", headers, content), [content]]
       end,
       html: proc do |content, status, headers, charset|
-        [status || 200, @@default_headers.call("text/html; charset=#{charset}", headers, content), [content]]
+        [status || 200, DEFAULT_HEADERS.call("text/html; charset=#{charset}", headers, content), [content]]
       end,
       res: proc do |content, status, _headers, charset|
         content.status = status if status
@@ -100,16 +100,16 @@ class Rackr
         content.headers['content-length'] ||= content.body.join.bytesize.to_s
         content.finish
       end
-    }
+    }.freeze
 
-    @@build_response = {
+    BUILD_RESPONSE = {
       json: proc do |content, status, headers, charset|
         content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
         Rack::Response.new(content, status,
-                           @@default_headers.call("application/json; charset=#{charset}", headers, content))
+                           DEFAULT_HEADERS.call("application/json; charset=#{charset}", headers, content))
       end,
       html: proc do |content, status, headers, charset|
-        Rack::Response.new(content, status, @@default_headers.call("text/html; charset=#{charset}", headers, content))
+        Rack::Response.new(content, status, DEFAULT_HEADERS.call("text/html; charset=#{charset}", headers, content))
       end,
       head: proc do |status, _empty, headers|
         Rack::Response.new(nil, status, headers)
@@ -121,7 +121,7 @@ class Rackr
           { 'location' => content }.merge(headers)
         )
       end
-    }
+    }.freeze
 
     def self.included(base)
       base.class_eval do
@@ -140,7 +140,7 @@ class Rackr
           type = opts.keys.first
           content = opts[type]
 
-          if (renderer = @@render[type])
+          if (renderer = RENDER[type])
             return renderer.call(
               content,
               opts[:status],
@@ -152,7 +152,7 @@ class Rackr
           if (mime = MIME_TYPES[type])
             return [
               opts[:status] || 200,
-              @@default_headers.call(
+              DEFAULT_HEADERS.call(
                 "#{mime}; charset=#{opts[:charset] || 'utf-8'}",
                 opts[:headers] || {},
                 content
@@ -176,7 +176,7 @@ class Rackr
           type = opts.keys.first
           content = opts[type]
 
-          if (builder = @@build_response[type])
+          if (builder = BUILD_RESPONSE[type])
             return builder.call(
               content,
               opts[:status] || 200,
@@ -189,7 +189,7 @@ class Rackr
             return Rack::Response.new(
               content,
               opts[:status] || 200,
-              @@default_headers.call(
+              DEFAULT_HEADERS.call(
                 "#{mime}; charset=#{opts[:charset] || 'utf-8'}",
                 opts[:headers] || {},
                 content
@@ -246,11 +246,11 @@ class Rackr
             return Rack::Response.new(
               parsed_erb,
               status,
-              @@default_headers.call("text/html; charset=#{charset}", headers, parsed_erb)
+              DEFAULT_HEADERS.call("text/html; charset=#{charset}", headers, parsed_erb)
             )
           end
 
-          [status, @@default_headers.call("text/html; charset=#{charset}", headers, parsed_erb), [parsed_erb]]
+          [status, DEFAULT_HEADERS.call("text/html; charset=#{charset}", headers, parsed_erb), [parsed_erb]]
         end
 
         def not_found!
