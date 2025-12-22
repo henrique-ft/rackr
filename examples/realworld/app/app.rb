@@ -1,11 +1,5 @@
-log_request = proc do |req, res|
-  p req.inspect
-
-  req
-end
-
 App =
-  Rackr.new(Config.get, before: log_request).call do
+  Rackr.new(Config.get).call do
     get do
       render html: '<h1> Realworld </h1>'
     end
@@ -15,7 +9,7 @@ App =
       end
 
       scope 'users' do
-        post 'login' do |req|
+        post 'login' do
           user = User[{email: req.params["user"]["email"], password: req.params["user"]["password"]}]
 
           return head(403) unless user

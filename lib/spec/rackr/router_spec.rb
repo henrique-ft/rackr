@@ -293,6 +293,43 @@ RSpec.describe Rackr::Router do
       expect(router.call(request)).to eq([500, {}, ['Internal server error']])
     end
 
+    context 'dev mode' do
+      before do
+        allow(ENV).to receive(:[]).with('RACK_ENV').and_return('development')
+      end
+
+      it 'render dev error when exception happen' do
+        router = Rackr::Router.new
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/teste'
+          }
+        router.add :get, 'teste', proc { raise StandardError }
+        result = router.call(request)
+
+        expect(result[0]).to eq(200)
+        expect(result[1]).to include({"content-type"=>"text/html; charset=utf-8"})
+      end
+
+      it 'render dev error when error endpoint returns nil' do
+        router = Rackr::Router.new
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/teste'
+          }
+        router.add :get, 'teste', proc { raise StandardError }
+        router.add_error(proc { |_req, _e| nil })
+        result = router.call(request)
+
+        expect(result[0]).to eq(200)
+        expect(result[1]).to include({"content-type"=>"text/html; charset=utf-8"})
+      end
+    end
+
     context 'custom' do
       it 'render custom error when exception happen' do
         router = Rackr::Router.new
