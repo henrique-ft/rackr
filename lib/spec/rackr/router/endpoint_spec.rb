@@ -7,10 +7,12 @@ require_relative '../../../rackr/callback'
 RSpec.describe Rackr::Router::Endpoint do
   describe '.call' do
     let(:content) { { request: 'data' } }
+    let(:routes) { { routes: 'data' } }
+    let(:config) { { config: 'data' } }
     let(:error) { StandardError.new('test error') }
 
     context 'when endpoint is a callable object (e.g., a proc)' do
-      let(:endpoint) { proc { |cont| "callable called with #{cont}" } }
+      let(:endpoint) { proc { |cont, err = nil| "callable called with #{cont} and error: #{err}" } }
 
       it 'calls the endpoint with content' do
         expect(endpoint).to receive(:call).with(content).and_call_original
@@ -18,9 +20,8 @@ RSpec.describe Rackr::Router::Endpoint do
       end
 
       it 'calls the endpoint with content and an error if provided' do
-        callable = proc { |cont, err| "callable called with #{cont} and #{err}" }
-        expect(callable).to receive(:call).with(content, error).and_call_original
-        described_class.call(callable, content, error)
+        expect(endpoint).to receive(:call).with(content, error).and_call_original
+        described_class.call(endpoint, content, nil, nil, error)
       end
     end
 
@@ -38,15 +39,16 @@ RSpec.describe Rackr::Router::Endpoint do
         allow(action_class).to receive(:new).and_return(action_instance)
       end
 
-      it 'initializes the class and calls the instance with content' do
-        expect(action_class).to receive(:new).with(routes: nil, config: nil)
+      it 'initializes the class with routes and config and calls the instance with content' do
+        expect(action_class).to receive(:new).with(routes: routes, config: config)
         expect(action_instance).to receive(:call).with(content)
-        described_class.call(action_class, content)
+        described_class.call(action_class, content, routes, config)
       end
 
       it 'calls the instance with content and an error if provided' do
+        expect(action_class).to receive(:new).with(routes: routes, config: config)
         expect(action_instance).to receive(:call).with(content, error)
-        described_class.call(action_class, content, error)
+        described_class.call(action_class, content, routes, config, error)
       end
     end
 
@@ -64,15 +66,16 @@ RSpec.describe Rackr::Router::Endpoint do
         allow(callback_class).to receive(:new).and_return(callback_instance)
       end
 
-      it 'initializes the class and calls the instance with content' do
-        expect(callback_class).to receive(:new).with(routes: nil, config: nil)
+      it 'initializes the class with routes and config and calls the instance with content' do
+        expect(callback_class).to receive(:new).with(routes: routes, config: config)
         expect(callback_instance).to receive(:call).with(content)
-        described_class.call(callback_class, content)
+        described_class.call(callback_class, content, routes, config)
       end
 
       it 'calls the instance with content and an error if provided' do
+        expect(callback_class).to receive(:new).with(routes: routes, config: config)
         expect(callback_instance).to receive(:call).with(content, error)
-        described_class.call(callback_class, content, error)
+        described_class.call(callback_class, content, routes, config, error)
       end
     end
 
@@ -95,8 +98,9 @@ RSpec.describe Rackr::Router::Endpoint do
       end
 
       it 'calls the instance with content and an error if provided' do
+        expect(standard_class).to receive(:new).with(no_args)
         expect(standard_instance).to receive(:call).with(content, error)
-        described_class.call(standard_class, content, error)
+        described_class.call(standard_class, content, nil, nil, error)
       end
     end
   end

@@ -4,6 +4,7 @@ require 'rack/parser'
 #require 'rackr'
 require 'sequel'
 require 'html_slice'
+require 'jwt'
 require_relative '../../lib/rackr'
 require_relative 'load'
 

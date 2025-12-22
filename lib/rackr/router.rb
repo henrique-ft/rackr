@@ -63,7 +63,7 @@ class Rackr
       begin
         i = 0
         while i < befores.size
-          before_result = Endpoint.call(befores[i], rack_request)
+          before_result = Endpoint.call(befores[i], rack_request, @routes, @config)
           return before_result unless before_result.is_a?(Rack::Request)
 
           rack_request = before_result
@@ -71,7 +71,7 @@ class Rackr
           i += 1
         end
 
-        endpoint_result = Endpoint.call(route_instance.endpoint, before_result || rack_request)
+        endpoint_result = Endpoint.call(route_instance.endpoint, before_result || rack_request, @routes, @config)
 
         call_afters(route_instance, endpoint_result)
       rescue Rackr::NotFound
@@ -118,7 +118,9 @@ class Rackr
           not_found_instances,
           @default_not_found
         ).endpoint,
-        request
+        request,
+        @routes,
+        @config
       )
 
       call_afters(route_instance, endpoint_result)
@@ -137,14 +139,14 @@ class Rackr
         return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => error }))
       end
 
-      endpoint_result = Endpoint.call(error_route.endpoint, request, error)
+      endpoint_result = Endpoint.call(error_route.endpoint, request, @routes, @config, error)
 
       if endpoint_result.nil?
         if @dev_mode
           return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => error }))
         end
 
-        endpoint_result = Endpoint.call(@default_error.endpoint, request, error)
+        endpoint_result = Endpoint.call(@default_error.endpoint, request, @routes, @config, error)
       end
 
       call_afters(route_instance, endpoint_result)
@@ -174,7 +176,7 @@ class Rackr
       afters = route_instance.afters
       i = 0
       while i < afters.size
-        Endpoint.call(afters[i], endpoint_result)
+        Endpoint.call(afters[i], endpoint_result, @routes, @config)
         i += 1
       end
     end

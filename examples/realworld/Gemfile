@@ -9,6 +9,7 @@ gem 'sqlite3'
 gem 'zeitwerk'
 gem 'rack-parser'
 gem 'html_slice'
+gem 'jwt'
 
 group :development do
   gem 'rerun'
