@@ -7,7 +7,7 @@ class Rackr
         include Rackr::Action
 
         def call(env)
-          render(html: <<-HTML
+          res = build_response(html: <<-HTML
             <!DOCTYPE html>
             <html>
             <head>
@@ -46,6 +46,8 @@ class Rackr
             </html>
           HTML
                 )
+          res.status = 500
+          render res:
         end
 
         def backtrace(env)

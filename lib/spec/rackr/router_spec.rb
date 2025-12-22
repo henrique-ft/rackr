@@ -309,7 +309,7 @@ RSpec.describe Rackr::Router do
         router.add :get, 'teste', proc { raise StandardError }
         result = router.call(request)
 
-        expect(result[0]).to eq(200)
+        expect(result[0]).to eq(500)
         expect(result[1]).to include({"content-type"=>"text/html; charset=utf-8"})
       end
 
@@ -325,7 +325,7 @@ RSpec.describe Rackr::Router do
         router.add_error(proc { |_req, _e| nil })
         result = router.call(request)
 
-        expect(result[0]).to eq(200)
+        expect(result[0]).to eq(500)
         expect(result[1]).to include({"content-type"=>"text/html; charset=utf-8"})
       end
     end
