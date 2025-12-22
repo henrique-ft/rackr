@@ -1,5 +1,11 @@
+log_request = proc do |req, res|
+  p req.inspect
+
+  req
+end
+
 App =
-  Rackr.new(Config.get).call do
+  Rackr.new(Config.get, before: log_request).call do
     get do
       render html: '<h1> Realworld </h1>'
     end
@@ -9,10 +15,12 @@ App =
       end
 
       scope 'users' do
-        get do
-        end
+        post 'login' do |req|
+          user = User[{email: req.params["user"]["email"], password: req.params["user"]["password"]}]
 
-        put do
+          return head(403) unless user
+
+          render(json: { user: user.to_hash })
         end
 
         # http POST localhost:9292/api/users user[password]=3 user[email]=test@email.com user[username]=hey
@@ -20,13 +28,10 @@ App =
           render json: { user: User.create(req.params["user"]).to_hash }
         end
 
-        post 'login' do
-          render(json: {
-            user: {
-              email: "",
-              password: ""
-            }
-          })
+        get do
+        end
+
+        put do
         end
       end
 
@@ -83,7 +88,7 @@ App =
 
       error do |req, e|
         if e.is_a?(Sequel::ValidationFailed)
-          render(e.errors, status: 422)
+          render(json: e.errors, status: 422)
         end
       end
     end

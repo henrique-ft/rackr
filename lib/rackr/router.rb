@@ -39,7 +39,7 @@ class Rackr
       @scopes_befores = {}
       @afters = ensure_array(after)
       @scopes_afters = {}
-      @default_error = Route.new(proc { |_req, e| raise e })
+      @default_error = Route.new(proc { |_req, e| [500, {}, ['Internal server error']] })
       @default_not_found = Route.new(proc { [404, {}, ['Not found']] })
       @splitted_request_path_info = []
       @current_request_path_info = nil
@@ -77,11 +77,7 @@ class Rackr
       rescue Rackr::NotFound
         return not_found_fallback(found_scopes, route_instance, before_result || rack_request)
       rescue Exception => e
-        if !@dev_mode || ENV['RACKR_ERROR_DEV']
-          return error_fallback(found_scopes, route_instance, before_result || rack_request, e)
-        end
-
-        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => e }))
+        return error_fallback(found_scopes, route_instance, before_result || rack_request, e)
       end
 
       endpoint_result
@@ -115,6 +111,42 @@ class Rackr
       @path_routes_instances[method.to_s.upcase][:__instances].push(route_instance)
     end
 
+    def not_found_fallback(found_scopes, route_instance, request)
+      args = [
+        match_route(
+          found_scopes,
+          not_found_instances,
+          @default_not_found
+        ).endpoint,
+        request
+      ]
+
+      endpoint_result = Endpoint.call(*args)
+
+      call_afters(route_instance, endpoint_result)
+
+      endpoint_result
+    end
+
+    def error_fallback(found_scopes, route_instance, request, error)
+      error_route = match_route(
+        found_scopes,
+        error_instances,
+        @default_error
+      )
+
+      if @dev_mode && error_route == @default_error
+        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => error }))
+      end
+
+      endpoint_result = Endpoint.call(error_route.endpoint, request, error)
+
+      call_afters(route_instance, endpoint_result)
+
+      endpoint_result
+    end
+
+
     %i[error not_found].each do |v|
       define_method("add_#{v}") do |endpoint|
         Errors.check_endpoint(endpoint, v)
@@ -129,24 +161,6 @@ class Rackr
         return set_to_scope(send("#{v}_instances"), route_instance) if @scopes.size >= 1
 
         instance_variable_set("@default_#{v}", route_instance)
-      end
-
-      define_method("#{v}_fallback") do |found_scopes, route_instance, request, error = nil|
-        args = [
-          match_route(
-            found_scopes,
-            send("#{v}_instances"),
-            instance_variable_get("@default_#{v}")
-          ).endpoint,
-          request
-        ]
-        args << error if error
-
-        endpoint_result = Endpoint.call(*args)
-
-        call_afters(route_instance, endpoint_result)
-
-        endpoint_result
       end
     end
 
