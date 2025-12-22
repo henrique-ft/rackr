@@ -1,1 +1,1 @@
-class User < Sequel::Model; end
+class Article < Sequel::Model; end

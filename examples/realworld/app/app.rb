@@ -11,14 +11,7 @@ App =
       scope 'users' do
         # Authentication
         # http POST localhost:9292/api/users/login user[password]=3 user[email]=test@email.com
-        post 'login' do |req|
-          user = User[{email: req.params["user"]["email"], password: req.params["user"]["password"]}]
-          return head(403) unless user
-
-          token = JWT.encode({ user: user.to_hash }, config[:secret], 'HS256')
-
-          render(json: { user: user.to_hash.merge({ token: }) })
-        end
+        post 'login', Actions::Users::Login
 
         # Registration
         # http POST localhost:9292/api/users user[password]=3 user[email]=test@email.com user[username]=hey
@@ -28,7 +21,8 @@ App =
 
         scope before: Callbacks::Users::Auth do
           # Get Current User
-          get { |req| render(json: { user: req.current_user }) }
+          # http GET localhost:9292/api/users Authorization:TOKEN
+          get { |req| render(json: { user: req.current_user.to_hash }) }
 
           put do
           end

@@ -1,1 +1,1 @@
-class User < Sequel::Model; end
+class Comment < Sequel::Model; end

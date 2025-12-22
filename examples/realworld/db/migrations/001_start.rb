@@ -6,7 +6,6 @@ Sequel.migration do
       String :username
       String :email
       String :password
-      String :token
       String :bio
       String :image
 
