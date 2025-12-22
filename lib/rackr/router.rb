@@ -112,16 +112,14 @@ class Rackr
     end
 
     def not_found_fallback(found_scopes, route_instance, request)
-      args = [
+      endpoint_result = Endpoint.call(
         match_route(
           found_scopes,
           not_found_instances,
           @default_not_found
         ).endpoint,
         request
-      ]
-
-      endpoint_result = Endpoint.call(*args)
+      )
 
       call_afters(route_instance, endpoint_result)
 
