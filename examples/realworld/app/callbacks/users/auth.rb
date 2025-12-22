@@ -5,9 +5,9 @@ module Callbacks
 
       def call(req)
         decoded_token = JWT.decode(req.fetch_header('HTTP_AUTHORIZATION'), config[:secret], 'HS256')
-        user = User[{id: decoded_token[0]["user"]["id"]}]
+        current_user = User[{id: decoded_token[0]["user"]["id"]}]
 
-        return head(403) unless user
+        return head(403) unless current_user
 
         assign(req, { current_user:  })
 
