@@ -88,6 +88,9 @@ GEM
     rspec-support (3.13.6)
     sequel (5.99.0)
       bigdecimal
+    sequel-generate-slug (0.1.0)
+      sequel
+      stringex
     shellany (0.0.1)
     sqlite3 (2.8.1-aarch64-linux-gnu)
     sqlite3 (2.8.1-aarch64-linux-musl)
@@ -99,6 +102,7 @@ GEM
     sqlite3 (2.8.1-x86_64-darwin)
     sqlite3 (2.8.1-x86_64-linux-gnu)
     sqlite3 (2.8.1-x86_64-linux-musl)
+    stringex (2.8.6)
     thor (1.4.0)
     zeitwerk (2.7.4)
 
@@ -125,6 +129,7 @@ DEPENDENCIES
   rerun
   rspec
   sequel
+  sequel-generate-slug
   sqlite3
   zeitwerk
 

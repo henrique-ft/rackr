@@ -13,6 +13,15 @@ Sequel.migration do
       String :updated_at, :null=>false
     end
 
+    create_table(:follows) do
+      primary_key :id
+      foreign_key :user_id, :users
+      foreign_key :follower_id, :users
+
+      String :created_at, :null=>false
+      String :updated_at, :null=>false
+    end
+
     create_table(:articles) do
       primary_key :id
       foreign_key :user_id, :users
@@ -21,20 +30,8 @@ Sequel.migration do
       String :title
       String :description
       String :body
-      String :tag_list
       String :favorited
       String :favorites_count
-
-      String :created_at, :null=>false
-      String :updated_at, :null=>false
-    end
-
-    create_table(:comments) do
-      primary_key :id
-      foreign_key :user_id, :users
-      foreign_key :article_id, :articles
-
-      String :body
 
       String :created_at, :null=>false
       String :updated_at, :null=>false

@@ -1,7 +1,7 @@
 App =
   Rackr.new(Config.get).call do
     get do
-      render html: '<h1>Real world </h1>'
+      render json: { real: 'world' }
     end
 
     scope 'api' do
@@ -17,7 +17,16 @@ App =
         end
       end
 
-      get 'tags' do
+      scope 'articles' do
+        get 'feed' do
+          render(json: { articles: Article.all.map(&:to_hash) })
+        end
+
+        scope :slug, before: Callbacks::Articles::AssignBySlug do
+          get do |req|
+            render(json: { article: req.article })
+          end
+        end
       end
 
       scope before: Callbacks::Users::Auth do
@@ -42,52 +51,40 @@ App =
 
             # Unfollow User
             # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
-            delete 'follow' do |req|
-              follow = Follow[{ user_id: req.user.id, follower_id: req.current_user.id }]
-              follow&.destroy
+            delete 'follow', Actions::Api::Profiles::Unfollow
+          end
+        end
+
+        scope 'articles' do
+          # Create Article
+          # http POST localhost:4000/api/articles Authorization:TOKEN
+          post do |req|
+            article = Article.create(
+              req.params["article"].merge({ user_id: req.current_user.id })
+            ).to_hash
+
+            render json: { article: }
+          end
+
+          scope(
+            :slug,
+            before: [
+              Callbacks::Articles::AssignBySlug,
+              Callbacks::Articles::CheckUserPermission
+            ]
+          ) do
+            # Update Article
+            # http PUT localhost:4000/api/articles/:slug Authorization:TOKEN
+            put do |req|
+              render json: { article: req.article.update(req.params["article"]) }
+            end
+
+            # Delete Article
+            # http DELETE localhost:4000/api/articles/:slug Authorization:TOKEN
+            delete do |req|
+              req.article.destroy
 
               head 200
-            end
-          end
-        end
-      end
-
-      scope 'articles' do
-        get do
-        end
-
-        post do
-        end
-
-        get 'feed' do
-        end
-
-        scope :slug do
-          get do
-          end
-
-          put do
-          end
-
-          delete do
-          end
-
-          scope 'favorite' do
-            post do
-            end
-
-            delete do
-            end
-          end
-
-          scope 'comments' do
-            post do
-            end
-
-            get do
-            end
-
-            delete :id do
             end
           end
         end
