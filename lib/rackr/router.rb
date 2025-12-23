@@ -15,15 +15,15 @@ class Rackr
     include Utils
 
     attr_writer :default_not_found
-    attr_reader :routes, :config, :not_found_instances, :error_instances
+    attr_reader :routes, :config, :not_found_tree, :error_tree
 
     def initialize(config = {}, before: [], after: [])
-      @path_routes_instances = {}
+      @path_routes_tree = {}
       %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
-        @path_routes_instances[method] = { __instances: [] }
+        @path_routes_tree[method] = { __instances: [] }
       end
-      @not_found_instances = {}
-      @error_instances = {}
+      @not_found_tree = {}
+      @error_tree = {}
 
       http_methods = HTTP_METHODS.map { |m| m.downcase.to_sym }
       @routes = Struct.new(*http_methods).new
@@ -108,14 +108,14 @@ class Rackr
 
       return push_to_scope(method.to_s.upcase, route_instance) if @scopes.size >= 1
 
-      @path_routes_instances[method.to_s.upcase][:__instances].push(route_instance)
+      @path_routes_tree[method.to_s.upcase][:__instances].push(route_instance)
     end
 
     def not_found_fallback(found_scopes, route_instance, request)
       endpoint_result = Endpoint.call(
         match_route(
           found_scopes,
-          not_found_instances,
+          not_found_tree,
           @default_not_found
         ).endpoint,
         request,
@@ -131,7 +131,7 @@ class Rackr
     def error_fallback(found_scopes, route_instance, request, error, env)
       error_route = match_route(
         found_scopes,
-        error_instances,
+        error_tree,
         @default_error
       )
 
@@ -166,7 +166,7 @@ class Rackr
             afters: @afters
           )
 
-        return set_to_scope(send("#{v}_instances"), route_instance) if @scopes.size >= 1
+        return set_to_scope(send("#{v}_tree"), route_instance) if @scopes.size >= 1
 
         instance_variable_set("@default_#{v}", route_instance)
       end
@@ -217,7 +217,7 @@ class Rackr
     end
 
     def push_to_scope(method, route_instance)
-      deep_hash_push(@path_routes_instances[method], *(not_empty_scopes + %i[__instances]), route_instance)
+      deep_hash_push(@path_routes_tree[method], *(not_empty_scopes + %i[__instances]), route_instance)
     end
 
     def set_to_scope(instances, route_instance)
@@ -240,7 +240,7 @@ class Rackr
 
     def match_path_route(request_method)
       find_instance_in_scope = proc do |request_method, found_scopes|
-        @path_routes_instances[request_method].dig(
+        @path_routes_tree[request_method].dig(
           *(found_scopes + [:__instances])
         )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
       end
@@ -248,25 +248,25 @@ class Rackr
       last_tail = @splitted_request_path_info.drop(1)
       found_scopes = []
 
-      path_routes_instances = @path_routes_instances[request_method]
+      path_routes_tree = @path_routes_tree[request_method]
 
       while last_tail && !last_tail.empty?
         segment = last_tail.shift
         found_route = nil
 
-        path_routes_instances.each_key do |scope|
+        path_routes_tree.each_key do |scope|
           next if scope == :__instances
 
           if segment == scope
             found_scopes << scope
-            path_routes_instances = @path_routes_instances[request_method].dig(*found_scopes)
+            path_routes_tree = @path_routes_tree[request_method].dig(*found_scopes)
             break
           elsif scope.start_with?(':')
             found_route = find_instance_in_scope.call(request_method, found_scopes)
             return found_route if found_route
 
             found_scopes << scope
-            path_routes_instances = @path_routes_instances[request_method].dig(*found_scopes)
+            path_routes_tree = @path_routes_tree[request_method].dig(*found_scopes)
             break
           end
         end
@@ -281,7 +281,7 @@ class Rackr
       if result_route.nil?
         result_route = match_route(
           found_scopes,
-          @not_found_instances,
+          @not_found_tree,
           @default_not_found
         )
       end
