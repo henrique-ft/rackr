@@ -12,7 +12,6 @@ gem 'puma'
 gem 'guard-puma'
 
 gem 'sequel'
-gem 'sequel-generate-slug'
 gem 'sqlite3'
 
 group :development do

@@ -1,6 +1,11 @@
 class Article < Sequel::Model
-  plugin :generate_slug, column: :slug, source: :title
   many_to_one :users
+
+  def before_save
+    self.slug = title.downcase.gsub(".", "").gsub(" ", "-")
+
+    super
+  end
 
   def validate
     super

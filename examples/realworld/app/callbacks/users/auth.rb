@@ -3,7 +3,7 @@ module Callbacks
     class Auth
       include Rackr::Callback
 
-      def self.call(req)
+      def call(req)
         decoded_token = JwtToken.new(config).decode(req)
         current_user = User[{id: decoded_token[0]["user"]["id"]}]
 

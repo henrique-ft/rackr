@@ -3,7 +3,7 @@ module Callbacks
     class CheckUserPermission
       include Rackr::Callback
 
-      def self.call(req)
+      def call(req)
         unless req.article.user_id == req.current_user.id
           return head(422)
         end

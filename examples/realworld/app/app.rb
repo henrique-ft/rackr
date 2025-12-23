@@ -6,25 +6,29 @@ App =
 
     scope 'api' do
       scope 'users' do
-        # Authentication
-        # http POST localhost:4000/api/users/login user[password]=3 user[email]=test@email.com
-        post 'login', Actions::Api::Users::Login
-
         # Registration
-        # http POST localhost:4000/api/users user[password]=3 user[email]=test@email.com user[username]=hey
+        # http POST localhost:4000/api/users user[password]=1 user[email]=1@email.com user[username]=one
         post do |req|
           render json: { user: User.create(req.params["user"]).to_hash }
         end
+
+        # Authentication
+        # http POST localhost:4000/api/users/login user[password]=1 user[email]=1@email.com
+        post 'login', Actions::Api::Users::Login
       end
 
       scope 'articles' do
+        # Feed Articles
+        # http GET localhost:4000/api/articles/feed
         get 'feed' do
           render(json: { articles: Article.all.map(&:to_hash) })
         end
 
         scope :slug, before: Callbacks::Articles::AssignBySlug do
+          # Get Article
+          # http GET localhost:4000/api/articles/:slug
           get do |req|
-            render(json: { article: req.article })
+            render(json: { article: req.article.to_hash })
           end
         end
       end
@@ -36,7 +40,7 @@ App =
           get { |req| render(json: { user: req.current_user.to_hash }) }
 
           # Update Current User
-          # http PUT localhost:4000/api/user Authorization:TOKEN user[username]=ho
+          # http PUT localhost:4000/api/user user[bio]=hello Authorization:TOKEN
           put do |req|
             req.current_user.update(req.params["user"])
             render json: { user: req.current_user.to_hash }
@@ -50,17 +54,17 @@ App =
             post 'follow', Actions::Api::Profiles::Follow
 
             # Unfollow User
-            # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
+            # http DELETE localhost:4000/api/profiles/:username/follow Authorization:TOKEN
             delete 'follow', Actions::Api::Profiles::Unfollow
           end
         end
 
         scope 'articles' do
           # Create Article
-          # http POST localhost:4000/api/articles Authorization:TOKEN
+          # http POST localhost:4000/api/articles article[title]=hey article[description]=ho article[body]=letsgo Authorization:TOKEN
           post do |req|
             article = Article.create(
-              req.params["article"].merge({ user_id: req.current_user.id })
+              req.params["article"].merge({ user_id: req.current_user.id, identifier: req.current_user.id })
             ).to_hash
 
             render json: { article: }
@@ -74,9 +78,9 @@ App =
             ]
           ) do
             # Update Article
-            # http PUT localhost:4000/api/articles/:slug Authorization:TOKEN
+            # http PUT localhost:4000/api/articles/:slug article["title"]=heyhey Authorization:TOKEN
             put do |req|
-              render json: { article: req.article.update(req.params["article"]) }
+              render json: { article: req.article.update(req.params["article"]).to_hash }
             end
 
             # Delete Article

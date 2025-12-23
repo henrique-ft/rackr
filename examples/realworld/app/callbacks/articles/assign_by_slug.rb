@@ -3,7 +3,7 @@ module Callbacks
     class AssignBySlug
       include Rackr::Callback
 
-      def self.call(req)
+      def call(req)
         article = Article[{ slug: req.params[:slug] }]
         return head(404) unless article
 
