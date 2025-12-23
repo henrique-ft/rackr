@@ -7,9 +7,11 @@ module Actions
         user = User[{email: req.params["user"]["email"], password: req.params["user"]["password"]}]
         return head(403) unless user
 
-        token = JWT.encode({ user: user.to_hash }, config[:secret], 'HS256')
-
-        render(json: { user: user.to_hash.merge({ token: }) })
+        render(json: {
+          user: user.to_hash.merge({
+            token: JwtToken.new(config).encode(user)
+          })
+        })
       end
     end
   end
