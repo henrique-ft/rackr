@@ -1,1 +1,7 @@
-RACKR_ERROR_DEV=true RACK_ENV=development bundle exec puma -p 4000
+#!/bin/bash
+
+if [ -z "$RACKR_WATCH" ]; then
+  RACKR_ERROR_DEV=true RACK_ENV=development bundle exec puma -p 4000
+else
+  RACKR_ERROR_DEV=true RACK_ENV=development bundle exec guard
+fi

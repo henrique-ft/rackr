@@ -1,1 +1,0 @@
-RACKR_ERROR_DEV=true RACK_ENV=development bundle exec guard

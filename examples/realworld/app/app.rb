@@ -34,30 +34,28 @@ App =
       end
 
       scope 'profiles', before: Callbacks::Users::Auth do
-        scope(
-          :username,
-          before: (proc { |req|
-            assign(req, { user: User[{ username: req.params["username"] }] })
-          })
-        ) do
+        scope :username, before: Callbacks::Users::AssignByUsername do
           # Follow User
           # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
           post 'follow' do |req|
-            Follow.create(
-              {
-                user_id: req.user.id,
-                follower_id: req.current_user.id
-              }
-            )
+            following = Follow[{user_id: user.id, follower_id: req.current_user.id}]
+            unless following
+              Follow.create(
+                {
+                  user_id: req.user.id,
+                  follower_id: req.current_user.id
+                }
+              )
+            end
 
             render json: { profile: user.to_hash.merge({ following: true }) }
           end
 
           # Unfollow User
           # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
-          delete 'follow' do
+          delete 'follow' do |req|
             follow = Follow[{ user_id: req.user.id, follower_id: req.current_user.id }]
-            follow.destroy
+            follow&.destroy
 
             head 200
           end
