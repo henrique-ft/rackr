@@ -350,6 +350,7 @@ RSpec.describe Rackr::Action do
     let(:included) { SomeClass.new(routes: routes, config: config) }
 
     it { expect(included.routes).to eq(routes) }
+    it { expect(included.path_for).to eq(routes) }
     it { expect(included.config).to eq(config) }
     it { expect(included.deps).to eq(config[:deps]) }
     it { expect(included.db).to eq(config[:deps][:db]) }

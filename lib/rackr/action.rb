@@ -136,6 +136,8 @@ class Rackr
           @cache = config&.dig(:deps, :cache)
         end
 
+        def path_for = @routes
+
         def render(**opts)
           type = opts.keys.first
           content = opts[type]
