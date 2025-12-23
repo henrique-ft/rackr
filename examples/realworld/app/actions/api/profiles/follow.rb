@@ -5,9 +5,9 @@ module Actions
         include Rackr::Action
 
         def call(req)
-          following = Follow[{user_id: req.user.id, follower_id: req.current_user.id}]
+          following = ::Follow[{user_id: req.user.id, follower_id: req.current_user.id}]
           unless following
-            Follow.create(
+            ::Follow.create(
               {
                 user_id: req.user.id,
                 follower_id: req.current_user.id
