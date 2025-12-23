@@ -5,19 +5,19 @@ App =
     end
 
     scope 'api' do
-      get 'tags' do
-      end
-
       scope 'users' do
         # Authentication
         # http POST localhost:4000/api/users/login user[password]=3 user[email]=test@email.com
-        post 'login', Actions::Users::Login
+        post 'login', Actions::Api::Users::Login
 
         # Registration
         # http POST localhost:4000/api/users user[password]=3 user[email]=test@email.com user[username]=hey
         post do |req|
           render json: { user: User.create(req.params["user"]).to_hash }
         end
+      end
+
+      get 'tags' do
       end
 
       scope before: Callbacks::Users::Auth do
@@ -38,19 +38,7 @@ App =
           scope :username, before: Callbacks::Users::AssignByUsername do
             # Follow User
             # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
-            post 'follow' do |req|
-              following = Follow[{user_id: req.user.id, follower_id: req.current_user.id}]
-              unless following
-                Follow.create(
-                  {
-                    user_id: req.user.id,
-                    follower_id: req.current_user.id
-                  }
-                )
-              end
-
-              render json: { profile: req.user.to_hash.merge({ following: true }) }
-            end
+            post 'follow', Actions::Api::Profiles::Follow
 
             # Unfollow User
             # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
