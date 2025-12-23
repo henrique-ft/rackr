@@ -1,1 +1,1 @@
-RACKR_ERROR_DEV=true RACK_ENV=development bundle exec guard
+RACKR_ERROR_DEV=true RACK_ENV=development bundle exec puma -p 4000

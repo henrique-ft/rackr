@@ -10,31 +10,56 @@ App =
 
       scope 'users' do
         # Authentication
-        # http POST localhost:9292/api/users/login user[password]=3 user[email]=test@email.com
+        # http POST localhost:4000/api/users/login user[password]=3 user[email]=test@email.com
         post 'login', Actions::Users::Login
 
         # Registration
-        # http POST localhost:9292/api/users user[password]=3 user[email]=test@email.com user[username]=hey
+        # http POST localhost:4000/api/users user[password]=3 user[email]=test@email.com user[username]=hey
         post do |req|
           render json: { user: User.create(req.params["user"]).to_hash }
         end
+      end
 
-        scope before: Callbacks::Users::Auth do
-          # Get Current User
-          # http GET localhost:9292/api/users Authorization:TOKEN
-          get { |req| render(json: { user: req.current_user.to_hash }) }
+      scope 'user', before: Callbacks::Users::Auth do
+        # Get Current User
+        # http GET localhost:4000/api/user Authorization:TOKEN
+        get { |req| render(json: { user: req.current_user.to_hash }) }
 
-          put do
-          end
+        # Update Current User
+        # http PUT localhost:4000/api/user Authorization:TOKEN user[username]=ho
+        put do |req|
+          req.current_user.update(req.params["user"])
+          render json: { user: req.current_user.to_hash }
         end
       end
 
-      scope 'profiles' do
-        scope :username do
-          post 'follow' do
+      scope 'profiles', before: Callbacks::Users::Auth do
+        scope(
+          :username,
+          before: (proc { |req|
+            assign(req, { user: User[{ username: req.params["username"] }] })
+          })
+        ) do
+          # Follow User
+          # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
+          post 'follow' do |req|
+            Follow.create(
+              {
+                user_id: req.user.id,
+                follower_id: req.current_user.id
+              }
+            )
+
+            render json: { profile: user.to_hash.merge({ following: true }) }
           end
 
+          # Unfollow User
+          # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
           delete 'follow' do
+            follow = Follow[{ user_id: req.user.id, follower_id: req.current_user.id }]
+            follow.destroy
+
+            head 200
           end
         end
       end
