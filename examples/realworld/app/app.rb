@@ -9,7 +9,7 @@ App =
         # Registration
         # http POST localhost:4000/api/users user[password]=1 user[email]=1@email.com user[username]=one
         post do |req|
-          render json: { user: User.create(req.params["user"]).to_hash }
+          render json: { user: User.create(req.params["user"] || {}).to_hash }
         end
 
         # Authentication
@@ -64,7 +64,7 @@ App =
           # http POST localhost:4000/api/articles article[title]=hey article[description]=ho article[body]=letsgo Authorization:TOKEN
           post do |req|
             article = Article.create(
-              req.params["article"].merge({ user_id: req.current_user.id, identifier: req.current_user.id })
+              (req.params["article"] || {}).merge({ user_id: req.current_user.id, identifier: req.current_user.id })
             ).to_hash
 
             render json: { article: }
@@ -80,7 +80,7 @@ App =
             # Update Article
             # http PUT localhost:4000/api/articles/:slug article["title"]=heyhey Authorization:TOKEN
             put do |req|
-              render json: { article: req.article.update(req.params["article"]).to_hash }
+              render json: { article: req.article.update(req.params["article"] || {}).to_hash }
             end
 
             # Delete Article
