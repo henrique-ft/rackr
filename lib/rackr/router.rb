@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_relative 'router/utils'
 require_relative 'router/errors'
 require_relative 'router/endpoint'
 require_relative 'router/route'

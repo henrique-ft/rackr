@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative '../../../rackr/router/utils'
+require_relative '../../rackr/utils'
 
-RSpec.describe Rackr::Router::Utils do
-  let(:utils) { Class.new { extend Rackr::Router::Utils } }
+RSpec.describe Rackr::Utils do
+  let(:utils) { Class.new { extend Rackr::Utils } }
 
   describe '#deep_hash_push' do
     it 'pushes a value into a non-existent key at the top level' do

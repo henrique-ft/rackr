@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'rackr/utils'
 require_relative 'rackr/action'
 require_relative 'rackr/callback'
 require_relative 'rackr/router/errors/dev_html'
@@ -11,6 +12,7 @@ class Rackr
   HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH].freeze
 
   include Callback
+  include Utils
 
   def initialize(config = {}, before: [], after: [])
     @router = Router.new(config, before: before, after: after)
@@ -73,7 +75,7 @@ class Rackr
     end
   end
 
-  def resources(name, id: :id, before: [], after: [], &block)
+  def resources(name, id: :id, path: nil, paths: {}, callbacks: [], before: [], after: [], &block)
     @resource_namespace = (@resource_namespace || []).push([name.to_s.capitalize])
 
     get_const = ->(type, action) do
@@ -95,17 +97,52 @@ class Rackr
       delete: { method: :delete, path: nil, action: get_const.call('Actions', 'Delete') }
     }
 
+    received_callbacks = Hash.new { |h, k| h[k] = { before: [], after: [] } }
+    (callbacks || []).each do |callback_config|
+      ensure_array(callback_config[:actions]).each do |action|
+        received_callbacks[action][:before].concat(ensure_array(callback_config[:before]))
+        received_callbacks[action][:after].concat(ensure_array(callback_config[:after]))
+      end
+    end
+
+    (paths || {}).each do |action, new_path|
+      if actions[action]
+        actions[action][:path] = new_path
+      elsif actions_for_id[action]
+        actions_for_id[action][:path] = new_path
+      end
+    end
+
     block_for_id = proc do
-      actions_for_id.each do |_, definition|
-        send(definition[:method], definition[:path], definition[:action]) if definition[:action]
+      actions_for_id.each do |action_name, definition|
+        if definition[:action]
+          action_callbacks = received_callbacks[action_name]
+          send(
+            definition[:method],
+            definition[:path],
+            definition[:action],
+            before: action_callbacks[:before],
+            after: action_callbacks[:after]
+          )
+        end
       end
 
       instance_eval(&block) if block_given?
     end
 
-    scope(name.to_s, before:, after:) do
-      actions.each do |_, definition|
-        send(definition[:method], definition[:path], definition[:action]) if definition[:action]
+    scope_name = path || name.to_s
+    scope(scope_name, before:, after:) do
+      actions.each do |action_name, definition|
+        if definition[:action]
+          action_callbacks = received_callbacks[action_name]
+          send(
+            definition[:method],
+            definition[:path],
+            definition[:action],
+            before: action_callbacks[:before],
+            after: action_callbacks[:after]
+          )
+        end
       end
 
       assign_callback = get_const.call('Callbacks', 'Assign')

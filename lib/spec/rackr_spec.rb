@@ -138,5 +138,77 @@ RSpec.describe Rackr do
         expect(app.routes.get.values).to include('/foods/:food_id/nesteds/:nested_id/foos')
       end
     end
+
+    context 'with new params' do
+      it 'should generate resources routes with custom path' do
+        app = Rackr.new
+        app.instance_eval do
+          resources :foods, path: 'comidas'
+        end
+
+        expect(app.routes.get.values).to include('/comidas', '/comidas/new', '/comidas/:id', '/comidas/:id/edit')
+        expect(app.routes.post.values).to include('/comidas')
+        expect(app.routes.put.values).to include('/comidas/:id')
+        expect(app.routes.delete.values).to include('/comidas/:id')
+      end
+
+      it 'should generate resources routes with custom paths for actions' do
+        app = Rackr.new
+        app.instance_eval do
+          resources :foods, paths: {
+            index: 'todos',
+            new: 'novo',
+            create: 'criar',
+            show: 'mostrar',
+            edit: 'editar',
+            update: 'atualizar',
+            delete: 'remover'
+          }
+        end
+
+        expect(app.routes.get.values).to include('/foods/todos', '/foods/novo', '/foods/:id/mostrar', '/foods/:id/editar')
+        expect(app.routes.post.values).to include('/foods/criar')
+        expect(app.routes.put.values).to include('/foods/:id/atualizar')
+        expect(app.routes.delete.values).to include('/foods/:id/remover')
+      end
+
+      context 'with callbacks' do
+        before do
+          module Callbacks
+            module Foods
+              class Cb1; def self.call; end; end
+              class Cb2; def self.call; end; end
+              class Cb3; def self.call; end; end
+            end
+          end
+        end
+
+        it 'should add before and after callbacks to specified actions' do
+          app = Rackr.new
+          app.instance_eval do
+            resources :foods, callbacks: [
+              { actions: :index, before: Callbacks::Foods::Cb1 },
+              { actions: [:show, :edit], after: [Callbacks::Foods::Cb2, Callbacks::Foods::Cb3] }
+            ]
+          end
+
+          router = app.instance_variable_get('@router')
+          tree = router.instance_variable_get('@path_routes_tree')
+
+          foods_routes = tree['GET']['foods']
+          index_route = foods_routes[:__instances].find { |r| r.match?('/foods') }
+
+          id_routes = foods_routes[':id']
+          show_route = id_routes[:__instances].find { |r| r.match?('/foods/some_id') }
+          edit_route = id_routes[:__instances].find { |r| r.match?('/foods/some_id/edit') }
+
+          expect(index_route.befores).to include(Callbacks::Foods::Cb1)
+          expect(show_route.afters).to include(Callbacks::Foods::Cb2)
+          expect(show_route.afters).to include(Callbacks::Foods::Cb3)
+          expect(edit_route.afters).to include(Callbacks::Foods::Cb2)
+          expect(edit_route.afters).to include(Callbacks::Foods::Cb3)
+        end
+      end
+    end
   end
 end
