@@ -76,25 +76,30 @@ class Rackr
   end
 
   def resources(name, id: :id, path: nil, paths: {}, callbacks: [], before: [], after: [], &block)
-    @resource_namespace = (@resource_namespace || []).push([name.to_s.capitalize])
+    infer_const = ->(type, action) do
+      scope_parts = @router.not_empty_scopes
+                          .map(&:to_s)
+                          .reject { |s| s.start_with?(':') }
+                          .map(&:capitalize)
 
-    get_const = ->(type, action) do
-      if Object.const_defined?("#{type}::#{@resource_namespace.join('::')}::#{action}")
-        Object.const_get("#{type}::#{@resource_namespace.join('::')}::#{action}")
+      const_path = ([type] + scope_parts + [name.to_s.capitalize, action]).join('::')
+
+      if Object.const_defined?(const_path)
+        Object.const_get(const_path)
       end
     end
 
     actions = {
-      index: { method: :get, path: nil, action: get_const.call('Actions', 'Index') },
-      new: { method: :get, path: 'new', action: get_const.call('Actions', 'New') },
-      create: { method: :post, path: nil, action: get_const.call('Actions', 'Create') },
+      index: { method: :get, path: nil, action: infer_const.call('Actions', 'Index') },
+      new: { method: :get, path: 'new', action: infer_const.call('Actions', 'New') },
+      create: { method: :post, path: nil, action: infer_const.call('Actions', 'Create') },
     }
 
     actions_for_id = {
-      show: { method: :get, path: nil, action: get_const.call('Actions', 'Show') },
-      edit: { method: :get, path: "edit", action: get_const.call('Actions', 'Edit') },
-      update: { method: :put, path: nil, action: get_const.call('Actions', 'Update') },
-      delete: { method: :delete, path: nil, action: get_const.call('Actions', 'Delete') }
+      show: { method: :get, path: nil, action: infer_const.call('Actions', 'Show') },
+      edit: { method: :get, path: "edit", action: infer_const.call('Actions', 'Edit') },
+      update: { method: :put, path: nil, action: infer_const.call('Actions', 'Update') },
+      delete: { method: :delete, path: nil, action: infer_const.call('Actions', 'Delete') }
     }
 
     received_callbacks = Hash.new { |h, k| h[k] = { before: [], after: [] } }
@@ -145,15 +150,13 @@ class Rackr
         end
       end
 
-      assign_callback = get_const.call('Callbacks', 'Assign')
+      assign_callback = infer_const.call('Callbacks', 'Assign')
       if assign_callback
         scope(id.to_sym, before: assign_callback, &block_for_id)
       else
         scope(id.to_sym, &block_for_id)
       end
     end
-
-    @resource_namespace = @resource_namespace.first(@resource_namespace.size - 1)
   end
 
   HTTP_METHODS.each do |http_method|

@@ -77,8 +77,7 @@ RSpec.describe Rackr do
     end
 
     it 'should generate resources routes' do
-      app = Rackr.new
-      app.instance_eval do
+      app = Rackr.new.call do
         resources :foods
       end
 
@@ -89,8 +88,7 @@ RSpec.describe Rackr do
     end
 
     it 'should generate resources routes with custom id' do
-      app = Rackr.new
-      app.instance_eval do
+      app = Rackr.new.call do
         resources :foods, id: :food_id
       end
 
@@ -100,8 +98,7 @@ RSpec.describe Rackr do
     end
 
     it 'should generate resources routes with a block' do
-      app = Rackr.new
-      app.instance_eval do
+      app = Rackr.new.call do
         resources :foods do
           get 'test', -> { 'test' }
         end
@@ -112,8 +109,7 @@ RSpec.describe Rackr do
 
     context 'when nesting resources' do
       it 'should nest resources routes with a block' do
-        app = Rackr.new
-        app.instance_eval do
+        app = Rackr.new.call do
           resources :foods do
             resources :nesteds do
               resources :foos
@@ -126,8 +122,7 @@ RSpec.describe Rackr do
       end
 
       it 'should nest deeper resources routes with a block' do
-        app = Rackr.new
-        app.instance_eval do
+        app = Rackr.new.call do
           resources :foods, id: :food_id do
             resources :nesteds, id: :nested_id do
               resources :foos
@@ -141,8 +136,7 @@ RSpec.describe Rackr do
 
     context 'with new params' do
       it 'should generate resources routes with custom path' do
-        app = Rackr.new
-        app.instance_eval do
+        app = Rackr.new.call do
           resources :foods, path: 'comidas'
         end
 
@@ -153,8 +147,7 @@ RSpec.describe Rackr do
       end
 
       it 'should generate resources routes with custom paths for actions' do
-        app = Rackr.new
-        app.instance_eval do
+        app = Rackr.new.call do
           resources :foods, paths: {
             index: 'todos',
             new: 'novo',
@@ -184,16 +177,14 @@ RSpec.describe Rackr do
         end
 
         it 'should add before and after callbacks to specified actions' do
-          app = Rackr.new
-          app.instance_eval do
+          app = Rackr.new.call do
             resources :foods, callbacks: [
               { actions: :index, before: Callbacks::Foods::Cb1 },
               { actions: [:show, :edit], after: [Callbacks::Foods::Cb2, Callbacks::Foods::Cb3] }
             ]
           end
 
-          router = app.instance_variable_get('@router')
-          tree = router.instance_variable_get('@path_routes_tree')
+          tree = app.instance_variable_get('@path_routes_tree')
 
           foods_routes = tree['GET']['foods']
           index_route = foods_routes[:__instances].find { |r| r.match?('/foods') }
@@ -208,6 +199,38 @@ RSpec.describe Rackr do
           expect(edit_route.afters).to include(Callbacks::Foods::Cb2)
           expect(edit_route.afters).to include(Callbacks::Foods::Cb3)
         end
+      end
+    end
+
+    context 'with scoped resources' do
+      before do
+        module Actions
+          module Api
+            module Users
+              module Name
+                class Index
+                  def self.call; end
+                end
+              end
+            end
+          end
+        end
+      end
+
+      it 'should infer const name from scope hierarchy' do
+        app = Rackr.new.call do
+          scope 'api' do
+            scope 'users' do
+              resources :name
+            end
+          end
+        end
+
+        tree = app.instance_variable_get('@path_routes_tree')
+        name_routes = tree['GET']['api']['users']['name'][:__instances]
+        index_route = name_routes.find { |r| r.match?('/api/users/name') }
+
+        expect(index_route.endpoint).to eq(Actions::Api::Users::Name::Index)
       end
     end
   end

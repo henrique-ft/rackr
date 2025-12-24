@@ -205,6 +205,10 @@ class Rackr
       @scopes = @scopes.first(@scopes.size - 1)
     end
 
+    def not_empty_scopes
+      @scopes.reject { |v| (v == '') }
+    end
+
     private
 
     def add_named_route(method, path_with_scopes, as)
@@ -231,10 +235,6 @@ class Rackr
       end
 
       path
-    end
-
-    def not_empty_scopes
-      @scopes.reject { |v| (v == '') }
     end
 
     def match_path_route(request_method)
