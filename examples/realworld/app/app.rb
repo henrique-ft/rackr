@@ -17,80 +17,54 @@ App =
         post 'login', Actions::Api::Users::Login
       end
 
-      scope 'articles' do
-        # Feed Articles
-        # http GET localhost:4000/api/articles/feed
-        get 'feed' do
-          render(json: { articles: Article.all.map(&:to_hash) })
-        end
+      scope 'user', before: Callbacks::Users::Auth do
+        # Get Current User
+        # http GET localhost:4000/api/user Authorization:TOKEN
+        get { |req| render(json: { user: req.current_user.to_hash }) }
 
-        scope :slug, before: Callbacks::Articles::AssignBySlug do
-          # Get Article
-          # http GET localhost:4000/api/articles/:slug
-          get do |req|
-            render(json: { article: req.article.to_hash })
-          end
+        # Update Current User
+        # http PUT localhost:4000/api/user user[bio]=hello Authorization:TOKEN
+        put do |req|
+          req.current_user.update(req.params["user"])
+          render json: { user: req.current_user.to_hash }
         end
       end
 
-      scope before: Callbacks::Users::Auth do
-        scope 'user' do
-          # Get Current User
-          # http GET localhost:4000/api/user Authorization:TOKEN
-          get { |req| render(json: { user: req.current_user.to_hash }) }
+      # Update Article
+      # http PUT localhost:4000/api/articles/:slug article["title"]=heyhey Authorization:TOKEN
+      #
+      # Delete Article
+      # http DELETE localhost:4000/api/articles/:slug Authorization:TOKEN
+      #
+      # Create Article
+      # http POST localhost:4000/api/articles article[title]=hey article[description]=ho article[body]=letsgo Authorization:TOKEN
+      #
+      # Get Article
+      # http GET localhost:4000/api/articles/:slug
+      resources(:articles, id: :slug, callbacks: [
+        {
+          actions: [:update, :delete, :create],
+          before: Callbacks::Users::Auth
+        },
+        {
+          actions: [:update, :delete],
+          before: Callbacks::Api::Articles::CheckUserPermission
+        }
+      ])
 
-          # Update Current User
-          # http PUT localhost:4000/api/user user[bio]=hello Authorization:TOKEN
-          put do |req|
-            req.current_user.update(req.params["user"])
-            render json: { user: req.current_user.to_hash }
-          end
-        end
+      get 'articles/feed' do
+        render(json: { articles: Article.all.map(&:to_hash) })
+      end
 
-        scope 'profiles' do
-          scope :username, before: Callbacks::Users::AssignByUsername do
-            # Follow User
-            # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
-            post 'follow', Actions::Api::Profiles::Follow
+      scope 'profiles', before: Callbacks::Users::Auth do
+        scope :username, before: Callbacks::Users::AssignByUsername do
+          # Follow User
+          # http POST localhost:4000/api/profiles/:username/follow Authorization:TOKEN
+          post 'follow', Actions::Api::Profiles::Follow
 
-            # Unfollow User
-            # http DELETE localhost:4000/api/profiles/:username/follow Authorization:TOKEN
-            delete 'follow', Actions::Api::Profiles::Unfollow
-          end
-        end
-
-        scope 'articles' do
-          # Create Article
-          # http POST localhost:4000/api/articles article[title]=hey article[description]=ho article[body]=letsgo Authorization:TOKEN
-          post do |req|
-            article = Article.create(
-              (req.params["article"] || {}).merge({ user_id: req.current_user.id, identifier: req.current_user.id })
-            ).to_hash
-
-            render json: { article: }
-          end
-
-          scope(
-            :slug,
-            before: [
-              Callbacks::Articles::AssignBySlug,
-              Callbacks::Articles::CheckUserPermission
-            ]
-          ) do
-            # Update Article
-            # http PUT localhost:4000/api/articles/:slug article["title"]=heyhey Authorization:TOKEN
-            put do |req|
-              render json: { article: req.article.update(req.params["article"] || {}).to_hash }
-            end
-
-            # Delete Article
-            # http DELETE localhost:4000/api/articles/:slug Authorization:TOKEN
-            delete do |req|
-              req.article.destroy
-
-              head 200
-            end
-          end
+          # Unfollow User
+          # http DELETE localhost:4000/api/profiles/:username/follow Authorization:TOKEN
+          delete 'follow', Actions::Api::Profiles::Unfollow
         end
       end
 

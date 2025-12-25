@@ -233,5 +233,45 @@ RSpec.describe Rackr do
         expect(index_route.endpoint).to eq(Actions::Api::Users::Name::Index)
       end
     end
+
+    context 'with scoped assign callback' do
+      before do
+        module Callbacks
+          module Api
+            module Articles
+              class Assign
+                def self.call; end
+              end
+            end
+          end
+        end
+        # Also need the action for the show route to exist
+        module Actions
+          module Api
+            module Articles
+              class Show
+                def self.call; end
+              end
+            end
+          end
+        end
+      end
+
+      it 'should infer assign callback from scope hierarchy' do
+        app = Rackr.new.call do
+          scope 'api' do
+            resources :articles, id: :slug
+          end
+        end
+
+        tree = app.instance_variable_get('@path_routes_tree')
+
+        # Path to the show route: /api/articles/:slug
+        id_routes = tree['GET']['api']['articles'][':slug'][:__instances]
+        show_route = id_routes.find { |r| r.match?('/api/articles/some-slug') }
+
+        expect(show_route.befores).to include(Callbacks::Api::Articles::Assign)
+      end
+    end
   end
 end

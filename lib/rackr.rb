@@ -82,7 +82,8 @@ class Rackr
                           .reject { |s| s.start_with?(':') }
                           .map(&:capitalize)
 
-      const_path = ([type] + scope_parts + [name.to_s.capitalize, action]).join('::')
+      parts = [type] + scope_parts + [name.to_s.capitalize, action]
+      const_path = parts.join('::')
 
       if Object.const_defined?(const_path)
         Object.const_get(const_path)
@@ -136,6 +137,8 @@ class Rackr
     end
 
     scope_name = path || name.to_s
+    assign_callback = infer_const.call('Callbacks', 'Assign')
+
     scope(scope_name, before:, after:) do
       actions.each do |action_name, definition|
         if definition[:action]
@@ -150,7 +153,6 @@ class Rackr
         end
       end
 
-      assign_callback = infer_const.call('Callbacks', 'Assign')
       if assign_callback
         scope(id.to_sym, before: assign_callback, &block_for_id)
       else
