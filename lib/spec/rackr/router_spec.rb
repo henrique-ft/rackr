@@ -311,7 +311,7 @@ RSpec.describe Rackr::Router do
         result = router.call(request)
 
         expect(result[0]).to eq(500)
-        expect(result[1]).to include({"content-type"=>"text/html; charset=utf-8"})
+        expect(result[1]).to include({ 'content-type' => 'text/html; charset=utf-8' })
       end
 
       it 'render dev error when error endpoint returns nil' do
@@ -327,7 +327,7 @@ RSpec.describe Rackr::Router do
         result = router.call(request)
 
         expect(result[0]).to eq(500)
-        expect(result[1]).to include({"content-type"=>"text/html; charset=utf-8"})
+        expect(result[1]).to include({ 'content-type' => 'text/html; charset=utf-8' })
       end
     end
 

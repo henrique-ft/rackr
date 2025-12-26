@@ -38,7 +38,7 @@ class Rackr
       @scopes_befores = {}
       @afters = ensure_array(after)
       @scopes_afters = {}
-      @default_error = Route.new(proc { |_req, e| [500, {}, ['Internal server error']] })
+      @default_error = Route.new(proc { |_req, _e| [500, {}, ['Internal server error']] })
       @default_not_found = Route.new(proc { [404, {}, ['Not found']] })
     end
 
@@ -145,9 +145,7 @@ class Rackr
       endpoint_result = Endpoint.call(error_route.endpoint, request, @routes, @config, error)
 
       if endpoint_result.nil?
-        if @dev_mode
-          return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => error }))
-        end
+        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => error })) if @dev_mode
 
         endpoint_result = Endpoint.call(@default_error.endpoint, request, @routes, @config, error)
       end
@@ -156,7 +154,6 @@ class Rackr
 
       endpoint_result
     end
-
 
     %i[error not_found].each do |v|
       define_method("add_#{v}") do |endpoint|
@@ -223,10 +220,8 @@ class Rackr
       @routes.send(method.downcase)[key.to_s.to_sym] = path_with_scopes
     end
 
-    
-
     def set_to_scope(instances, route_instance)
-      deep_hash_set(instances, (not_empty_scopes + %i[__instance]), route_instance)
+      deep_hash_set(instances, not_empty_scopes + %i[__instance], route_instance)
     end
 
     def put_path_slash(path)
@@ -266,9 +261,7 @@ class Rackr
         route.match?(current_request_path_info)
       end
 
-      if route_instance.nil?
-        route_instance = find_not_found_route(found_scopes)
-      end
+      route_instance = find_not_found_route(found_scopes) if route_instance.nil?
 
       [route_instance, found_scopes]
     end
@@ -279,6 +272,7 @@ class Rackr
       while not_found_route.nil? && !found_scopes.empty?
         not_found_route = @not_found_tree.dig(*found_scopes, :__instance)
         break if not_found_route
+
         found_scopes.pop
       end
 
