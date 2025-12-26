@@ -4,9 +4,7 @@ module Actions
       class Show
         include Rackr::Action
 
-        def call(req)
-          render(json: { article: req.article.to_hash })
-        end
+        def call(req) = render(json: { article: req.article.to_hash })
       end
     end
   end
