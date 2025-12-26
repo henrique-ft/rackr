@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative '../../rackr/utils'
 require_relative '../../rackr/router'
 require_relative '../../rackr'
 require 'byebug'
@@ -433,6 +434,57 @@ RSpec.describe Rackr::Router do
         }
 
       expect(router.call(request)).to eq('success')
+    end
+
+    context 'when conflicting with path params scope' do
+      it do
+        router = Rackr::Router.new
+        router.add :get, 'show', ->(_env) { 'success' }
+        router.add :get, 'show/:str', ->(req) { req.params[:str] }
+
+        request_a =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/show'
+          }
+
+        expect(router.call(request_a)).to eq('success')
+
+        request_b =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/show/hello'
+          }
+
+        expect(router.call(request_b)).to eq('hello')
+      end
+
+      it do
+        router = Rackr::Router.new
+
+        router.append_scope 'v3'
+        router.append_scope :str
+        router.add :get, 'hello', ->(req) { req.params[:str] }
+        router.clear_last_scope
+        router.add :get, 'this-must-match', ->(_env) { 'success' }
+        router.clear_last_scope
+
+        request_a =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/v3/something/hello'
+          }
+
+        expect(router.call(request_a)).to eq('something')
+
+        request_b =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/v3/this-must-match'
+          }
+
+        expect(router.call(request_b)).to eq('success')
+      end
     end
 
     context 'empty scopes' do

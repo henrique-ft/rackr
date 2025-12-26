@@ -11,7 +11,7 @@ class Rackr
     # This is the core class of Rackr. This class aggregate the route instance tree, callbacks (before and after) and scopes
     # then, using the building blocks, match the request and call the endpoints
 
-    include Utils
+    include Rackr::Utils
 
     attr_writer :default_not_found
     attr_reader :routes, :config, :not_found_tree, :error_tree
@@ -40,22 +40,22 @@ class Rackr
       @scopes_afters = {}
       @default_error = Route.new(proc { |_req, e| [500, {}, ['Internal server error']] })
       @default_not_found = Route.new(proc { [404, {}, ['Not found']] })
-      @splitted_request_path_info = []
-      @current_request_path_info = nil
     end
 
     def call(env)
       path_info = env['PATH_INFO']
+      request_method = env['REQUEST_METHOD'] == 'HEAD' ? 'GET' : env['REQUEST_METHOD']
 
-      @splitted_request_path_info = path_info.split('/')
-      @current_request_path_info =
+      splitted_request_path_info = path_info.split('/')
+      current_request_path_info =
         path_info == '/' ? path_info : path_info.chomp('/') # remove trailing "/"
 
-      request_builder = BuildRequest.new(env, @splitted_request_path_info)
-      env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
-
-      route_instance, found_scopes = match_path_route(env['REQUEST_METHOD'])
-      rack_request = request_builder.call(route_instance)
+      route_instance, found_scopes = match_path_route(
+        request_method,
+        splitted_request_path_info,
+        current_request_path_info
+      )
+      rack_request = BuildRequest.new(env, splitted_request_path_info).call(route_instance)
       befores = route_instance.befores
       before_result = nil
 
@@ -105,9 +105,13 @@ class Rackr
           wildcard: wildcard
         )
 
-      return push_to_scope(method.to_s.upcase, route_instance) if @scopes.size >= 1
+      path_segments = path_with_scopes.split('/').reject(&:empty?)
 
-      @path_routes_tree[method.to_s.upcase][:__instances].push(route_instance)
+      if path_segments.empty?
+        @path_routes_tree[method.to_s.upcase][:__instances].push(route_instance)
+      else
+        deep_hash_push(@path_routes_tree[method.to_s.upcase], *(path_segments + [:__instances]), route_instance)
+      end
     end
 
     def not_found_fallback(found_scopes, route_instance, request)
@@ -219,9 +223,7 @@ class Rackr
       @routes.send(method.downcase)[key.to_s.to_sym] = path_with_scopes
     end
 
-    def push_to_scope(method, route_instance)
-      deep_hash_push(@path_routes_tree[method], *(not_empty_scopes + %i[__instances]), route_instance)
-    end
+    
 
     def set_to_scope(instances, route_instance)
       deep_hash_set(instances, (not_empty_scopes + %i[__instance]), route_instance)
@@ -237,55 +239,50 @@ class Rackr
       path
     end
 
-    def match_path_route(request_method)
-      find_instance_in_scope = proc do |request_method, found_scopes|
-        @path_routes_tree[request_method].dig(
-          *(found_scopes + [:__instances])
-        )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
-      end
-
-      last_tail = @splitted_request_path_info.drop(1)
+    def match_path_route(request_method, splitted_request_path_info, current_request_path_info)
+      path_routes_tree = @path_routes_tree[request_method]
       found_scopes = []
 
-      path_routes_tree = @path_routes_tree[request_method]
+      i = 1
+      while i < splitted_request_path_info.size
+        segment = splitted_request_path_info[i]
 
-      while last_tail && !last_tail.empty?
-        segment = last_tail.shift
-        found_route = nil
-
-        path_routes_tree.each_key do |scope|
-          next if scope == :__instances
-
-          if segment == scope
-            found_scopes << scope
-            path_routes_tree = @path_routes_tree[request_method].dig(*found_scopes)
-            break
-          elsif scope.start_with?(':')
-            found_route = find_instance_in_scope.call(request_method, found_scopes)
-            return found_route if found_route
-
-            found_scopes << scope
-            path_routes_tree = @path_routes_tree[request_method].dig(*found_scopes)
-            break
-          end
+        if path_routes_tree.key?(segment)
+          found_scopes << segment
+          path_routes_tree = path_routes_tree[segment]
+        elsif (param_key = path_routes_tree.keys.find { |k| k.start_with?(':') })
+          found_scopes << param_key
+          path_routes_tree = path_routes_tree[param_key]
+        elsif path_routes_tree.key?('*')
+          path_routes_tree = path_routes_tree['*']
+          break
+        else
+          break
         end
+        i += 1
       end
 
-      result_route = find_instance_in_scope.call(request_method, found_scopes)
-
-      if result_route.nil? && !found_scopes.empty?
-        result_route = find_instance_in_scope.call(request_method, found_scopes[..-2])
+      route_instance = path_routes_tree[:__instances]&.detect do |route|
+        route.match?(current_request_path_info)
       end
 
-      if result_route.nil?
-        result_route = match_route(
-          found_scopes,
-          @not_found_tree,
-          @default_not_found
-        )
+      if route_instance.nil?
+        route_instance = find_not_found_route(found_scopes)
       end
 
-      [result_route, found_scopes]
+      [route_instance, found_scopes]
+    end
+
+    def find_not_found_route(found_scopes)
+      not_found_route = nil
+
+      while not_found_route.nil? && !found_scopes.empty?
+        not_found_route = @not_found_tree.dig(*found_scopes, :__instance)
+        break if not_found_route
+        found_scopes.pop
+      end
+
+      not_found_route || @default_not_found
     end
 
     def match_route(found_scopes, instances, default_instance)

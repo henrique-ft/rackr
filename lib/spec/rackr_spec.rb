@@ -191,7 +191,7 @@ RSpec.describe Rackr do
 
           id_routes = foods_routes[':id']
           show_route = id_routes[:__instances].find { |r| r.match?('/foods/some_id') }
-          edit_route = id_routes[:__instances].find { |r| r.match?('/foods/some_id/edit') }
+          edit_route = id_routes['edit'][:__instances].find { |r| r.match?('/foods/some_id/edit') }
 
           expect(index_route.befores).to include(Callbacks::Foods::Cb1)
           expect(show_route.afters).to include(Callbacks::Foods::Cb2)
