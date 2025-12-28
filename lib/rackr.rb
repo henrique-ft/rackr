@@ -76,13 +76,16 @@ class Rackr
   end
 
   def resources(name, id: :id, path: nil, paths: {}, callbacks: [], before: [], after: [], &block)
-    infer_const = ->(type, action) do
+    @nested_resources ||= []
+    @nested_resources.push(name)
+
+    infer_action_const = ->(action) do
       scope_parts = @router.not_empty_scopes
                           .map(&:to_s)
                           .reject { |s| s.start_with?(':') }
                           .map(&:capitalize)
 
-      parts = [type] + scope_parts + [name.to_s.capitalize, action]
+      parts = ['Actions'] + scope_parts + [name.to_s.capitalize, action]
       const_path = parts.join('::')
 
       if Object.const_defined?(const_path)
@@ -90,17 +93,23 @@ class Rackr
       end
     end
 
+    infer_assign_const = lambda do
+      parts = @nested_resources.map { |s| s.to_s.capitalize }
+      const_path = "Callbacks::#{parts.join('::')}::Assign"
+      Object.const_get(const_path) if Object.const_defined?(const_path)
+    end
+
     actions = {
-      index: { method: :get, path: nil, action: infer_const.call('Actions', 'Index') },
-      new: { method: :get, path: 'new', action: infer_const.call('Actions', 'New') },
-      create: { method: :post, path: nil, action: infer_const.call('Actions', 'Create') },
+      index: { method: :get, path: nil, action: infer_action_const.call('Index') },
+      new: { method: :get, path: 'new', action: infer_action_const.call('New') },
+      create: { method: :post, path: nil, action: infer_action_const.call('Create') },
     }
 
     actions_for_id = {
-      show: { method: :get, path: nil, action: infer_const.call('Actions', 'Show') },
-      edit: { method: :get, path: "edit", action: infer_const.call('Actions', 'Edit') },
-      update: { method: :put, path: nil, action: infer_const.call('Actions', 'Update') },
-      delete: { method: :delete, path: nil, action: infer_const.call('Actions', 'Delete') }
+      show: { method: :get, path: nil, action: infer_action_const.call('Show') },
+      edit: { method: :get, path: "edit", action: infer_action_const.call('Edit') },
+      update: { method: :put, path: nil, action: infer_action_const.call('Update') },
+      delete: { method: :delete, path: nil, action: infer_action_const.call('Delete') }
     }
 
     received_callbacks = Hash.new { |h, k| h[k] = { before: [], after: [] } }
@@ -137,7 +146,7 @@ class Rackr
     end
 
     scope_name = path || name.to_s
-    assign_callback = infer_const.call('Callbacks', 'Assign')
+    assign_callback = infer_assign_const.call
 
     scope(scope_name, before:, after:) do
       actions.each do |action_name, definition|
@@ -159,6 +168,8 @@ class Rackr
         scope(id.to_sym, &block_for_id)
       end
     end
+
+    @nested_resources.pop
   end
 
   HTTP_METHODS.each do |http_method|

@@ -236,28 +236,30 @@ RSpec.describe Rackr do
 
     context 'with scoped assign callback' do
       before do
-        module Callbacks
+        module Actions
           module Api
             module Articles
-              class Assign
-                def self.call; end
+              class Show; def self.call; end; end
+              module Another
+                module Themes
+                  class Show; def self.call; end; end
+                end
               end
             end
           end
         end
-        # Also need the action for the show route to exist
-        module Actions
-          module Api
-            module Articles
-              class Show
-                def self.call; end
-              end
+
+        module Callbacks
+          module Articles
+            class Assign; def self.call; end; end
+            module Themes
+              class Assign; def self.call; end; end
             end
           end
         end
       end
 
-      it 'should infer assign callback from scope hierarchy' do
+      it 'should infer assign callback ignoring the scope' do
         app = Rackr.new.call do
           scope 'api' do
             resources :articles, id: :slug
@@ -265,12 +267,32 @@ RSpec.describe Rackr do
         end
 
         tree = app.instance_variable_get('@path_routes_tree')
-
-        # Path to the show route: /api/articles/:slug
         id_routes = tree['GET']['api']['articles'][':slug'][:__instances]
         show_route = id_routes.find { |r| r.match?('/api/articles/some-slug') }
 
-        expect(show_route.befores).to include(Callbacks::Api::Articles::Assign)
+        expect(show_route.befores).to include(Callbacks::Articles::Assign)
+      end
+
+      it 'should infer nested assign callbacks ignoring the scope' do
+        app = Rackr.new.call do
+          scope 'api' do
+            resources :articles do
+              scope 'another' do
+                resources :themes
+              end
+            end
+          end
+        end
+
+        tree = app.instance_variable_get('@path_routes_tree')
+        
+        article_id_routes = tree['GET']['api']['articles'][':id'][:__instances]
+        article_show_route = article_id_routes.find { |r| r.match?('/api/articles/some-id') }
+        expect(article_show_route.befores).to include(Callbacks::Articles::Assign)
+
+        theme_id_routes = tree['GET']['api']['articles'][':id']['another']['themes'][':id'][:__instances]
+        theme_show_route = theme_id_routes.find { |r| r.match?('/api/articles/some-id/another/themes/some-id') }
+        expect(theme_show_route.befores).to include(Callbacks::Articles::Themes::Assign)
       end
     end
   end
