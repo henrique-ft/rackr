@@ -44,7 +44,7 @@ App =
       req.session['visitas'] ||= 0
 
       res = build_response(
-        text: "#{req.session['visitas'] += 1} #{req.cookies['x']}"
+        html: "#{req.session['visitas'] += 1} #{req.cookies['x']}"
       )
       cookies = req.cookies['x'] || ''
       res.set_cookie('x', cookies += 'a')
