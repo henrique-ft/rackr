@@ -305,9 +305,9 @@ class Rackr
         def content_security_policy
           @content_security_policy ||=
             DEFAULT_CSP_HEADERS
-              .merge(config&.dig(:csp_headers) || {})
-              .map { |k, v| "#{k.to_s.tr('_', '-')} #{v}" }
-              .join('; ')
+            .merge(config&.dig(:csp_headers) || {})
+            .map { |k, v| "#{k.to_s.tr('_', '-')} #{v}" }
+            .join('; ')
         end
       end
     end
