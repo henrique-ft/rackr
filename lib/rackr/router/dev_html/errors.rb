@@ -20,9 +20,9 @@ class Rackr
                 body>div { border-bottom:1px solid #ddd; }
                 h1 { font-weight:normal; }
                 h2 { margin-bottom:.8em; }
-                h2 span { font-size:80%; color:#666; font-weight:normal; }
+                h2 span { font-size:80%; color:#555; font-weight:normal; }
                 #summary { background: #ffc; }
-                #summary h2 { font-weight: normal; color: #666; }
+                #summary h2 { font-weight: normal; color: #555; }
                 #backtrace { background: #eee; }
                 pre {
                   background: #ddd;

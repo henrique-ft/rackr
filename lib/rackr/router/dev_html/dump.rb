@@ -1,17 +1,23 @@
 # frozen_string_literal: true
 
+require 'rack/utils'
+
 class Rackr
   class Router
     module DevHtml
       class PrettyPrint
         def self.call(content, level = 0)
+          content = content.inspect if content.class == String
+          content = 'nil' if content.class == nil
+          content = 'false' if content.class == false
+
           if level >= 2
-            return "<pre>#{content}</pre>"
+            return "<pre>#{Rack::Utils.escape_html(content)}</pre>"
           end
 
           case content
           when String, Symbol, Numeric, TrueClass, FalseClass, NilClass
-            "<pre>#{content}</pre>"
+            "<pre>#{Rack::Utils.escape_html(content)}</pre>"
           when Array
             pretty_print_array(content, level)
           when Hash
@@ -58,22 +64,22 @@ class Rackr
               <title>Application dump</title>
               <style>
                 body {
-                  padding: 1em;
+                  padding: 0px;
+                  margin: 0px;
+                  font:small sans-serif;
+                  background-color: #2b2b2b;
+                  color: white;
                 }
-                .collapsible {
-                  cursor: pointer;
-                }
-                .collapsible > ul {
-                  display: none;
-                }
-                .collapsible.open > ul {
-                  display: block;
+                h2 {
+                  margin: 0px;
+                  padding: 0.2em;
+                  background-color: #353535;
                 }
                 li {
                   padding: 0px;
                 }
                 div {
-                margin: 1em;
+                  margin: 1em;
                 }
               </style>
             </head>
