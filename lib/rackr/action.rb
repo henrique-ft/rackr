@@ -282,6 +282,10 @@ class Rackr
           [status, DEFAULT_HEADERS.call("text/html; charset=#{charset}", headers, parsed_erb), [parsed_erb]]
         end
 
+        def d(content)
+          raise Rackr::Dump.new(content)
+        end
+
         def not_found!
           raise Rackr::NotFound
         end

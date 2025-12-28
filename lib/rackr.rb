@@ -3,11 +3,19 @@
 require_relative 'rackr/utils'
 require_relative 'rackr/action'
 require_relative 'rackr/callback'
-require_relative 'rackr/router/errors/dev_html'
+require_relative 'rackr/router/dev_html/errors'
+require_relative 'rackr/router/dev_html/dump'
 require_relative 'rackr/router'
 
 class Rackr
   class NotFound < StandardError; end
+  class Dump < StandardError;
+    attr_reader :content
+
+    def initialize(content)
+      @content = content
+    end
+  end
 
   HTTP_METHODS = %w[GET POST DELETE PUT TRACE OPTIONS PATCH].freeze
 

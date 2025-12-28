@@ -52,6 +52,10 @@ App =
       render res:
     end
 
+    get 'dump' do |req|
+      d(req)
+    end
+
     scope 'some-form' do
       get do
         render(html: """

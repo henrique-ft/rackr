@@ -2,8 +2,8 @@
 
 class Rackr
   class Router
-    module Errors
-      class DevHtml
+    module DevHtml
+      class Errors
         include Rackr::Action
 
         def call(env)

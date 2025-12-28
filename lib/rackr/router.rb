@@ -75,6 +75,8 @@ class Rackr
         call_afters(route_instance, endpoint_result)
       rescue Rackr::NotFound
         return not_found_fallback(found_scopes, route_instance, before_result || rack_request)
+      rescue Rackr::Dump => dump
+        return Endpoint.call(DevHtml::Dump, env.merge({ 'dump' => dump }))
       rescue Exception => e
         return error_fallback(found_scopes, route_instance, before_result || rack_request, e, env)
       end
@@ -139,13 +141,13 @@ class Rackr
       )
 
       if @dev_mode && error_route == @default_error
-        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => error }))
+        return Endpoint.call(DevHtml::Errors, env.merge({ 'error' => error }))
       end
 
       endpoint_result = Endpoint.call(error_route.endpoint, request, @routes, @config, error)
 
       if endpoint_result.nil?
-        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => error })) if @dev_mode
+        return Endpoint.call(DevHtml::Errors, env.merge({ 'error' => error })) if @dev_mode
 
         endpoint_result = Endpoint.call(@default_error.endpoint, request, @routes, @config, error)
       end
