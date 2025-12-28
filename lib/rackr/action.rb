@@ -65,6 +65,22 @@ class Rackr
       zip: 'application/zip'
     }.freeze
 
+    DEFAULT_CSP_HEADERS = {
+      base_uri: "'self'",
+      child_src: "'self'",
+      connect_src: "'self'",
+      default_src: "'none'",
+      font_src: "'self'",
+      form_action: "'self'",
+      frame_ancestors: "'self'",
+      frame_src: "'self'",
+      img_src: "'self' https: data:",
+      media_src: "'self'",
+      object_src: "'none'",
+      script_src: "'self'",
+      style_src: "'self' 'unsafe-inline' https:"
+    }.freeze
+
     # These are constant (not methods) for better performance
 
     DEFAULT_HEADERS = (proc do |content_type, headers, content|
@@ -79,7 +95,8 @@ class Rackr
         content = Oj.dump(content, mode: :compat) unless content.is_a?(String)
         [status || 200, DEFAULT_HEADERS.call("application/json; charset=#{charset}", headers, content), [content]]
       end,
-      html: proc do |content, status, headers, charset|
+      html: proc do |content, status, headers, charset, content_security_policy|
+        headers['content-security-policy'] = content_security_policy
         [status || 200, DEFAULT_HEADERS.call("text/html; charset=#{charset}", headers, content), [content]]
       end,
       res: proc do |content, status, _headers, charset|
@@ -108,7 +125,8 @@ class Rackr
         Rack::Response.new(content, status,
                            DEFAULT_HEADERS.call("application/json; charset=#{charset}", headers, content))
       end,
-      html: proc do |content, status, headers, charset|
+      html: proc do |content, status, headers, charset, content_security_policy|
+        headers['content-security-policy'] = content_security_policy
         Rack::Response.new(content, status, DEFAULT_HEADERS.call("text/html; charset=#{charset}", headers, content))
       end,
       head: proc do |status, _empty, headers|
@@ -153,7 +171,8 @@ class Rackr
               content,
               opts[:status],
               opts[:headers] || {},
-              opts[:charset] || 'utf-8'
+              opts[:charset] || 'utf-8',
+              content_security_policy
             )
           end
 
@@ -189,7 +208,8 @@ class Rackr
               content,
               opts[:status] || 200,
               opts[:headers] || {},
-              opts[:charset] || 'utf-8'
+              opts[:charset] || 'utf-8',
+              content_security_policy
             )
           end
 
@@ -226,6 +246,7 @@ class Rackr
           charset:
         )
           base_path = config.dig(:views, :path) || 'views'
+          headers['content-security-policy'] ||= content_security_policy
 
           file_or_nil = proc do |path|
             ::File.read(path)
@@ -279,6 +300,14 @@ class Rackr
 
         def response(body = nil, status = 200, headers = {})
           Rack::Response.new(body, status, headers)
+        end
+
+        def content_security_policy
+          @content_security_policy ||=
+            DEFAULT_CSP_HEADERS
+              .merge(config&.dig(:csp_headers) || {})
+              .map { |k, v| "#{k.to_s.tr('_', '-')} #{v}" }
+              .join('; ')
         end
       end
     end
