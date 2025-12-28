@@ -48,7 +48,7 @@ App =
         },
         {
           actions: [:update, :delete],
-          before: Callbacks::Api::Articles::CheckUserPermission
+          before: Callbacks::Articles::CheckUserPermission
         }
       ])
 
