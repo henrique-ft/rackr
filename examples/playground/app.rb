@@ -13,6 +13,7 @@ config = {
   deps: {
     db: Sequel.connect("sqlite://#{ENV['RACK_ENV']}.db"),
   },
+  host: 'localhost:9292',
   views: { path: 'app/views' }
 }
 
@@ -49,6 +50,23 @@ App =
       res.set_cookie('x', cookies += 'a')
 
       render res:
+    end
+
+    scope 'some-form' do
+      get do
+        render(html: """
+             #{url_for(:get, :'some-form')}
+             <form method='POST'>
+              <input type='text' name='some'/>
+
+              <button type='submit'> submit </button>
+             </form>
+               """)
+      end
+
+      post do |req|
+        render(html: "#{req.params.inspect}")
+      end
     end
 
     post 'post/:foo' do |req|

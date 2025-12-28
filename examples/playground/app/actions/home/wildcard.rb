@@ -10,7 +10,7 @@ module Actions
       end
 
       def res
-        html_response("<h4>Wildcard</h4>")
+        build_response(html: "<h4>Wildcard</h4>")
       end
     end
   end

@@ -337,20 +337,39 @@ RSpec.describe Rackr::Action do
     end
   end
 
+  context 'url helpers' do
+    let(:routes) do
+      double(get: { show: '/show/:id' })
+    end
+    let(:config) { { host: 'http://localhost:3000' } }
+    let(:subject) { SomeClass.new(routes: routes, config: config) }
+
+    context '#path_for' do
+      it 'returns the path for a given route' do
+        expect(subject.path_for(:get, :show)).to eq('/show/:id')
+      end
+    end
+
+    context '#url_for' do
+      it 'returns the full url for a given route' do
+        expect(subject.url_for(:get, :show)).to eq('http://localhost:3000/show/:id')
+      end
+    end
+  end
+
   context 'including' do
     let(:routes) { 'routes' }
-    let(:deps) {
+    let(:deps) do
       {
         db: 'db',
         log: 'log',
         cache: 'cache'
       }
-    }
-    let(:config) { { some_config: 'a', deps: } }
+    end
+    let(:config) { { some_config: 'a', deps: deps } }
     let(:included) { SomeClass.new(routes: routes, config: config) }
 
     it { expect(included.routes).to eq(routes) }
-    it { expect(included.path_for).to eq(routes) }
     it { expect(included.config).to eq(config) }
     it { expect(included.deps).to eq(config[:deps]) }
     it { expect(included.db).to eq(config[:deps][:db]) }

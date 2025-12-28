@@ -136,7 +136,13 @@ class Rackr
           @cache = config&.dig(:deps, :cache)
         end
 
-        def path_for = @routes
+        def url_for(method, name)
+          "#{config&.dig(:host)}#{path_for(method, name)}"
+        end
+
+        def path_for(method, name)
+          routes.send(method)&.dig(name)
+        end
 
         def render(**opts)
           type = opts.keys.first
