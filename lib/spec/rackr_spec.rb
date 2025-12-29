@@ -285,7 +285,7 @@ RSpec.describe Rackr do
         end
 
         tree = app.instance_variable_get('@path_routes_tree')
-        
+
         article_id_routes = tree['GET']['api']['articles'][':id'][:__instances]
         article_show_route = article_id_routes.find { |r| r.match?('/api/articles/some-id') }
         expect(article_show_route.befores).to include(Callbacks::Articles::Assign)
@@ -300,6 +300,30 @@ RSpec.describe Rackr do
   context '.error' do
     class CustomErrorA < StandardError; end
     class CustomErrorB < StandardError; end
+    class CustomError < StandardError; end
+
+    class CustomAction
+      def self.call(_env, _exception)
+        [200, {}, ['CustomAction called']]
+      end
+    end
+
+    it 'should route to a specific action for a given error class' do
+      app = Rackr.new.call do
+        get 'raise_custom_error' do
+          raise CustomError
+        end
+
+        error CustomError, CustomAction
+
+        error do
+          [500, {}, ['General Error']]
+        end
+      end
+
+      request = { 'REQUEST_METHOD' => 'GET', 'PATH_INFO' => '/raise_custom_error' }
+      expect(app.call(request)).to eq([200, {}, ['CustomAction called']])
+    end
 
     it 'should handle specific errors' do
       app = Rackr.new.call do
@@ -307,7 +331,7 @@ RSpec.describe Rackr do
           raise CustomErrorA
         end
 
-        error is: CustomErrorA do
+        error CustomErrorA do
           [422, {}, ['Handled CustomErrorA']]
         end
 
@@ -326,7 +350,7 @@ RSpec.describe Rackr do
           raise CustomErrorB
         end
 
-        error is: CustomErrorA do
+        error CustomErrorA do
           [422, {}, ['Handled CustomErrorA']]
         end
 
@@ -354,7 +378,7 @@ RSpec.describe Rackr do
             raise CustomErrorA
           end
 
-          error is: CustomErrorA do
+          error CustomErrorA do
             [403, {}, ['Scoped Handled CustomErrorA']]
           end
         end

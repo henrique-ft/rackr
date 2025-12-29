@@ -385,7 +385,7 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/teste'
           }
         router.add :get, 'teste', proc { raise CustomErrorA }
-        router.add_error(proc { |_req, _e| [422, {}, ['Custom Error A handled']] }, is: CustomErrorA)
+        router.add_error(proc { |_req, _e| [422, {}, ['Custom Error A handled']] }, CustomErrorA)
         router.add_error(proc { |_req, _e| [500, {}, ['General Error handled']] })
 
         expect(router.call(request)).to eq([422, {}, ['Custom Error A handled']])
@@ -400,8 +400,8 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/teste'
           }
         router.add :get, 'teste', proc { raise CustomErrorB }
-        router.add_error proc { |_req, _e| [422, {}, ['Custom Error A handled']] }, is: CustomErrorA
-        router.add_error proc { |_req, _e| [400, {}, ['Custom Error B handled']] }, is: CustomErrorB
+        router.add_error proc { |_req, _e| [422, {}, ['Custom Error A handled']] }, CustomErrorA
+        router.add_error proc { |_req, _e| [400, {}, ['Custom Error B handled']] }, CustomErrorB
         router.add_error proc { |_req, _e| [500, {}, ['General Error handled']] }
 
         expect(router.call(request)).to eq([400, {}, ['Custom Error B handled']])
@@ -429,7 +429,7 @@ RSpec.describe Rackr::Router do
           router.add :get, 'foo', proc { raise CustomErrorA }
 
           router.append_scope 'test'
-          router.add_error proc { |_req, _e| [422, {}, ['Scoped Custom Error A handled']] }, is: CustomErrorA
+          router.add_error proc { |_req, _e| [422, {}, ['Scoped Custom Error A handled']] }, CustomErrorA
           router.add :get, 'bar', proc { raise CustomErrorA }
           router.add :get, 'baz', proc { raise StandardError }
 
@@ -460,11 +460,11 @@ RSpec.describe Rackr::Router do
           router.add_error proc { |_req, e| [500, {}, ["General Error: #{e.class}"]] }
 
           router.append_scope 'outer'
-          router.add_error proc { |_req, _e| [400, {}, ['Outer Scoped Custom Error A handled']] }, is: CustomErrorA
+          router.add_error proc { |_req, _e| [400, {}, ['Outer Scoped Custom Error A handled']] }, CustomErrorA
           router.add :get, 'foo', proc { raise CustomErrorA }
 
           router.append_scope 'inner'
-          router.add_error proc { |_req, _e| [403, {}, ['Inner Scoped Custom Error A handled']] }, is: CustomErrorA
+          router.add_error proc { |_req, _e| [403, {}, ['Inner Scoped Custom Error A handled']] }, CustomErrorA
           router.add :get, 'bar', proc { raise CustomErrorA }
           router.add :get, 'baz', proc { raise StandardError }
 

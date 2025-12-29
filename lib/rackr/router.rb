@@ -174,7 +174,7 @@ class Rackr
       @default_not_found = route_instance
     end
 
-    def add_error(endpoint, is: nil)
+    def add_error(endpoint, error_class = nil)
       Errors.check_endpoint(endpoint, 'error')
 
       route_instance =
@@ -184,9 +184,9 @@ class Rackr
           afters: @afters
         )
 
-      if is
-        return set_to_scope(specific_error_tree[is] ||= {}, route_instance) if @scopes.size >= 1
-        @specific_errors[is] = route_instance
+      if error_class
+        return set_to_scope(specific_error_tree[error_class] ||= {}, route_instance) if @scopes.size >= 1
+        @specific_errors[error_class] = route_instance
       else
         return set_to_scope(error_tree, route_instance) if @scopes.size >= 1
         @default_error = route_instance
