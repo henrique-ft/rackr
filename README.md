@@ -156,6 +156,8 @@ use https://github.com/rtomayko/rack-cache
 
 https://www.rubydoc.info/github/rack/rack/Rack/CommonLogger
 
+We can add `use Rack::CommonLogger` in config.ru, or just use de `before` and/or `after` callbacks to collect and log info / error / warning
+
 ## Benchmarks (r10k)
 
 Running in Ruby 3.3.0
