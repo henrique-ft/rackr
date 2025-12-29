@@ -296,4 +296,75 @@ RSpec.describe Rackr do
       end
     end
   end
+
+  context '.error' do
+    class CustomErrorA < StandardError; end
+    class CustomErrorB < StandardError; end
+
+    it 'should handle specific errors' do
+      app = Rackr.new.call do
+        get 'raise_a' do
+          raise CustomErrorA
+        end
+
+        error is: CustomErrorA do
+          [422, {}, ['Handled CustomErrorA']]
+        end
+
+        error do
+          [500, {}, ['General Error']]
+        end
+      end
+
+      request = { 'REQUEST_METHOD' => 'GET', 'PATH_INFO' => '/raise_a' }
+      expect(app.call(request)).to eq([422, {}, ['Handled CustomErrorA']])
+    end
+
+    it 'should fallback to general error if no specific handler' do
+      app = Rackr.new.call do
+        get 'raise_b' do
+          raise CustomErrorB
+        end
+
+        error is: CustomErrorA do
+          [422, {}, ['Handled CustomErrorA']]
+        end
+
+        error do
+          [500, {}, ['General Error']]
+        end
+      end
+
+      request = { 'REQUEST_METHOD' => 'GET', 'PATH_INFO' => '/raise_b' }
+      expect(app.call(request)).to eq([500, {}, ['General Error']])
+    end
+
+    it 'should handle specific errors within scopes' do
+      app = Rackr.new.call do
+        error do |_, e|
+          [500, {}, ["General Error: #{e.class}"]]
+        end
+
+        get 'outside_scope_raise_a' do
+          raise CustomErrorA
+        end
+
+        scope 'admin' do
+          get 'inside_scope_raise_a' do
+            raise CustomErrorA
+          end
+
+          error is: CustomErrorA do
+            [403, {}, ['Scoped Handled CustomErrorA']]
+          end
+        end
+      end
+
+      request_outside = { 'REQUEST_METHOD' => 'GET', 'PATH_INFO' => '/outside_scope_raise_a' }
+      expect(app.call(request_outside)).to eq([500, {}, ['General Error: CustomErrorA']])
+
+      request_inside = { 'REQUEST_METHOD' => 'GET', 'PATH_INFO' => '/admin/inside_scope_raise_a' }
+      expect(app.call(request_inside)).to eq([403, {}, ['Scoped Handled CustomErrorA']])
+    end
+  end
 end

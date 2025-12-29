@@ -138,8 +138,8 @@ class Rackr
     def error_fallback(found_scopes, route_instance, request, error, env)
       error_route = match_route(
         found_scopes,
-        specific_error_tree[error] || error_tree,
-        @specific_errors[error] || @default_error
+        specific_error_tree[error.class] || error_tree,
+        @specific_errors[error.class] || @default_error
       )
 
       if @dev_mode && error_route == @default_error
@@ -174,7 +174,7 @@ class Rackr
       @default_not_found = route_instance
     end
 
-    def add_error(endpoint, is = nil)
+    def add_error(endpoint, is: nil)
       Errors.check_endpoint(endpoint, 'error')
 
       route_instance =
@@ -185,7 +185,7 @@ class Rackr
         )
 
       if is
-        return set_to_scope(specific_error_tree[is], route_instance) if @scopes.size >= 1
+        return set_to_scope(specific_error_tree[is] ||= {}, route_instance) if @scopes.size >= 1
         @specific_errors[is] = route_instance
       else
         return set_to_scope(error_tree, route_instance) if @scopes.size >= 1

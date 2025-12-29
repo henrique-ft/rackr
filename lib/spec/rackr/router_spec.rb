@@ -371,6 +371,131 @@ RSpec.describe Rackr::Router do
         end
       end
     end
+
+    context 'specific errors' do
+      class CustomErrorA < StandardError; end
+      class CustomErrorB < StandardError; end
+
+      it 'renders specific error when exception happen' do
+        router = Rackr::Router.new
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/teste'
+          }
+        router.add :get, 'teste', proc { raise CustomErrorA }
+        router.add_error(proc { |_req, _e| [422, {}, ['Custom Error A handled']] }, is: CustomErrorA)
+        router.add_error(proc { |_req, _e| [500, {}, ['General Error handled']] })
+
+        expect(router.call(request)).to eq([422, {}, ['Custom Error A handled']])
+      end
+
+      it 'renders specific error when another specific exception happen' do
+        router = Rackr::Router.new
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/teste'
+          }
+        router.add :get, 'teste', proc { raise CustomErrorB }
+        router.add_error proc { |_req, _e| [422, {}, ['Custom Error A handled']] }, is: CustomErrorA
+        router.add_error proc { |_req, _e| [400, {}, ['Custom Error B handled']] }, is: CustomErrorB
+        router.add_error proc { |_req, _e| [500, {}, ['General Error handled']] }
+
+        expect(router.call(request)).to eq([400, {}, ['Custom Error B handled']])
+      end
+
+      it 'renders general error when specific exception happen but no specific handler' do
+        router = Rackr::Router.new
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/teste'
+          }
+        router.add :get, 'teste', proc { raise CustomErrorA }
+        router.add_error proc { |_req, _e| [500, {}, ['General Error handled']] }
+
+        expect(router.call(request)).to eq([500, {}, ['General Error handled']])
+      end
+
+      context 'when using scopes' do
+        it 'renders specific error within scope' do
+          router = Rackr::Router.new
+
+          router.add_error proc { |_req, e| [500, {}, ["General Error: #{e.class}"]] }
+          router.add :get, 'foo', proc { raise CustomErrorA }
+
+          router.append_scope 'test'
+          router.add_error proc { |_req, _e| [422, {}, ['Scoped Custom Error A handled']] }, is: CustomErrorA
+          router.add :get, 'bar', proc { raise CustomErrorA }
+          router.add :get, 'baz', proc { raise StandardError }
+
+          request_a =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/foo'
+            }
+          request_b =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/test/bar'
+            }
+          request_c =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/test/baz'
+            }
+
+          expect(router.call(request_a)).to eq([500, {}, ['General Error: CustomErrorA']])
+          expect(router.call(request_b)).to eq([422, {}, ['Scoped Custom Error A handled']])
+          expect(router.call(request_c)).to eq([500, {}, ['General Error: StandardError']])
+        end
+
+        it 'renders specific error with nested scopes' do
+          router = Rackr::Router.new
+
+          router.add_error proc { |_req, e| [500, {}, ["General Error: #{e.class}"]] }
+
+          router.append_scope 'outer'
+          router.add_error proc { |_req, _e| [400, {}, ['Outer Scoped Custom Error A handled']] }, is: CustomErrorA
+          router.add :get, 'foo', proc { raise CustomErrorA }
+
+          router.append_scope 'inner'
+          router.add_error proc { |_req, _e| [403, {}, ['Inner Scoped Custom Error A handled']] }, is: CustomErrorA
+          router.add :get, 'bar', proc { raise CustomErrorA }
+          router.add :get, 'baz', proc { raise StandardError }
+
+          request_a =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/outer/foo'
+            }
+          request_b =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/outer/inner/bar'
+            }
+          request_c =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/outer/inner/baz'
+            }
+          request_d =
+            {
+              'REQUEST_METHOD' => 'GET',
+              'PATH_INFO' => '/outside'
+            }
+
+          expect(router.call(request_a)).to eq([400, {}, ['Outer Scoped Custom Error A handled']])
+          expect(router.call(request_b)).to eq([403, {}, ['Inner Scoped Custom Error A handled']])
+          expect(router.call(request_c)).to eq([500, {}, ['General Error: StandardError']])
+          expect(router.call(request_d)).to eq([404, {}, ['Not found']]) # No route, so 404
+        end
+      end
+    end
   end
 
   context 'scopes' do
