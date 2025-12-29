@@ -2,11 +2,11 @@
 
 source "https://rubygems.org"
 
-gem 'rackr'
 gem 'zeitwerk'
 gem 'rack-parser'
-gem 'html_slice'
 gem 'jwt'
+gem 'erubi'
+gem 'oj'
 
 gem 'puma'
 gem 'guard-puma'

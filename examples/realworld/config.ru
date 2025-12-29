@@ -1,11 +1,11 @@
 require 'byebug' if ENV['RACK_ENV'] == 'development'
 
-require 'rack/parser'
-#require 'rackr'
-require 'sequel'
-require 'html_slice'
-require 'jwt'
+require 'bundler/setup'
+Bundler.require
+
 require_relative '../../lib/rackr'
+
+require 'rack/parser'
 require_relative 'load'
 
 use(
