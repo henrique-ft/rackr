@@ -10,16 +10,16 @@ RSpec.describe Rackr::Router do
     let(:router) do
       router = Rackr::Router.new
 
-      router.add :get, 'get', double(call: 'Hey get')
-      router.add :head, 'head', double(call: 'Hey head')
-      router.add :post, 'post', double(call: 'Hey post')
-      router.add :delete, 'delete', double(call: 'Hey delete')
-      router.add :put, 'put', double(call: 'Hey put')
-      router.add :trace, 'trace', double(call: 'Hey trace')
-      router.add :options, 'options', double(call: 'Hey options')
-      router.add :patch, 'patch', double(call: 'Hey patch')
-      router.add :get, '/starting_with_slash', double(call: 'Hey slash')
-      router.add :get, '*', double(call: 'Hey wildcard')
+      router.add :get, 'get', double(call: ['Hey get'])
+      router.add :head, 'head', double(call: ['Hey head'])
+      router.add :post, 'post', double(call: ['Hey post'])
+      router.add :delete, 'delete', double(call: ['Hey delete'])
+      router.add :put, 'put', double(call: ['Hey put'])
+      router.add :trace, 'trace', double(call: ['Hey trace'])
+      router.add :options, 'options', double(call: ['Hey options'])
+      router.add :patch, 'patch', double(call: ['Hey patch'])
+      router.add :get, '/starting_with_slash', double(call: ['Hey slash'])
+      router.add :get, '*', double(call: ['Hey wildcard'])
 
       router
     end
@@ -31,7 +31,7 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/any-route'
         }
 
-      expect(router.call(request)).to eq('Hey wildcard')
+      expect(router.call(request)).to eq(['Hey wildcard'])
     end
 
     it do
@@ -41,7 +41,7 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/get'
         }
 
-      expect(router.call(request)).to eq('Hey get')
+      expect(router.call(request)).to eq(['Hey get'])
     end
 
     it do
@@ -51,7 +51,7 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/head'
         }
 
-      expect(router.call(request)).to eq('Hey head')
+      expect(router.call(request)).to eq(['Hey head'])
     end
 
     it do
@@ -61,7 +61,7 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/post'
         }
 
-      expect(router.call(request)).to eq('Hey post')
+      expect(router.call(request)).to eq(['Hey post'])
     end
 
     it do
@@ -71,7 +71,7 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/delete'
         }
 
-      expect(router.call(request)).to eq('Hey delete')
+      expect(router.call(request)).to eq(['Hey delete'])
     end
 
     it do
@@ -81,7 +81,7 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/put'
         }
 
-      expect(router.call(request)).to eq('Hey put')
+      expect(router.call(request)).to eq(['Hey put'])
     end
 
     it do
@@ -91,7 +91,7 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/trace'
         }
 
-      expect(router.call(request)).to eq('Hey trace')
+      expect(router.call(request)).to eq(['Hey trace'])
     end
 
     it do
@@ -101,7 +101,7 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/options'
         }
 
-      expect(router.call(request)).to eq('Hey options')
+      expect(router.call(request)).to eq(['Hey options'])
     end
 
     it do
@@ -111,7 +111,7 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/patch'
         }
 
-      expect(router.call(request)).to eq('Hey patch')
+      expect(router.call(request)).to eq(['Hey patch'])
     end
 
     it do
@@ -121,14 +121,14 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/starting_with_slash'
         }
 
-      expect(router.call(request)).to eq('Hey slash')
+      expect(router.call(request)).to eq(['Hey slash'])
     end
   end
 
   it 'render 404 when fails' do
     router = Rackr::Router.new
 
-    router.add :get, 'teste', double(call: 'Hey test')
+    router.add :get, 'teste', double(call: ['Hey test'])
 
     request =
       {
@@ -161,7 +161,7 @@ RSpec.describe Rackr::Router do
         router.add_not_found proc { [404, {}, ['Not found']] }
         router.append_scope 'test'
         router.add_not_found proc { |_req| [404, {}, ['Inside scope not found']] }
-        router.add :get, 'some-thing', ->(_env) { [200, {}, ''] }
+        router.add :get, 'some-thing', ->(_req) { [200, {}, ''] }
 
         request_a =
           {
@@ -188,7 +188,7 @@ RSpec.describe Rackr::Router do
           req
         }]
         router.add_not_found proc { |req| [404, {}, ["Inside scope not found, name: #{req.params[:name]}"]] }
-        router.add :get, 'some-thing', ->(_env) { [200, {}, ''] }
+        router.add :get, 'some-thing', ->(_req) { [200, {}, ''] }
 
         request_a =
           {
@@ -204,7 +204,7 @@ RSpec.describe Rackr::Router do
           router = Rackr::Router.new
 
           router.add_not_found proc { [404, {}, ['Custom not found']] }
-          router.add :get, 'raise', lambda { |_env|
+          router.add :get, 'raise', lambda { |_req|
             raise Rackr::NotFound
           }
 
@@ -223,7 +223,7 @@ RSpec.describe Rackr::Router do
           router.add_not_found proc { [404, {}, ['Not found']] }
           router.append_scope 'test'
           router.add_not_found proc { [404, {}, ['Inside scope not found']] }
-          router.add :get, 'raise', lambda { |_env|
+          router.add :get, 'raise', lambda { |_req|
             raise Rackr::NotFound
           }
 
@@ -243,7 +243,7 @@ RSpec.describe Rackr::Router do
           router.append_scope 'test'
           router.append_scope :id
           router.add_not_found proc { [404, {}, ['Inside scope not found']] }
-          router.add :get, 'raise', lambda { |_env|
+          router.add :get, 'raise', lambda { |_req|
             raise Rackr::NotFound
           }
 
@@ -264,7 +264,7 @@ RSpec.describe Rackr::Router do
           router.append_scope :id
           router.add_not_found proc { [404, {}, ['Inside scope not found']] }
           router.append_scope 'something'
-          router.add :get, 'raise', lambda { |_env|
+          router.add :get, 'raise', lambda { |_req|
             raise Rackr::NotFound
           }
 
@@ -503,7 +503,7 @@ RSpec.describe Rackr::Router do
       router = Rackr::Router.new
 
       router.append_scope 'admin'
-      router.add :get, 'teste', ->(_env) { 'success' }
+      router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
       request =
         {
@@ -511,14 +511,14 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/admin/teste'
         }
 
-      expect(router.call(request)).to eq('success')
+      expect(router.call(request)).to eq([200, {}, ['success']])
     end
 
     it 'can append named scopes' do
       router = Rackr::Router.new
 
       router.append_scope :name
-      router.add :get, 'teste', ->(_env) { 'success' }
+      router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
       request =
         {
@@ -527,7 +527,7 @@ RSpec.describe Rackr::Router do
           'rack.input' => ''
         }
 
-      expect(router.call(request)).to eq('success')
+      expect(router.call(request)).to eq([200, {}, ['success']])
     end
 
     it 'can clear the last scope' do
@@ -535,7 +535,7 @@ RSpec.describe Rackr::Router do
 
       router.append_scope 'admin'
       router.clear_last_scope
-      router.add :get, 'teste', ->(_env) { 'success' }
+      router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
       request =
         {
@@ -543,14 +543,14 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/teste'
         }
 
-      expect(router.call(request)).to eq('success')
+      expect(router.call(request)).to eq([200, {}, ['success']])
     end
 
     it 'dont conflict with root path inside scopes' do
       router = Rackr::Router.new
 
       router.append_scope 'admin'
-      router.add :get, '', ->(_env) { 'success' }
+      router.add :get, '', ->(_req) { [200, {}, ['success']] }
 
       request =
         {
@@ -558,14 +558,14 @@ RSpec.describe Rackr::Router do
           'PATH_INFO' => '/admin'
         }
 
-      expect(router.call(request)).to eq('success')
+      expect(router.call(request)).to eq([200, {}, ['success']])
     end
 
     context 'when conflicting with path params scope' do
       it do
         router = Rackr::Router.new
-        router.add :get, 'show', ->(_env) { 'success' }
-        router.add :get, 'show/:str', ->(req) { req.params[:str] }
+        router.add :get, 'show', ->(_req) { [200, {}, ['success']] }
+        router.add :get, 'show/:str', ->(req) { [200, {}, [req.params[:str]]] }
 
         request_a =
           {
@@ -573,7 +573,7 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/show'
           }
 
-        expect(router.call(request_a)).to eq('success')
+        expect(router.call(request_a)).to eq([200, {}, ['success']])
 
         request_b =
           {
@@ -581,7 +581,7 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/show/hello'
           }
 
-        expect(router.call(request_b)).to eq('hello')
+        expect(router.call(request_b)).to eq([200, {}, ['hello']])
       end
 
       it do
@@ -589,9 +589,9 @@ RSpec.describe Rackr::Router do
 
         router.append_scope 'v3'
         router.append_scope :str
-        router.add :get, 'hello', ->(req) { req.params[:str] }
+        router.add :get, 'hello', ->(req) { [200, {}, [req.params[:str]]] }
         router.clear_last_scope
-        router.add :get, 'this-must-match', ->(_env) { 'success' }
+        router.add :get, 'this-must-match', ->(_req) { [200, {}, ['success']] }
         router.clear_last_scope
 
         request_a =
@@ -600,7 +600,7 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/v3/something/hello'
           }
 
-        expect(router.call(request_a)).to eq('something')
+        expect(router.call(request_a)).to eq([200, {}, ['something']])
 
         request_b =
           {
@@ -608,7 +608,7 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/v3/this-must-match'
           }
 
-        expect(router.call(request_b)).to eq('success')
+        expect(router.call(request_b)).to eq([200, {}, ['success']])
       end
     end
 
@@ -617,7 +617,7 @@ RSpec.describe Rackr::Router do
         router = Rackr::Router.new
 
         router.append_scope ''
-        router.add :get, 'teste', ->(_env) { 'success' }
+        router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
         request =
           {
@@ -625,7 +625,7 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/teste'
           }
 
-        expect(router.call(request)).to eq('success')
+        expect(router.call(request)).to eq([200, {}, ['success']])
       end
 
       it 'can clear the last scope' do
@@ -633,7 +633,7 @@ RSpec.describe Rackr::Router do
 
         router.append_scope ''
         router.clear_last_scope
-        router.add :get, 'teste', ->(_env) { 'success' }
+        router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
         request =
           {
@@ -641,14 +641,14 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/teste'
           }
 
-        expect(router.call(request)).to eq('success')
+        expect(router.call(request)).to eq([200, {}, ['success']])
       end
 
       it 'dont conflict with root path inside scopes' do
         router = Rackr::Router.new
 
         router.append_scope ''
-        router.add :get, '', ->(_env) { 'success' }
+        router.add :get, '', ->(_req) { [200, {}, ['success']] }
 
         request =
           {
@@ -656,7 +656,7 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/'
           }
 
-        expect(router.call(request)).to eq('success')
+        expect(router.call(request)).to eq([200, {}, ['success']])
       end
     end
 
@@ -674,7 +674,7 @@ RSpec.describe Rackr::Router do
           router = Rackr::Router.new
 
           router.append_scope 'admin'
-          router.add :get, 'teste', ->(_env) { 'success' }
+          router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
           expect(router.routes.get[:admin_teste]).to eq('/admin/teste')
         end
@@ -684,7 +684,7 @@ RSpec.describe Rackr::Router do
 
           router.append_scope 'admin'
           router.append_scope 'independent'
-          router.add :get, 'teste', ->(_env) { 'success' }
+          router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
           expect(router.routes.get[:admin_independent_teste]).to eq('/admin/independent/teste')
         end
@@ -692,7 +692,7 @@ RSpec.describe Rackr::Router do
 
       it 'when root path, it adds the root key' do
         router = Rackr::Router.new
-        router.add :get, '', ->(_env) { 'success' }
+        router.add :get, '', ->(_req) { [200, {}, ['success']] }
 
         expect(router.routes.get[:root]).to eq('/')
       end
@@ -702,7 +702,7 @@ RSpec.describe Rackr::Router do
 
         router.append_scope 'admin'
         router.append_scope 'independent'
-        router.add :get, 'teste', ->(_env) { 'success' }, as: :something
+        router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }, as: :something
 
         expect(router.routes.get[:something]).to eq('/admin/independent/teste')
       end
@@ -712,11 +712,11 @@ RSpec.describe Rackr::Router do
       it 'can receive scopes afters' do
         router = Rackr::Router.new
         scope_after = lambda do |res|
-          expect(res).to eq('success')
+          expect(res).to eq([200, {}, ['success']])
         end
 
         router.append_scope 'admin', scope_afters: scope_after
-        router.add :get, 'teste', ->(_env) { 'success' }
+        router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
         request =
           {
@@ -737,7 +737,7 @@ RSpec.describe Rackr::Router do
 
         router.append_scope 'admin', scope_afters: after_action
         router.append_scope 'v1', scope_afters: after_action
-        router.add :get, 'teste', ->(_env) { 'success' }
+        router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
         request =
           {
@@ -745,7 +745,7 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/admin/v1/teste'
           }
 
-        expect(router.call(request)).to eq('success')
+        expect(router.call(request)).to eq([200, {}, ['success']])
         expect(afters_called).to eq(3)
       end
 
@@ -753,11 +753,11 @@ RSpec.describe Rackr::Router do
         it 'can receive scopes afters' do
           router = Rackr::Router.new
           scope_after = lambda do |res|
-            expect(res).to eq('success')
+            expect(res).to eq([200, {}, ['success']])
           end
 
           router.append_scope '', scope_afters: scope_after
-          router.add :get, 'teste', ->(_env) { 'success' }
+          router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
           request =
             {
@@ -778,7 +778,7 @@ RSpec.describe Rackr::Router do
 
           router.append_scope '', scope_afters: after_action
           router.append_scope '', scope_afters: after_action
-          router.add :get, 'teste', ->(_env) { 'success' }
+          router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
           request =
             {
@@ -786,7 +786,7 @@ RSpec.describe Rackr::Router do
               'PATH_INFO' => '/teste'
             }
 
-          expect(router.call(request)).to eq('success')
+          expect(router.call(request)).to eq([200, {}, ['success']])
           expect(afters_called).to eq(3)
         end
       end
@@ -795,18 +795,18 @@ RSpec.describe Rackr::Router do
     context 'before:' do
       it 'can receive scopes befores' do
         router = Rackr::Router.new
-        before_action = ->(_req) { 'inside before' }
+        before_action = ->(req) { [200, {}, []] }
 
         router.append_scope 'admin', scope_befores: before_action
-        router.add :get, 'teste', ->(_env) { 'success' }
+        router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
         request =
           {
             'REQUEST_METHOD' => 'GET',
             'PATH_INFO' => '/admin/teste'
           }
-
-        expect(router.call(request)).to eq('inside before')
+        router.call(request)
+        expect(router.call(request)).to eq([200, {}, []])
       end
 
       it 'can append more than 1 scopes befores' do
@@ -820,7 +820,7 @@ RSpec.describe Rackr::Router do
 
         router.append_scope 'admin', scope_befores: before_action
         router.append_scope 'v1', scope_befores: before_action
-        router.add :get, 'teste', ->(_env) { 'success' }
+        router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
         request =
           {
@@ -828,18 +828,18 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/admin/v1/teste'
           }
 
-        expect(router.call(request)).to eq('success')
+        expect(router.call(request)).to eq([200, {}, ['success']])
         expect(befores_called).to eq(3)
       end
 
       it 'break befores pipeline when not returning req' do
         router = Rackr::Router.new
         before_action = ->(req) { req }
-        before_action2 = ->(_req) { 'hey' }
+        before_action2 = ->(_req) { [] }
 
         router.append_scope 'admin', scope_befores: before_action
         router.append_scope 'v1', scope_befores: before_action2
-        router.add :get, 'teste', ->(_env) { 'success' }
+        router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
         request =
           {
@@ -847,16 +847,16 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/admin/v1/teste'
           }
 
-        expect(router.call(request)).to eq('hey')
+        expect(router.call(request)).to eq([])
       end
 
       context 'empty scopes' do
         it 'can receive scopes befores' do
           router = Rackr::Router.new
-          before_action = ->(_req) { 'inside before' }
+          before_action = ->(_req) { [200, {}, []] }
 
           router.append_scope '', scope_befores: before_action
-          router.add :get, 'teste', ->(_env) { 'success' }
+          router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
           request =
             {
@@ -864,7 +864,7 @@ RSpec.describe Rackr::Router do
               'PATH_INFO' => '/teste'
             }
 
-          expect(router.call(request)).to eq('inside before')
+          expect(router.call(request)).to eq([200, {}, []])
         end
 
         it 'can append more than 1 scopes befores' do
@@ -878,7 +878,7 @@ RSpec.describe Rackr::Router do
 
           router.append_scope '', scope_befores: before_action
           router.append_scope '', scope_befores: before_action
-          router.add :get, 'teste', ->(_env) { 'success' }
+          router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
 
           request =
             {
@@ -886,7 +886,7 @@ RSpec.describe Rackr::Router do
               'PATH_INFO' => '/teste'
             }
 
-          expect(router.call(request)).to eq('success')
+          expect(router.call(request)).to eq([200, {}, ['success']])
           expect(befores_called).to eq(3)
         end
       end

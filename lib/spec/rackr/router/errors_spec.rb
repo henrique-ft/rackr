@@ -4,6 +4,14 @@ require_relative '../../../rackr/router/errors'
 require 'byebug'
 
 RSpec.describe Rackr::Router::Errors do
+  describe 'check_rack_response' do
+    it do
+      expect do
+        Rackr::Router::Errors.check_rack_response(1, '')
+      end.to raise_error(Rackr::Router::Errors::InvalidRackResponseError)
+    end
+  end
+
   describe 'check_scope_name' do
     it do
       expect do

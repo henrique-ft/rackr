@@ -17,17 +17,6 @@ class Rackr
     attr_reader :routes, :config, :not_found_tree, :error_tree, :specific_error_tree
 
     def initialize(config = {}, before: [], after: [])
-      @path_routes_tree = {}
-      %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
-        @path_routes_tree[method] = { __instances: [] }
-      end
-      @not_found_tree = {}
-      @default_not_found = Route.new(proc { [404, {}, ['Not found']] })
-      @error_tree = {}
-      @default_error = Route.new(proc { |_req, _e| [500, {}, ['Internal server error']] })
-      @specific_error_tree = {}
-      @specific_errors = {}
-
       http_methods = HTTP_METHODS.map { |m| m.downcase.to_sym }
       @routes = Struct.new(*http_methods).new
       http_methods.each do |method|
@@ -42,6 +31,26 @@ class Rackr
       @scopes_befores = {}
       @afters = ensure_array(after)
       @scopes_afters = {}
+      @path_routes_tree = {}
+      %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
+        @path_routes_tree[method] = { __instances: [] }
+      end
+      @not_found_tree = {}
+      @default_not_found =
+        Route.new(
+          proc { [404, {}, ['Not found']] },
+          befores: @befores,
+          afters: @afters
+        )
+      @error_tree = {}
+      @default_error =
+        Route.new(
+          proc { |_req, _e| [500, {}, ['Internal server error']] },
+          befores: @befores,
+          afters: @afters
+        )
+      @specific_error_tree = {}
+      @specific_errors = {}
     end
 
     def call(env)
@@ -65,9 +74,11 @@ class Rackr
         i = 0
         while i < befores.size
           before_result = Endpoint.call(befores[i], rack_request, @routes, @config)
-          return before_result unless before_result.is_a?(Rack::Request)
+          unless before_result.is_a?(Rack::Request)
+            Errors.check_rack_response(before_result, 'before callback')
 
-          rack_request = before_result
+            return before_result
+          end
 
           i += 1
         end
@@ -83,6 +94,7 @@ class Rackr
         return error_fallback(found_scopes, route_instance, before_result || rack_request, e, env)
       end
 
+      Errors.check_rack_response(endpoint_result, 'action')
       endpoint_result
     end
 
@@ -113,7 +125,7 @@ class Rackr
 
       if path_segments.empty?
         @path_routes_tree[method.to_s.upcase][:__instances].push(route_instance)
-      else
+     else
         deep_hash_push(@path_routes_tree[method.to_s.upcase], *(path_segments + [:__instances]), route_instance)
       end
     end

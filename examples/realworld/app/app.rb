@@ -1,10 +1,20 @@
 App =
   Rackr.new(Config.get).call do
+    error do |req, e|
+      p "Rollbar.error(#{e})"
+
+      head 500
+    end
+
     get do
       render json: { real: 'world' }
     end
 
     scope 'api' do
+      error(Sequel::ValidationFailed) do |req, e|
+        render(json: e.errors, status: 422)
+      end
+
       scope 'users' do
         # Registration
         # http POST localhost:4000/api/users user[password]=1 user[email]=1@email.com user[username]=one
@@ -65,12 +75,6 @@ App =
           # Unfollow User
           # http DELETE localhost:4000/api/profiles/:username/follow Authorization:TOKEN
           delete 'follow', Actions::Api::Profiles::Unfollow
-        end
-      end
-
-      error do |req, e|
-        if e.is_a?(Sequel::ValidationFailed)
-          render(json: e.errors, status: 422)
         end
       end
     end

@@ -18,6 +18,7 @@ use(
 )
 
 use Rack::Parser
+use Rack::CommonLogger
 use Rack::Static, :urls => ["/public"]
 
 run App

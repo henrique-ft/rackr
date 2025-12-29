@@ -10,8 +10,15 @@ class Rackr
       class InvalidCallbackError < Error; end
       class InvalidPathError < Error; end
       class InvalidBranchNameError < Error; end
+      class InvalidRackResponseError < StandardError; end
 
       class << self
+        def check_rack_response(response, where)
+          return if response.is_a?(Array)
+
+          raise(InvalidRackResponseError, "Invalid Rack response in #{where}, received: #{response}")
+        end
+
         def check_scope_name(path)
           return if path.is_a?(String) || path.is_a?(Symbol) || path.nil?
 
