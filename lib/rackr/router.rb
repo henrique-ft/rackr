@@ -14,7 +14,7 @@ class Rackr
     include Rackr::Utils
 
     attr_writer :default_not_found
-    attr_reader :routes, :config, :not_found_tree, :error_tree
+    attr_reader :routes, :config, :not_found_tree, :error_tree, :specific_error_tree
 
     def initialize(config = {}, before: [], after: [])
       @path_routes_tree = {}
@@ -22,7 +22,11 @@ class Rackr
         @path_routes_tree[method] = { __instances: [] }
       end
       @not_found_tree = {}
+      @default_not_found = Route.new(proc { [404, {}, ['Not found']] })
       @error_tree = {}
+      @default_error = Route.new(proc { |_req, _e| [500, {}, ['Internal server error']] })
+      @specific_error_tree = {}
+      @specific_errors = {}
 
       http_methods = HTTP_METHODS.map { |m| m.downcase.to_sym }
       @routes = Struct.new(*http_methods).new
@@ -38,8 +42,6 @@ class Rackr
       @scopes_befores = {}
       @afters = ensure_array(after)
       @scopes_afters = {}
-      @default_error = Route.new(proc { |_req, _e| [500, {}, ['Internal server error']] })
-      @default_not_found = Route.new(proc { [404, {}, ['Not found']] })
     end
 
     def call(env)
@@ -136,8 +138,8 @@ class Rackr
     def error_fallback(found_scopes, route_instance, request, error, env)
       error_route = match_route(
         found_scopes,
-        error_tree,
-        @default_error
+        specific_error_tree[error.class] || error_tree,
+        @specific_errors[error.class] || @default_error
       )
 
       if @dev_mode && error_route == @default_error
@@ -157,20 +159,37 @@ class Rackr
       endpoint_result
     end
 
-    %i[error not_found].each do |v|
-      define_method("add_#{v}") do |endpoint|
-        Errors.check_endpoint(endpoint, v)
+    def add_not_found(endpoint)
+      Errors.check_endpoint(endpoint, 'not found')
 
-        route_instance =
-          Route.new(
-            endpoint,
-            befores: @befores,
-            afters: @afters
-          )
+      route_instance =
+        Route.new(
+          endpoint,
+          befores: @befores,
+          afters: @afters
+        )
 
-        return set_to_scope(send("#{v}_tree"), route_instance) if @scopes.size >= 1
+      return set_to_scope(not_found_tree, route_instance) if @scopes.size >= 1
 
-        instance_variable_set("@default_#{v}", route_instance)
+      @default_not_found = route_instance
+    end
+
+    def add_error(endpoint, is = nil)
+      Errors.check_endpoint(endpoint, 'error')
+
+      route_instance =
+        Route.new(
+          endpoint,
+          befores: @befores,
+          afters: @afters
+        )
+
+      if is
+        return set_to_scope(specific_error_tree[is.class], route_instance) if @scopes.size >= 1
+        @specific_errors[is.class] = route_instance
+      else
+        return set_to_scope(error_tree, route_instance) if @scopes.size >= 1
+        @default_error = route_instance
       end
     end
 

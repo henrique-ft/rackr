@@ -75,11 +75,11 @@ class Rackr
     end
   end
 
-  def error(endpoint = -> {}, &block)
+  def error(endpoint = -> {}, is: nil, &block)
     if block_given?
-      @router.add_error(block)
+      @router.add_error(block, is)
     else
-      @router.add_error(endpoint)
+      @router.add_error(endpoint, is)
     end
   end
 
