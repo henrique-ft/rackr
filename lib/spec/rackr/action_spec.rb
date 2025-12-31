@@ -2,6 +2,8 @@
 
 require_relative '../../rackr'
 require_relative '../../rackr/action'
+require_relative '../../rackr/utils'
+require_relative '../../rackr/callback'
 require 'byebug'
 
 class SomeClass
@@ -488,6 +490,58 @@ RSpec.describe Rackr::Action do
       it 'merges and overrides the default csp' do
         result = subject.render(html: 'test')
         expect(result[1]['content-security-policy']).to eq(expected_csp)
+      end
+    end
+  end
+
+  context 'callbacks' do
+    class MyCallback
+      include Rackr::Callback
+      def call
+      end
+    end
+
+    class MyActionWithCallbacks
+      include Rackr::Action
+      before MyCallback
+      after MyCallback
+    end
+
+    class MyActionWithoutCallbacks
+      include Rackr::Action
+    end
+
+    describe '.included' do
+      it 'extends and includes Callbacks for actions' do
+        expect(MyActionWithoutCallbacks).to be_a(Rackr::Action::Callbacks::ClassMethods)
+        expect(MyActionWithoutCallbacks.included_modules).to include(Rackr::Action::Callbacks)
+      end
+
+      it 'does not extend or include Callbacks for callbacks' do
+        expect(MyCallback).not_to be_a(Rackr::Action::Callbacks::ClassMethods)
+        expect(MyCallback.included_modules).not_to include(Rackr::Action::Callbacks)
+      end
+    end
+
+    describe 'class-level callbacks' do
+      it 'allows actions to define before callbacks' do
+        expect(MyActionWithCallbacks.befores).to eq([MyCallback])
+      end
+
+      it 'allows actions to define after callbacks' do
+        expect(MyActionWithCallbacks.afters).to eq([MyCallback])
+      end
+
+      it 'makes class-level callbacks available on instances' do
+        action_instance = MyActionWithCallbacks.new
+        expect(action_instance.befores).to eq([MyCallback])
+        expect(action_instance.afters).to eq([MyCallback])
+      end
+
+      it 'returns an empty array for actions without callbacks' do
+        action_instance = MyActionWithoutCallbacks.new
+        expect(action_instance.befores).to eq([])
+        expect(action_instance.afters).to eq([])
       end
     end
   end

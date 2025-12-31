@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require_relative '../../rackr/utils'
+require_relative '../../rackr/callback'
+require_relative '../../rackr/action'
 require_relative '../../rackr/router'
 require_relative '../../rackr'
 require 'byebug'
@@ -897,5 +899,61 @@ RSpec.describe Rackr::Router do
     router = Rackr::Router.new({ something: 'x' })
 
     expect(router.config[:something]).to eq('x')
+  end
+
+  context 'when action has class-level callbacks' do
+    let(:router) { Rackr::Router.new }
+
+    # A dummy callback class for testing purposes
+    class MyRouterCallback
+      include Rackr::Callback
+      def call
+        # no-op
+      end
+    end
+
+    # A dummy action class that defines class-level callbacks
+    class MyActionWithRouterCallbacks
+      include Rackr::Action
+      before MyRouterCallback
+      after MyRouterCallback
+
+      def call
+        [200, {}, ['OK']]
+      end
+    end
+
+    it 'adds the action callbacks to the route' do
+      router.add :get, '/test', MyActionWithRouterCallbacks
+
+      route_instance = router.instance_variable_get(:@path_routes_tree)['GET']['test'][:__instances].first
+      expect(route_instance.befores).to include(MyRouterCallback)
+      expect(route_instance.afters).to include(MyRouterCallback)
+    end
+
+    it 'adds the action callbacks to the not_found route' do
+      router.add_not_found MyActionWithRouterCallbacks
+
+      not_found_route = router.instance_variable_get(:@default_not_found)
+      expect(not_found_route.befores).to include(MyRouterCallback)
+      expect(not_found_route.afters).to include(MyRouterCallback)
+    end
+
+    it 'adds the action callbacks to the error route' do
+      router.add_error MyActionWithRouterCallbacks
+
+      error_route = router.instance_variable_get(:@default_error)
+      expect(error_route.befores).to include(MyRouterCallback)
+      expect(error_route.afters).to include(MyRouterCallback)
+    end
+
+    it 'adds the action callbacks to a specific error route' do
+      class MyCustomErrorForRouter < StandardError; end
+      router.add_error MyActionWithRouterCallbacks, MyCustomErrorForRouter
+
+      error_route = router.instance_variable_get(:@specific_errors)[MyCustomErrorForRouter]
+      expect(error_route.befores).to include(MyRouterCallback)
+      expect(error_route.afters).to include(MyRouterCallback)
+    end
   end
 end

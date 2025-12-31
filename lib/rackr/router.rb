@@ -5,6 +5,8 @@ require_relative 'router/endpoint'
 require_relative 'router/route'
 require_relative 'router/path_route'
 require_relative 'router/build_request'
+require_relative 'router/dev_html/errors'
+require_relative 'router/dev_html/dump'
 
 class Rackr
   class Router
@@ -98,38 +100,6 @@ class Rackr
       endpoint_result
     end
 
-    def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])
-      Errors.check_path(path)
-      Errors.check_endpoint(endpoint, path)
-      Errors.check_as(as, path)
-      Errors.check_callbacks(route_befores, path)
-      Errors.check_callbacks(route_afters, path)
-
-      method = :get if method == :head
-
-      wildcard = path == '*'
-      path = path.is_a?(Symbol) ? path.inspect : path.sub(%r{\A/}, '')
-      path_with_scopes = "/#{not_empty_scopes.join('/')}#{put_path_slash(path)}"
-      add_named_route(method, path_with_scopes, as)
-
-      route_instance =
-        PathRoute.new(
-          path_with_scopes,
-          endpoint,
-          befores: @befores + ensure_array(route_befores),
-          afters: @afters + ensure_array(route_afters),
-          wildcard: wildcard
-        )
-
-      path_segments = path_with_scopes.split('/').reject(&:empty?)
-
-      if path_segments.empty?
-        @path_routes_tree[method.to_s.upcase][:__instances].push(route_instance)
-     else
-        deep_hash_push(@path_routes_tree[method.to_s.upcase], *(path_segments + [:__instances]), route_instance)
-      end
-    end
-
     def not_found_fallback(found_scopes, route_instance, request)
       endpoint_result = Endpoint.call(
         match_route(
@@ -171,14 +141,57 @@ class Rackr
       endpoint_result
     end
 
+    def call_afters(route_instance, endpoint_result)
+      afters = route_instance.afters
+      i = 0
+      while i < afters.size
+        Endpoint.call(afters[i], endpoint_result, @routes, @config)
+        i += 1
+      end
+    end
+
+    def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])
+      Errors.check_path(path)
+      Errors.check_endpoint(endpoint, path)
+      Errors.check_as(as, path)
+      Errors.check_callbacks(route_befores, path)
+      Errors.check_callbacks(route_afters, path)
+
+      method = :get if method == :head
+
+      wildcard = path == '*'
+      path = path.is_a?(Symbol) ? path.inspect : path.sub(%r{\A/}, '')
+      path_with_scopes = "/#{not_empty_scopes.join('/')}#{put_path_slash(path)}"
+      add_named_route(method, path_with_scopes, as)
+      action_befores, action_afters = fetch_endpoint_callbacks(endpoint)
+
+      route_instance =
+        PathRoute.new(
+          path_with_scopes,
+          endpoint,
+          befores: @befores + ensure_array(route_befores) + action_befores,
+          afters: @afters + ensure_array(route_afters) + action_afters,
+          wildcard: wildcard
+        )
+
+      path_segments = path_with_scopes.split('/').reject(&:empty?)
+
+      if path_segments.empty?
+        @path_routes_tree[method.to_s.upcase][:__instances].push(route_instance)
+      else
+        deep_hash_push(@path_routes_tree[method.to_s.upcase], *(path_segments + [:__instances]), route_instance)
+      end
+    end
+
     def add_not_found(endpoint)
       Errors.check_endpoint(endpoint, 'not found')
 
+      action_befores, action_afters = fetch_endpoint_callbacks(endpoint)
       route_instance =
         Route.new(
           endpoint,
-          befores: @befores,
-          afters: @afters
+          befores: @befores + action_befores,
+          afters: @afters + action_afters
         )
 
       return set_to_scope(not_found_tree, route_instance) if @scopes.size >= 1
@@ -189,11 +202,12 @@ class Rackr
     def add_error(endpoint, error_class = nil)
       Errors.check_endpoint(endpoint, 'error')
 
+      action_befores, action_afters = fetch_endpoint_callbacks(endpoint)
       route_instance =
         Route.new(
           endpoint,
-          befores: @befores,
-          afters: @afters
+          befores: @befores + action_befores,
+          afters: @afters + action_afters
         )
 
       if error_class
@@ -202,15 +216,6 @@ class Rackr
       else
         return set_to_scope(error_tree, route_instance) if @scopes.size >= 1
         @default_error = route_instance
-      end
-    end
-
-    def call_afters(route_instance, endpoint_result)
-      afters = route_instance.afters
-      i = 0
-      while i < afters.size
-        Endpoint.call(afters[i], endpoint_result, @routes, @config)
-        i += 1
       end
     end
 
@@ -244,6 +249,18 @@ class Rackr
     end
 
     private
+
+    def fetch_endpoint_callbacks(endpoint)
+      action_befores = []
+      action_afters = []
+      if endpoint.is_a?(Class) && endpoint.ancestors.include?(Rackr::Action)
+        action_instance = endpoint.new
+        action_befores = action_instance.befores
+        action_afters = action_instance.afters
+      end
+
+      [action_befores, action_afters]
+    end
 
     def add_named_route(method, path_with_scopes, as)
       return @routes.send(method.downcase)[:root] = path_with_scopes if path_with_scopes == '/'

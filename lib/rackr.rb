@@ -3,8 +3,6 @@
 require_relative 'rackr/utils'
 require_relative 'rackr/action'
 require_relative 'rackr/callback'
-require_relative 'rackr/router/dev_html/errors'
-require_relative 'rackr/router/dev_html/dump'
 require_relative 'rackr/router'
 
 class Rackr

@@ -3,6 +3,7 @@
 require 'erubi'
 require 'oj'
 require 'rack'
+require_relative 'action/callbacks'
 
 class Rackr
   module Action
@@ -143,7 +144,12 @@ class Rackr
 
     def self.included(base)
       base.class_eval do
-        attr_reader :routes, :config, :deps, :db, :log, :cache if self != Rackr
+        if self != Rackr
+          attr_reader :routes, :config, :deps, :db, :log, :cache
+          if !self.included_modules.include?(Rackr::Callback)
+            include Callbacks
+          end
+        end
 
         def initialize(routes: nil, config: nil)
           @routes = routes
