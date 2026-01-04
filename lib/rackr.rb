@@ -5,9 +5,11 @@ require_relative 'rackr/action'
 require_relative 'rackr/callback'
 require_relative 'rackr/router'
 
+# Rackr is a simple router for Rack.
 class Rackr
   class NotFound < StandardError; end
 
+  # Dump is a special error that is used to dump the content of a request.
   class Dump < StandardError
     attr_reader :content
 

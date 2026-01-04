@@ -9,10 +9,9 @@ require_relative 'router/dev_html/errors'
 require_relative 'router/dev_html/dump'
 
 class Rackr
+  # This is the core class of Rackr. This class aggregate the route instance tree, callbacks (before and after) and scopes
+  # then, using the building blocks, match the request and call the endpoints
   class Router
-    # This is the core class of Rackr. This class aggregate the route instance tree, callbacks (before and after) and scopes
-    # then, using the building blocks, match the request and call the endpoints
-
     include Rackr::Utils
 
     attr_writer :default_not_found

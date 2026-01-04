@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
 class Rackr
+  # A callback is just a Rackr::Action with the assign method
   module Callback
-    # A callback is just a Rackr::Action with the assign method
-
     def self.included(base)
       base.class_eval do
         include Rackr::Action

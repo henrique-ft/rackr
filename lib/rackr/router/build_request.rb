@@ -2,9 +2,8 @@
 
 class Rackr
   class Router
+    # This class is responsible for initialize the Rack::Request object and give it the path params
     class BuildRequest
-      # This class is responsible for initialize the Rack::Request object and give it the path params
-
       def initialize(env, spplited_request_path)
         @env = env
         @spplited_request_path = spplited_request_path

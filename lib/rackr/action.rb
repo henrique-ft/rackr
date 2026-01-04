@@ -6,10 +6,9 @@ require 'rack'
 require_relative 'action/callbacks'
 
 class Rackr
+  # This module provides the action functions available inside the routes context or
+  # specific action class that included the Rackr::Action.
   module Action
-    # This module provides the action functions available inside the routes context or
-    # specific action class that included the Rackr::Action.
-
     MIME_TYPES = {
       text: 'text/plain',
       html: 'text/html',

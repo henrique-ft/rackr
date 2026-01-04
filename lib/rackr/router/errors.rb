@@ -2,6 +2,7 @@
 
 class Rackr
   class Router
+    # Errors for the router
     module Errors
       class Error < StandardError; end
       class InvalidNamedRouteError < Error; end

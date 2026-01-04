@@ -3,6 +3,7 @@
 class Rackr
   class Router
     module DevHtml
+      # This is the action that is called when an error is raised
       class Errors
         include Rackr::Action
 

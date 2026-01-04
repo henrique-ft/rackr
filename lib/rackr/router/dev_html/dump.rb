@@ -5,6 +5,7 @@ require 'rack/utils'
 class Rackr
   class Router
     module DevHtml
+      # Pretty print the content of the dump
       class PrettyPrint
         def self.call(content, level = 0)
           content = content.inspect if content.instance_of?(String)
@@ -51,6 +52,7 @@ class Rackr
         end
       end
 
+      # This is the action that is called when a dump is raised
       class Dump
         include Rackr::Action
 
