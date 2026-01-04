@@ -41,8 +41,6 @@ end
 
 App =
   Rackr.new(config).call do
-    include HtmlLayout
-
     get do |req|
       req.session['visitas'] ||= 0
 
@@ -56,7 +54,7 @@ App =
     end
 
     get 'html_slice' do
-      render html: (layout do
+      render html: (html_slice do
         div "hey", **stimulus_controller(['name', { user: 3 }])
         input "hey", user: 2, **stimulus_target('name#oi')
       end)

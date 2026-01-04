@@ -1,0 +1,52 @@
+AllCops:
+  TargetRubyVersion: 3.1
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'bin/**/*'
+    - 'examples/**/*'
+    - 'templates/**/*'
+    - 'spec/**/*'
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+    - '.git/**/*'
+    - '*.gemspec'
+    - 'Rakefile'
+    - 'Gemfile'
+
+Metrics/MethodLength:
+  Max: 80
+
+Style/Documentation:
+  Enabled: true
+
+Metrics/BlockLength:
+  Enabled: false
+
+Layout/LineLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Max: 25
+
+Naming/PredicatePrefix:
+  Enabled: false
+
+Naming/PredicateMethod:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Max: 7
+
+Metrics/ClassLength:
+  Max: 300
+
+Metrics/ModuleLength:
+  Max: 300
+

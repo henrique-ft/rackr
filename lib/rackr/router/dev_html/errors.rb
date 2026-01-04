@@ -45,7 +45,7 @@ class Rackr
             </body>
             </html>
           HTML
-                )
+                              )
           res.status = 500
           render res:
         end
@@ -60,7 +60,7 @@ class Rackr
           file_path = (match ? match[1] : nil)
           unless file_path.nil?
             lines = File.readlines(file_path).map.with_index { |line, i| "#{i + 1}: #{line}" }
-            traceback << "<pre>#{slice_around_index(lines, line_number).join('')}</pre>"
+            traceback << "<pre>#{slice_around_index(lines, line_number).join}</pre>"
           end
 
           traceback << "<p>#{tail.join('<br>')}</p>"

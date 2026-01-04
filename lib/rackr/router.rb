@@ -90,11 +90,13 @@ class Rackr
         call_afters(route_instance, endpoint_result)
       rescue Rackr::NotFound
         return not_found_fallback(found_scopes, route_instance, before_result || rack_request)
-      rescue Rackr::Dump => dump
-        return Endpoint.call(DevHtml::Dump, env.merge({ 'dump' => dump }))
+      rescue Rackr::Dump => e
+        return Endpoint.call(DevHtml::Dump, env.merge({ 'dump' => e }))
+        # rubocop:disable Lint/RescueException
       rescue Exception => e
         return error_fallback(found_scopes, route_instance, before_result || rack_request, e, env)
       end
+      # rubocop:enable Lint/RescueException
 
       Errors.check_rack_response(endpoint_result, 'action')
       endpoint_result
@@ -124,9 +126,7 @@ class Rackr
         @specific_errors[error.class] || @default_error
       )
 
-      if @dev_mode && error_route == @default_error
-        return Endpoint.call(DevHtml::Errors, env.merge({ 'error' => error }))
-      end
+      return Endpoint.call(DevHtml::Errors, env.merge({ 'error' => error })) if @dev_mode && error_route == @default_error
 
       endpoint_result = Endpoint.call(error_route.endpoint, request, @routes, @config, error)
 
@@ -212,9 +212,11 @@ class Rackr
 
       if error_class
         return set_to_scope(specific_error_tree[error_class] ||= {}, route_instance) if @scopes.size >= 1
+
         @specific_errors[error_class] = route_instance
       else
         return set_to_scope(error_tree, route_instance) if @scopes.size >= 1
+
         @default_error = route_instance
       end
     end

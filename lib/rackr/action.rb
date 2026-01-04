@@ -142,13 +142,14 @@ class Rackr
       end
     }.freeze
 
+    # rubocop:disable Metrics/PerceivedComplexity
+    # rubocop:disable Metrics/MethodLength
     def self.included(base)
       base.class_eval do
         if self != Rackr
           attr_reader :routes, :config, :deps, :db, :log, :cache
-          if !self.included_modules.include?(Rackr::Callback)
-            include Callbacks
-          end
+
+          include Callbacks unless included_modules.include?(Rackr::Callback)
         end
 
         include HtmlSlice if Object.const_defined?('HtmlSlice')
@@ -292,16 +293,18 @@ class Rackr
         end
 
         def d(content)
-          raise Rackr::Dump.new(content)
+          raise Rackr::Dump, content
         end
 
         def not_found!
           raise Rackr::NotFound
         end
 
+        # rubocop:disable Security/Eval
         def load_erb(content, binding_context: nil)
           eval(Erubi::Engine.new(content).src, binding_context)
         end
+        # rubocop:enable Security/Eval
 
         def head(status, headers: {})
           [status, headers, []]
@@ -325,4 +328,6 @@ class Rackr
       end
     end
   end
+  # rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/MethodLength
 end
