@@ -5,7 +5,6 @@ source 'https://rubygems.org'
 gem 'erubi'
 gem 'oj'
 gem 'rack'
-gem 'html_slice'
 
 # for small / medium projects and little memory usage
 gem 'thin'
@@ -14,6 +13,8 @@ gem 'thin'
 # gem 'puma'
 
 group :development, :test do
+  gem 'html_slice'
+  gem 'stimulux'
   gem 'byebug'
   gem 'pry', '~> 0.12.2'
   gem 'rerun'

@@ -151,13 +151,8 @@ class Rackr
           end
         end
 
-        if Object.const_defined?(HtmlSlice)
-          include HtmlSlice
-
-          define_method(:html) do |&block|
-            html_slice(&block)
-          end
-        end
+        include HtmlSlice if Object.const_defined?('HtmlSlice')
+        include Stimulux if Object.const_defined?('Stimulux')
 
         def initialize(routes: nil, config: nil)
           @routes = routes

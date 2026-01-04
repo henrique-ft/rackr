@@ -78,6 +78,7 @@ GEM
       parser (>= 3.3.7.2)
       prism (~> 1.4)
     ruby-progressbar (1.13.0)
+    stimulux (0.1.0)
     thin (2.0.1)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
@@ -110,6 +111,7 @@ DEPENDENCIES
   rerun
   rspec
   rubocop
+  stimulux
   thin
 
 BUNDLED WITH

@@ -10,6 +10,7 @@ gem 'thin'
 # database
 gem 'sequel'
 gem 'sqlite3'
+gem 'html_slice'
 
 # for large projects
 # gem 'puma'

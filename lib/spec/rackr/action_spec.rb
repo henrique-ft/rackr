@@ -545,4 +545,55 @@ RSpec.describe Rackr::Action do
       end
     end
   end
+
+  describe 'conditional module inclusion' do
+    let(:action_file_path) { File.expand_path('../../../rackr/action.rb', __FILE__) }
+
+    after do
+      # Clean up any defined modules and reload to original state
+      Object.send(:remove_const, :HtmlSlice) if defined?(::HtmlSlice)
+      Object.send(:remove_const, :Stimulux) if defined?(::Stimulux)
+      require_relative action_file_path
+    end
+
+    context 'when HtmlSlice is defined' do
+      it 'includes HtmlSlice' do
+        module ::HtmlSlice; end
+        require_relative action_file_path
+
+        action_class = Class.new { include Rackr::Action }
+        expect(action_class.included_modules).to include(::HtmlSlice)
+      end
+    end
+
+    context 'when HtmlSlice is not defined' do
+      it 'does not include HtmlSlice' do
+        Object.send(:remove_const, :HtmlSlice) if defined?(::HtmlSlice)
+        require_relative action_file_path
+
+        action_class = Class.new { include Rackr::Action }
+        expect(action_class.ancestors.map(&:to_s)).not_to include('HtmlSlice')
+      end
+    end
+
+    context 'when Stimulux is defined' do
+      it 'includes Stimulux' do
+        module ::Stimulux; end
+        require_relative action_file_path
+
+        action_class = Class.new { include Rackr::Action }
+        expect(action_class.included_modules).to include(::Stimulux)
+      end
+    end
+
+    context 'when Stimulux is not defined' do
+      it 'does not include Stimulux' do
+        Object.send(:remove_const, :Stimulux) if defined?(::Stimulux)
+        require_relative action_file_path
+
+        action_class = Class.new { include Rackr::Action }
+        expect(action_class.ancestors.map(&:to_s)).not_to include('Stimulux')
+      end
+    end
+  end
 end
