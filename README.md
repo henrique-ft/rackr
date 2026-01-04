@@ -162,7 +162,7 @@ We can add `use Rack::CommonLogger` in config.ru, or just use de `before` and/or
 
 Running in Ruby 3.3.0
 
-![rps_3](https://github.com/user-attachments/assets/773ce116-ccea-45f9-9503-176804cb997e)
+![rps_3](https://github.com/henrique-ft/rackr/blob/master/perf_tests/r10k/graphs/rps_3.png)
 
 ## Feel free to get the idea, fork, contribute and do whatever you want!
 
