@@ -151,6 +151,14 @@ class Rackr
           end
         end
 
+        if Object.const_defined?(HtmlSlice)
+          include HtmlSlice
+
+          define_method(:html) do |&block|
+            html_slice(&block)
+          end
+        end
+
         def initialize(routes: nil, config: nil)
           @routes = routes
           @config = config
