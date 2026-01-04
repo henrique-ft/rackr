@@ -82,6 +82,10 @@ GEM
     rubocop-ast (1.48.0)
       parser (>= 3.3.7.2)
       prism (~> 1.4)
+    rubocop-performance (1.26.1)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.47.1, < 2.0)
     ruby-progressbar (1.13.0)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
@@ -108,6 +112,7 @@ DEPENDENCIES
   rerun
   rspec
   rubocop (~> 1.21)
+  rubocop-performance
 
 BUNDLED WITH
    2.6.6
