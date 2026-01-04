@@ -19,10 +19,10 @@ RSpec.describe Rackr::Callback do
   context 'not returning valid rack request' do
     it do
       app = Rack::Builder.new do
-        run (Rackr.new(before: proc { 123 }).call do
-          get { render text: 'hello'}
+        run(Rackr.new(before: proc { 123 }).call do
+          get { render text: 'hello' }
 
-          error do |req, e|
+          error do |_req, e|
             [500, {}, [e.to_s]]
           end
         end)
@@ -34,7 +34,7 @@ RSpec.describe Rackr::Callback do
           'PATH_INFO' => '/'
         }
 
-      expect(app.call(env)).to eq([500, {}, ["Invalid Rack response in before callback, received: 123"]])
+      expect(app.call(env)).to eq([500, {}, ['Invalid Rack response in before callback, received: 123']])
     end
   end
 

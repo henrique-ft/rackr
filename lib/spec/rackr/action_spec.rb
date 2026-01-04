@@ -8,7 +8,8 @@ require 'byebug'
 
 class SomeClass
   include Rackr::Action
-()
+
+  ()
 end
 
 class SomeClass2
@@ -101,8 +102,8 @@ RSpec.describe Rackr::Action do
       let(:path) { 'test' }
 
       before do
-        allow(::File).to receive(:read).with("views/#{path}.html.erb").and_return('file.')
-        allow(::File).to receive(:read).with('views/layout.html.erb').and_raise(Errno::ENOENT)
+        allow(File).to receive(:read).with("views/#{path}.html.erb").and_return('file.')
+        allow(File).to receive(:read).with('views/layout.html.erb').and_raise(Errno::ENOENT)
       end
 
       it 'can render with success' do
@@ -117,7 +118,7 @@ RSpec.describe Rackr::Action do
 
       it 'reads the views/* folder' do
         subject.render(view: path)
-        expect(::File).to have_received(:read).with('views/test.html.erb')
+        expect(File).to have_received(:read).with('views/test.html.erb')
       end
 
       context 'reads the config views folder' do
@@ -126,10 +127,10 @@ RSpec.describe Rackr::Action do
         end
 
         it do
-          allow(::File).to receive(:read).with("some/path/#{path}.html.erb").and_return('file.')
-          allow(::File).to receive(:read).with('some/path/layout.html.erb').and_raise(Errno::ENOENT)
+          allow(File).to receive(:read).with("some/path/#{path}.html.erb").and_return('file.')
+          allow(File).to receive(:read).with('some/path/layout.html.erb').and_raise(Errno::ENOENT)
           subject.render(view: path)
-          expect(::File).to have_received(:read).with('some/path/test.html.erb')
+          expect(File).to have_received(:read).with('some/path/test.html.erb')
         end
       end
 
@@ -140,13 +141,13 @@ RSpec.describe Rackr::Action do
 
       context 'with layout' do
         before do
-          allow(::File).to receive(:read).with("views/#{path}.html.erb").and_return('some content')
-          allow(::File).to receive(:read).with('views/layout.html.erb').and_return('(( <%= yield %> ))')
+          allow(File).to receive(:read).with("views/#{path}.html.erb").and_return('some content')
+          allow(File).to receive(:read).with('views/layout.html.erb').and_return('(( <%= yield %> ))')
         end
 
         it 'reads the layout in views folder' do
           subject.render(view: path)
-          expect(::File).to have_received(:read).with('views/layout.html.erb')
+          expect(File).to have_received(:read).with('views/layout.html.erb')
         end
 
         it 'renders the content with the layout' do
@@ -174,7 +175,7 @@ RSpec.describe Rackr::Action do
 
     context 'view_response' do
       before do
-        allow(::File).to receive(:read).and_return('file.')
+        allow(File).to receive(:read).and_return('file.')
       end
 
       it 'can render with success with response_instance' do
@@ -248,13 +249,13 @@ RSpec.describe Rackr::Action do
     it 'can render a rack response with response:' do
       result = subject.render(response: subject.response('body', 404, { 'some' => 'header' }))
       expect(result[0]).to eq(404)
-      expect(result[1]).to include({ 'content-length' => '4', "content-type"=>"charset=utf-8", 'some' => 'header' })
+      expect(result[1]).to include({ 'content-length' => '4', 'content-type' => 'charset=utf-8', 'some' => 'header' })
     end
 
     it 'can render a rack response with res:' do
       result = subject.render(res: subject.response('body', 404, { 'some' => 'header' }))
       expect(result[0]).to eq(404)
-      expect(result[1]).to include({ 'content-length' => '4', "content-type"=>"charset=utf-8", 'some' => 'header' })
+      expect(result[1]).to include({ 'content-length' => '4', 'content-type' => 'charset=utf-8', 'some' => 'header' })
     end
   end
 
@@ -370,12 +371,12 @@ RSpec.describe Rackr::Action do
       end
 
       it 'defaults to utf-8 for json' do
-        result = subject.render(json: {a: 1})
+        result = subject.render(json: { a: 1 })
         expect(result[1]['content-type']).to eq('application/json; charset=utf-8')
       end
 
       it 'respects custom charset for json' do
-        result = subject.render(json: {a: 1}, charset: 'iso-8859-1')
+        result = subject.render(json: { a: 1 }, charset: 'iso-8859-1')
         expect(result[1]['content-type']).to eq('application/json; charset=iso-8859-1')
       end
 
@@ -407,12 +408,12 @@ RSpec.describe Rackr::Action do
       end
 
       it 'defaults to utf-8 for json' do
-        response = subject.build_response(json: {a: 1})
+        response = subject.build_response(json: { a: 1 })
         expect(response.headers['content-type']).to eq('application/json; charset=utf-8')
       end
 
       it 'respects custom charset for json' do
-        response = subject.build_response(json: {a: 1}, charset: 'iso-8859-1')
+        response = subject.build_response(json: { a: 1 }, charset: 'iso-8859-1')
         expect(response.headers['content-type']).to eq('application/json; charset=iso-8859-1')
       end
 
@@ -445,8 +446,8 @@ RSpec.describe Rackr::Action do
       end
 
       it 'is present in view render' do
-        allow(::File).to receive(:read).with("views/test.html.erb").and_return('file.')
-        allow(::File).to receive(:read).with('views/layout.html.erb').and_raise(Errno::ENOENT)
+        allow(File).to receive(:read).with('views/test.html.erb').and_return('file.')
+        allow(File).to receive(:read).with('views/layout.html.erb').and_raise(Errno::ENOENT)
         result = subject.render(view: 'test')
         expect(result[1]['content-security-policy']).to eq(default_csp)
       end
@@ -497,12 +498,13 @@ RSpec.describe Rackr::Action do
   context 'callbacks' do
     class MyCallback
       include Rackr::Callback
-      def call
-      end
+
+      def call; end
     end
 
     class MyActionWithCallbacks
       include Rackr::Action
+
       before MyCallback
       after MyCallback
     end
@@ -547,12 +549,12 @@ RSpec.describe Rackr::Action do
   end
 
   describe 'conditional module inclusion' do
-    let(:action_file_path) { File.expand_path('../../../rackr/action.rb', __FILE__) }
+    let(:action_file_path) { File.expand_path('../../rackr/action.rb', __dir__) }
 
     after do
       # Clean up any defined modules and reload to original state
-      Object.send(:remove_const, :HtmlSlice) if defined?(::HtmlSlice)
-      Object.send(:remove_const, :Stimulux) if defined?(::Stimulux)
+      Object.send(:remove_const, :HtmlSlice) if defined?(HtmlSlice)
+      Object.send(:remove_const, :Stimulux) if defined?(Stimulux)
       require_relative action_file_path
     end
 
@@ -562,13 +564,13 @@ RSpec.describe Rackr::Action do
         require_relative action_file_path
 
         action_class = Class.new { include Rackr::Action }
-        expect(action_class.included_modules).to include(::HtmlSlice)
+        expect(action_class.included_modules).to include(HtmlSlice)
       end
     end
 
     context 'when HtmlSlice is not defined' do
       it 'does not include HtmlSlice' do
-        Object.send(:remove_const, :HtmlSlice) if defined?(::HtmlSlice)
+        Object.send(:remove_const, :HtmlSlice) if defined?(HtmlSlice)
         require_relative action_file_path
 
         action_class = Class.new { include Rackr::Action }
@@ -582,13 +584,13 @@ RSpec.describe Rackr::Action do
         require_relative action_file_path
 
         action_class = Class.new { include Rackr::Action }
-        expect(action_class.included_modules).to include(::Stimulux)
+        expect(action_class.included_modules).to include(Stimulux)
       end
     end
 
     context 'when Stimulux is not defined' do
       it 'does not include Stimulux' do
-        Object.send(:remove_const, :Stimulux) if defined?(::Stimulux)
+        Object.send(:remove_const, :Stimulux) if defined?(Stimulux)
         require_relative action_file_path
 
         action_class = Class.new { include Rackr::Action }

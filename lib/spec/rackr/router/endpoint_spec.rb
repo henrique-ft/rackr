@@ -30,6 +30,7 @@ RSpec.describe Rackr::Router::Endpoint do
       let(:action_class) do
         Class.new do
           include Rackr::Action
+
           def initialize(routes:, config:); end
           def call(cont, err = nil); end
         end
@@ -57,6 +58,7 @@ RSpec.describe Rackr::Router::Endpoint do
       let(:callback_class) do
         Class.new do
           include Rackr::Callback
+
           def initialize(routes:, config:); end
           def call(cont, err = nil); end
         end

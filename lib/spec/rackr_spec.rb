@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require_relative '../rackr'
 require_relative '../rackr/action'
 
 RSpec.describe Rackr do
   def router(app)
-    app.instance_variable_get('@router')
+    app.instance_variable_get(:@router)
   end
 
   context '.routes' do
@@ -180,11 +182,11 @@ RSpec.describe Rackr do
           app = Rackr.new.call do
             resources :foods, callbacks: [
               { actions: :index, before: Callbacks::Foods::Cb1 },
-              { actions: [:show, :edit], after: [Callbacks::Foods::Cb2, Callbacks::Foods::Cb3] }
+              { actions: %i[show edit], after: [Callbacks::Foods::Cb2, Callbacks::Foods::Cb3] }
             ]
           end
 
-          tree = app.instance_variable_get('@path_routes_tree')
+          tree = app.instance_variable_get(:@path_routes_tree)
 
           foods_routes = tree['GET']['foods']
           index_route = foods_routes[:__instances].find { |r| r.match?('/foods') }
@@ -226,7 +228,7 @@ RSpec.describe Rackr do
           end
         end
 
-        tree = app.instance_variable_get('@path_routes_tree')
+        tree = app.instance_variable_get(:@path_routes_tree)
         name_routes = tree['GET']['api']['users']['name'][:__instances]
         index_route = name_routes.find { |r| r.match?('/api/users/name') }
 
@@ -240,6 +242,7 @@ RSpec.describe Rackr do
           module Api
             module Articles
               class Show; def self.call; end; end
+
               module Another
                 module Themes
                   class Show; def self.call; end; end
@@ -252,6 +255,7 @@ RSpec.describe Rackr do
         module Callbacks
           module Articles
             class Assign; def self.call; end; end
+
             module Themes
               class Assign; def self.call; end; end
             end
@@ -266,7 +270,7 @@ RSpec.describe Rackr do
           end
         end
 
-        tree = app.instance_variable_get('@path_routes_tree')
+        tree = app.instance_variable_get(:@path_routes_tree)
         id_routes = tree['GET']['api']['articles'][':slug'][:__instances]
         show_route = id_routes.find { |r| r.match?('/api/articles/some-slug') }
 
@@ -284,7 +288,7 @@ RSpec.describe Rackr do
           end
         end
 
-        tree = app.instance_variable_get('@path_routes_tree')
+        tree = app.instance_variable_get(:@path_routes_tree)
 
         article_id_routes = tree['GET']['api']['articles'][':id'][:__instances]
         article_show_route = article_id_routes.find { |r| r.match?('/api/articles/some-id') }
