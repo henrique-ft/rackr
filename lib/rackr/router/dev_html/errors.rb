@@ -53,7 +53,7 @@ class Rackr
 
         def backtrace(env)
           first, *tail = env['error'].backtrace
-          traceback = String.new('<h2>Traceback <span>(innermost first)</span></h2>')
+          traceback = +'<h2>Traceback <span>(innermost first)</span></h2>'
           traceback << "<p class=\"first-p\">#{first}</p><br/>"
 
           line_number = extract_line_number(first)

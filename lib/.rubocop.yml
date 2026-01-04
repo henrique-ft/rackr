@@ -1,3 +1,5 @@
+plugins: rubocop-performance
+
 AllCops:
   TargetRubyVersion: 3.1
   NewCops: enable
@@ -15,10 +17,7 @@ AllCops:
     - 'Gemfile'
 
 Metrics/MethodLength:
-  Max: 80
-
-Style/Documentation:
-  Enabled: true
+  Enabled: false
 
 Metrics/BlockLength:
   Enabled: false
@@ -33,7 +32,7 @@ Metrics/AbcSize:
   Enabled: false
 
 Metrics/PerceivedComplexity:
-  Max: 25
+  Enabled: false
 
 Naming/PredicatePrefix:
   Enabled: false

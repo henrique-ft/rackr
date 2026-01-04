@@ -141,8 +141,6 @@ class Rackr
       end
     }.freeze
 
-    # rubocop:disable Metrics/PerceivedComplexity
-    # rubocop:disable Metrics/MethodLength
     def self.included(base)
       base.class_eval do
         if self != Rackr

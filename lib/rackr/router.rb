@@ -159,7 +159,7 @@ class Rackr
       method = :get if method == :head
 
       wildcard = path == '*'
-      path = path.is_a?(Symbol) ? path.inspect : path.sub(%r{\A/}, '')
+      path = path.is_a?(Symbol) ? path.inspect : path.delete_prefix('/')
       path_with_scopes = "/#{not_empty_scopes.join('/')}#{put_path_slash(path)}"
       add_named_route(method, path_with_scopes, as)
       action_befores, action_afters = fetch_endpoint_callbacks(endpoint)
@@ -267,7 +267,7 @@ class Rackr
       return @routes.send(method.downcase)[:root] = path_with_scopes if path_with_scopes == '/'
       return @routes.send(method.downcase)[as] = path_with_scopes unless as.nil?
 
-      key = path_with_scopes.sub('/', '').gsub(':', '').gsub('/', '_')
+      key = path_with_scopes.sub('/', '').delete(':').tr('/', '_')
       @routes.send(method.downcase)[key.to_s.to_sym] = path_with_scopes
     end
 
