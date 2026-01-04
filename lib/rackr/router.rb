@@ -1,27 +1,24 @@
 # frozen_string_literal: true
 
-require_relative 'router/utils'
 require_relative 'router/errors'
 require_relative 'router/endpoint'
 require_relative 'router/route'
 require_relative 'router/path_route'
 require_relative 'router/build_request'
+require_relative 'router/dev_html/errors'
+require_relative 'router/dev_html/dump'
 
 class Rackr
   class Router
-    include Utils
+    # This is the core class of Rackr. This class aggregate the route instance tree, callbacks (before and after) and scopes
+    # then, using the building blocks, match the request and call the endpoints
+
+    include Rackr::Utils
 
     attr_writer :default_not_found
-    attr_reader :routes, :config, :not_found_instances, :error_instances
+    attr_reader :routes, :config, :not_found_tree, :error_tree, :specific_error_tree
 
     def initialize(config = {}, before: [], after: [])
-      @path_routes_instances = {}
-      %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
-        @path_routes_instances[method] = { __instances: [] }
-      end
-      @not_found_instances = {}
-      @error_instances = {}
-
       http_methods = HTTP_METHODS.map { |m| m.downcase.to_sym }
       @routes = Struct.new(*http_methods).new
       http_methods.each do |method|
@@ -36,52 +33,121 @@ class Rackr
       @scopes_befores = {}
       @afters = ensure_array(after)
       @scopes_afters = {}
-      @default_error = Route.new(proc { |_req, e| raise e })
-      @default_not_found = Route.new(proc { [404, {}, ['Not found']] })
-      @splitted_request_path_info = []
-      @current_request_path_info = nil
+      @path_routes_tree = {}
+      %w[GET POST DELETE PUT TRACE OPTIONS PATCH].each do |method|
+        @path_routes_tree[method] = { __instances: [] }
+      end
+      @not_found_tree = {}
+      @default_not_found =
+        Route.new(
+          proc { [404, {}, ['Not found']] },
+          befores: @befores,
+          afters: @afters
+        )
+      @error_tree = {}
+      @default_error =
+        Route.new(
+          proc { |_req, _e| [500, {}, ['Internal server error']] },
+          befores: @befores,
+          afters: @afters
+        )
+      @specific_error_tree = {}
+      @specific_errors = {}
     end
 
     def call(env)
       path_info = env['PATH_INFO']
+      request_method = env['REQUEST_METHOD'] == 'HEAD' ? 'GET' : env['REQUEST_METHOD']
 
-      @splitted_request_path_info = path_info.split('/')
-      @current_request_path_info =
+      splitted_request_path_info = path_info.split('/')
+      current_request_path_info =
         path_info == '/' ? path_info : path_info.chomp('/') # remove trailing "/"
 
-      request_builder = BuildRequest.new(env, @splitted_request_path_info)
-      env['REQUEST_METHOD'] = 'GET' if env['REQUEST_METHOD'] == 'HEAD'
-
-      route_instance, found_scopes = match_path_route(env['REQUEST_METHOD'])
-      rack_request = request_builder.call(route_instance)
+      route_instance, found_scopes = match_path_route(
+        request_method,
+        splitted_request_path_info,
+        current_request_path_info
+      )
+      rack_request = BuildRequest.new(env, splitted_request_path_info).call(route_instance)
       befores = route_instance.befores
       before_result = nil
 
       begin
         i = 0
         while i < befores.size
-          before_result = Endpoint.call(befores[i], rack_request)
-          return before_result unless before_result.is_a?(Rack::Request)
+          before_result = Endpoint.call(befores[i], rack_request, @routes, @config)
+          unless before_result.is_a?(Rack::Request)
+            Errors.check_rack_response(before_result, 'before callback')
 
-          rack_request = before_result
+            return before_result
+          end
 
           i += 1
         end
 
-        endpoint_result = Endpoint.call(route_instance.endpoint, before_result || rack_request)
+        endpoint_result = Endpoint.call(route_instance.endpoint, before_result || rack_request, @routes, @config)
 
         call_afters(route_instance, endpoint_result)
       rescue Rackr::NotFound
         return not_found_fallback(found_scopes, route_instance, before_result || rack_request)
+      rescue Rackr::Dump => dump
+        return Endpoint.call(DevHtml::Dump, env.merge({ 'dump' => dump }))
       rescue Exception => e
-        if !@dev_mode || ENV['RACKR_ERROR_DEV']
-          return error_fallback(found_scopes, route_instance, before_result || rack_request, e)
-        end
-
-        return Endpoint.call(Errors::DevHtml, env.merge({ 'error' => e }))
+        return error_fallback(found_scopes, route_instance, before_result || rack_request, e, env)
       end
 
+      Errors.check_rack_response(endpoint_result, 'action')
       endpoint_result
+    end
+
+    def not_found_fallback(found_scopes, route_instance, request)
+      endpoint_result = Endpoint.call(
+        match_route(
+          found_scopes,
+          not_found_tree,
+          @default_not_found
+        ).endpoint,
+        request,
+        @routes,
+        @config
+      )
+
+      call_afters(route_instance, endpoint_result)
+
+      endpoint_result
+    end
+
+    def error_fallback(found_scopes, route_instance, request, error, env)
+      error_route = match_route(
+        found_scopes,
+        specific_error_tree[error.class] || error_tree,
+        @specific_errors[error.class] || @default_error
+      )
+
+      if @dev_mode && error_route == @default_error
+        return Endpoint.call(DevHtml::Errors, env.merge({ 'error' => error }))
+      end
+
+      endpoint_result = Endpoint.call(error_route.endpoint, request, @routes, @config, error)
+
+      if endpoint_result.nil?
+        return Endpoint.call(DevHtml::Errors, env.merge({ 'error' => error })) if @dev_mode
+
+        endpoint_result = Endpoint.call(@default_error.endpoint, request, @routes, @config, error)
+      end
+
+      call_afters(route_instance, endpoint_result)
+
+      endpoint_result
+    end
+
+    def call_afters(route_instance, endpoint_result)
+      afters = route_instance.afters
+      i = 0
+      while i < afters.size
+        Endpoint.call(afters[i], endpoint_result, @routes, @config)
+        i += 1
+      end
     end
 
     def add(method, path, endpoint, as: nil, route_befores: [], route_afters: [])
@@ -97,62 +163,59 @@ class Rackr
       path = path.is_a?(Symbol) ? path.inspect : path.sub(%r{\A/}, '')
       path_with_scopes = "/#{not_empty_scopes.join('/')}#{put_path_slash(path)}"
       add_named_route(method, path_with_scopes, as)
+      action_befores, action_afters = fetch_endpoint_callbacks(endpoint)
 
       route_instance =
         PathRoute.new(
           path_with_scopes,
           endpoint,
-          befores: @befores + ensure_array(route_befores),
-          afters: @afters + ensure_array(route_afters),
+          befores: @befores + ensure_array(route_befores) + action_befores,
+          afters: @afters + ensure_array(route_afters) + action_afters,
           wildcard: wildcard
         )
 
-      return push_to_scope(method.to_s.upcase, route_instance) if @scopes.size >= 1
+      path_segments = path_with_scopes.split('/').reject(&:empty?)
 
-      @path_routes_instances[method.to_s.upcase][:__instances].push(route_instance)
-    end
-
-    %i[error not_found].each do |v|
-      define_method("add_#{v}") do |endpoint|
-        Errors.check_endpoint(endpoint, v)
-
-        route_instance =
-          Route.new(
-            endpoint,
-            befores: @befores,
-            afters: @afters
-          )
-
-        return set_to_scope(send("#{v}_instances"), route_instance) if @scopes.size >= 1
-
-        instance_variable_set("@default_#{v}", route_instance)
-      end
-
-      define_method("#{v}_fallback") do |found_scopes, route_instance, request, error = nil|
-        args = [
-          match_route(
-            found_scopes,
-            send("#{v}_instances"),
-            instance_variable_get("@default_#{v}")
-          ).endpoint,
-          request
-        ]
-        args << error if error
-
-        endpoint_result = Endpoint.call(*args)
-
-        call_afters(route_instance, endpoint_result)
-
-        endpoint_result
+      if path_segments.empty?
+        @path_routes_tree[method.to_s.upcase][:__instances].push(route_instance)
+      else
+        deep_hash_push(@path_routes_tree[method.to_s.upcase], *(path_segments + [:__instances]), route_instance)
       end
     end
 
-    def call_afters(route_instance, endpoint_result)
-      afters = route_instance.afters
-      i = 0
-      while i < afters.size
-        Endpoint.call(afters[i], endpoint_result)
-        i += 1
+    def add_not_found(endpoint)
+      Errors.check_endpoint(endpoint, 'not found')
+
+      action_befores, action_afters = fetch_endpoint_callbacks(endpoint)
+      route_instance =
+        Route.new(
+          endpoint,
+          befores: @befores + action_befores,
+          afters: @afters + action_afters
+        )
+
+      return set_to_scope(not_found_tree, route_instance) if @scopes.size >= 1
+
+      @default_not_found = route_instance
+    end
+
+    def add_error(endpoint, error_class = nil)
+      Errors.check_endpoint(endpoint, 'error')
+
+      action_befores, action_afters = fetch_endpoint_callbacks(endpoint)
+      route_instance =
+        Route.new(
+          endpoint,
+          befores: @befores + action_befores,
+          afters: @afters + action_afters
+        )
+
+      if error_class
+        return set_to_scope(specific_error_tree[error_class] ||= {}, route_instance) if @scopes.size >= 1
+        @specific_errors[error_class] = route_instance
+      else
+        return set_to_scope(error_tree, route_instance) if @scopes.size >= 1
+        @default_error = route_instance
       end
     end
 
@@ -181,7 +244,23 @@ class Rackr
       @scopes = @scopes.first(@scopes.size - 1)
     end
 
+    def not_empty_scopes
+      @scopes.reject { |v| (v == '') }
+    end
+
     private
+
+    def fetch_endpoint_callbacks(endpoint)
+      action_befores = []
+      action_afters = []
+      if endpoint.is_a?(Class) && endpoint.ancestors.include?(Rackr::Action)
+        action_instance = endpoint.new
+        action_befores = action_instance.befores
+        action_afters = action_instance.afters
+      end
+
+      [action_befores, action_afters]
+    end
 
     def add_named_route(method, path_with_scopes, as)
       return @routes.send(method.downcase)[:root] = path_with_scopes if path_with_scopes == '/'
@@ -191,12 +270,8 @@ class Rackr
       @routes.send(method.downcase)[key.to_s.to_sym] = path_with_scopes
     end
 
-    def push_to_scope(method, route_instance)
-      deep_hash_push(@path_routes_instances[method], *(not_empty_scopes + %i[__instances]), route_instance)
-    end
-
     def set_to_scope(instances, route_instance)
-      deep_hash_set(instances, (not_empty_scopes + %i[__instance]), route_instance)
+      deep_hash_set(instances, not_empty_scopes + %i[__instance], route_instance)
     end
 
     def put_path_slash(path)
@@ -209,59 +284,49 @@ class Rackr
       path
     end
 
-    def not_empty_scopes
-      @scopes.reject { |v| (v == '') }
-    end
-
-    def match_path_route(request_method)
-      find_instance_in_scope = proc do |request_method, found_scopes|
-        @path_routes_instances[request_method].dig(
-          *(found_scopes + [:__instances])
-        )&.detect { |route_instance| route_instance.match?(@current_request_path_info) }
-      end
-
-      last_tail = @splitted_request_path_info.drop(1)
+    def match_path_route(request_method, splitted_request_path_info, current_request_path_info)
+      path_routes_tree = @path_routes_tree[request_method]
       found_scopes = []
 
-      path_routes_instances = @path_routes_instances[request_method]
+      i = 1
+      while i < splitted_request_path_info.size
+        segment = splitted_request_path_info[i]
 
-      while last_tail && !last_tail.empty?
-        segment = last_tail.shift
-        found_route = nil
-
-        path_routes_instances.each_key do |scope|
-          next if scope == :__instances
-
-          if segment == scope
-            found_scopes << scope
-            path_routes_instances = @path_routes_instances[request_method].dig(*found_scopes)
-            break
-          elsif scope.start_with?(':')
-            found_route = find_instance_in_scope.call(request_method, found_scopes)
-            return found_route if found_route
-
-            found_scopes << scope
-            path_routes_instances = @path_routes_instances[request_method].dig(*found_scopes)
-            break
-          end
+        if path_routes_tree.key?(segment)
+          found_scopes << segment
+          path_routes_tree = path_routes_tree[segment]
+        elsif (param_key = path_routes_tree.keys.find { |k| k.start_with?(':') })
+          found_scopes << param_key
+          path_routes_tree = path_routes_tree[param_key]
+        elsif path_routes_tree.key?('*')
+          path_routes_tree = path_routes_tree['*']
+          break
+        else
+          break
         end
+        i += 1
       end
 
-      result_route = find_instance_in_scope.call(request_method, found_scopes)
-
-      if result_route.nil? && !found_scopes.empty?
-        result_route = find_instance_in_scope.call(request_method, found_scopes[..-2])
+      route_instance = path_routes_tree[:__instances]&.detect do |route|
+        route.match?(current_request_path_info)
       end
 
-      if result_route.nil?
-        result_route = match_route(
-          found_scopes,
-          @not_found_instances,
-          @default_not_found
-        )
+      route_instance = find_not_found_route(found_scopes) if route_instance.nil?
+
+      [route_instance, found_scopes]
+    end
+
+    def find_not_found_route(found_scopes)
+      not_found_route = nil
+
+      while not_found_route.nil? && !found_scopes.empty?
+        not_found_route = @not_found_tree.dig(*found_scopes, :__instance)
+        break if not_found_route
+
+        found_scopes.pop
       end
 
-      [result_route, found_scopes]
+      not_found_route || @default_not_found
     end
 
     def match_route(found_scopes, instances, default_instance)

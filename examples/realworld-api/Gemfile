@@ -1,0 +1,21 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gem 'zeitwerk'
+gem 'rack-parser'
+gem 'jwt'
+gem 'erubi'
+gem 'oj'
+
+gem 'puma'
+gem 'guard-puma'
+
+gem 'sequel'
+gem 'sqlite3'
+
+group :development do
+  gem 'rerun'
+  gem 'byebug'
+  gem 'rspec'
+end

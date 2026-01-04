@@ -1,1 +1,0 @@
-RACK_ENV=development bundle exec rerun --no-notify rackup

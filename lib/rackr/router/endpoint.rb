@@ -3,12 +3,14 @@
 class Rackr
   class Router
     module Endpoint
-      def self.call(endpoint, content, error = nil)
+      # A endpoint in Rackr is all objects that respond do .call, or .new.call
+
+      def self.call(endpoint, content, routes = nil, config = nil, error = nil)
         instance =
           if endpoint.respond_to?(:call)
             endpoint
           elsif endpoint < Rackr::Action || endpoint < Rackr::Callback
-            endpoint.new(routes: @routes, config: @config)
+            endpoint.new(routes:, config:)
           else
             endpoint.new
           end

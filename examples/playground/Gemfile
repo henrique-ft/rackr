@@ -1,0 +1,26 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gem 'rackr'
+gem 'rack-session'
+gem 'rack-parser'
+# for small / medium projects and little memory usage
+gem 'thin'
+# database
+gem 'sequel'
+gem 'sqlite3'
+
+# for large projects
+# gem 'puma'
+
+group :development, :test do
+  gem 'byebug'
+  gem 'pry', '~> 0.12.2'
+  gem 'rerun'
+  gem 'capybara'
+  gem 'rspec'
+  gem 'rubocop', require: false
+end
+
+# gem "rails"

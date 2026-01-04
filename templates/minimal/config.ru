@@ -29,10 +29,10 @@ App = Rackr.new({
   end
 end
 
-puts "\n= Routes =============="
-App.routes.each_pair { |v| p v }
-puts "\n= Config =============="
+run App
+
+puts "\nRoutes:"
+App.routes.each_pair { |v| p(v) }
+puts "\nConfig:"
 puts App.config
 puts "\n"
-
-run App

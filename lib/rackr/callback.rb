@@ -2,6 +2,8 @@
 
 class Rackr
   module Callback
+    # A callback is just a Rackr::Action with the assign method
+
     def self.included(base)
       base.class_eval do
         include Rackr::Action
