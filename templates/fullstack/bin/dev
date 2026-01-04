@@ -1,1 +1,7 @@
-RACK_ENV=development bundle exec rerun --no-notify --ignore 'public/*' --ignore 'app/assets/*' -- thin -p 9292 start
+#!/bin/bash
+
+if [ -z "$RACKR_WATCH" ]; then
+  RACKR_ERROR_DEV=true RACK_ENV=development bundle exec puma -p 4000
+else
+  RACKR_ERROR_DEV=true RACK_ENV=development bundle exec guard
+fi

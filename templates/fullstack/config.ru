@@ -1,12 +1,18 @@
 require 'byebug' if ENV['RACK_ENV'] == 'development'
 
+require 'bundler/setup'
+Bundler.require
+
 require_relative '../../lib/rackr'
-#require 'rackr'
-require 'sequel'
-require 'html_slice'
+
+require 'rack/parser'
 require_relative 'load'
 
-use Rack::Parser
+use(
+  Rack::Parser,
+  parsers: { %r{json} => proc { |data| Oj.load(data) } }
+)
+
 use Rack::Static, :urls => ["/public"]
 
 #if ENV['RACK_ENV'] != 'development'

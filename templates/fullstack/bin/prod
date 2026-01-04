@@ -1,1 +1,3 @@
-RUBY_YJIT_ENABLE=1 RACK_ENV=production bundle exec thin start -p 9292
+#!/bin/bash
+
+RUBY_YJIT_ENABLE=1 RACK_ENV=production bundle exec puma -p 4000
