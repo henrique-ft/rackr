@@ -1,6 +1,7 @@
 require 'byebug'
 require 'sequel'
 require 'json'
+require 'html_slice'
 #require 'rackr'
 require_relative '../../lib/rackr'
 require_relative 'app/actions/home/index'
@@ -50,6 +51,13 @@ App =
       res.set_cookie('x', cookies += 'a')
 
       render res:
+    end
+
+    get 'html_slice' do
+      render html: (html_slice do
+        div "hey", **stimulus_controller(['name', { user: 3 }])
+        input "hey", user: 2, **stimulus_target('name#oi')
+      end)
     end
 
     get 'dump' do |req|

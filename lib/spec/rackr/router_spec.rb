@@ -325,7 +325,7 @@ RSpec.describe Rackr::Router do
             'PATH_INFO' => '/teste'
           }
         router.add :get, 'teste', proc { raise StandardError }
-        router.add_error(proc { |_req, _e| nil })
+        router.add_error(proc { |_req, _e| })
         result = router.call(request)
 
         expect(result[0]).to eq(500)
@@ -797,7 +797,7 @@ RSpec.describe Rackr::Router do
     context 'before:' do
       it 'can receive scopes befores' do
         router = Rackr::Router.new
-        before_action = ->(req) { [200, {}, []] }
+        before_action = ->(_req) { [200, {}, []] }
 
         router.append_scope 'admin', scope_befores: before_action
         router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
@@ -907,6 +907,7 @@ RSpec.describe Rackr::Router do
     # A dummy callback class for testing purposes
     class MyRouterCallback
       include Rackr::Callback
+
       def call
         # no-op
       end
@@ -915,6 +916,7 @@ RSpec.describe Rackr::Router do
     # A dummy action class that defines class-level callbacks
     class MyActionWithRouterCallbacks
       include Rackr::Action
+
       before MyRouterCallback
       after MyRouterCallback
 

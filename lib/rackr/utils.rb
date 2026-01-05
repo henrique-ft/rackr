@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class Rackr
+  # Utils methods for Rackr
   module Utils
     def deep_hash_push(hash, first_key, *rest_keys, val)
       if rest_keys.empty?

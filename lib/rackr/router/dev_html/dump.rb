@@ -5,15 +5,14 @@ require 'rack/utils'
 class Rackr
   class Router
     module DevHtml
+      # Pretty print the content of the dump
       class PrettyPrint
         def self.call(content, level = 0)
-          content = content.inspect if content.class == String
-          content = 'nil' if content.class == nil
-          content = 'false' if content.class == false
+          content = content.inspect if content.instance_of?(String)
+          content = 'nil' if content.instance_of?(nil)
+          content = 'false' if content.instance_of?(false)
 
-          if level >= 2
-            return "<pre>#{Rack::Utils.escape_html(content)}</pre>"
-          end
+          return "<pre>#{Rack::Utils.escape_html(content)}</pre>" if level >= 2
 
           case content
           when String, Symbol, Numeric, TrueClass, FalseClass, NilClass
@@ -53,6 +52,7 @@ class Rackr
         end
       end
 
+      # This is the action that is called when a dump is raised
       class Dump
         include Rackr::Action
 
@@ -94,7 +94,7 @@ class Rackr
             </body>
             </html>
           HTML
-                )
+                        )
           res.status = 200
           res.headers['content-type'] = 'text/html'
           render res:

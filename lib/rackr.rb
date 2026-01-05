@@ -5,13 +5,18 @@ require_relative 'rackr/action'
 require_relative 'rackr/callback'
 require_relative 'rackr/router'
 
+# Rackr is a simple router for Rack.
 class Rackr
   class NotFound < StandardError; end
-  class Dump < StandardError;
+
+  # Dump is a special error that is used to dump the content of a request.
+  class Dump < StandardError
     attr_reader :content
 
     def initialize(content)
       @content = content
+
+      super
     end
   end
 
@@ -24,8 +29,8 @@ class Rackr
     @router = Router.new(config, before: before, after: after)
   end
 
-  def call(&block)
-    instance_eval(&block)
+  def call(&)
+    instance_eval(&)
 
     @router
   end
@@ -91,18 +96,16 @@ class Rackr
     @nested_resources ||= []
     @nested_resources.push(name)
 
-    infer_action_const = ->(action) do
+    infer_action_const = lambda do |action|
       scope_parts = @router.not_empty_scopes
-                          .map(&:to_s)
-                          .reject { |s| s.start_with?(':') }
-                          .map(&:capitalize)
+                           .map(&:to_s)
+                           .reject { |s| s.start_with?(':') }
+                           .map(&:capitalize)
 
       parts = ['Actions'] + scope_parts + [name.to_s.capitalize, action]
       const_path = parts.join('::')
 
-      if Object.const_defined?(const_path)
-        Object.const_get(const_path)
-      end
+      Object.const_get(const_path) if Object.const_defined?(const_path)
     end
 
     infer_assign_const = lambda do
@@ -114,12 +117,12 @@ class Rackr
     actions = {
       index: { method: :get, path: nil, action: infer_action_const.call('Index') },
       new: { method: :get, path: 'new', action: infer_action_const.call('New') },
-      create: { method: :post, path: nil, action: infer_action_const.call('Create') },
+      create: { method: :post, path: nil, action: infer_action_const.call('Create') }
     }
 
     actions_for_id = {
       show: { method: :get, path: nil, action: infer_action_const.call('Show') },
-      edit: { method: :get, path: "edit", action: infer_action_const.call('Edit') },
+      edit: { method: :get, path: 'edit', action: infer_action_const.call('Edit') },
       update: { method: :put, path: nil, action: infer_action_const.call('Update') },
       delete: { method: :delete, path: nil, action: infer_action_const.call('Delete') }
     }
@@ -142,16 +145,16 @@ class Rackr
 
     block_for_id = proc do
       actions_for_id.each do |action_name, definition|
-        if definition[:action]
-          action_callbacks = received_callbacks[action_name]
-          send(
-            definition[:method],
-            definition[:path],
-            definition[:action],
-            before: action_callbacks[:before],
-            after: action_callbacks[:after]
-          )
-        end
+        next unless definition[:action]
+
+        action_callbacks = received_callbacks[action_name]
+        send(
+          definition[:method],
+          definition[:path],
+          definition[:action],
+          before: action_callbacks[:before],
+          after: action_callbacks[:after]
+        )
       end
 
       instance_eval(&block) if block_given?
@@ -162,16 +165,16 @@ class Rackr
 
     scope(scope_name, before:, after:) do
       actions.each do |action_name, definition|
-        if definition[:action]
-          action_callbacks = received_callbacks[action_name]
-          send(
-            definition[:method],
-            definition[:path],
-            definition[:action],
-            before: action_callbacks[:before],
-            after: action_callbacks[:after]
-          )
-        end
+        next unless definition[:action]
+
+        action_callbacks = received_callbacks[action_name]
+        send(
+          definition[:method],
+          definition[:path],
+          definition[:action],
+          before: action_callbacks[:before],
+          after: action_callbacks[:after]
+        )
       end
 
       if assign_callback

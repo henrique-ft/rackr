@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../../../rackr/utils'
 require_relative '../../../rackr/action/callbacks'
 
@@ -49,10 +51,10 @@ RSpec.describe Rackr::Action::Callbacks do
     end
 
     context 'when passed an array' do
-      before { subject.before([:callback1, :callback2]) }
+      before { subject.before(%i[callback1 callback2]) }
 
       it 'stores the array' do
-        expect(subject.befores).to eq([:callback1, :callback2])
+        expect(subject.befores).to eq(%i[callback1 callback2])
       end
     end
 
@@ -101,10 +103,10 @@ RSpec.describe Rackr::Action::Callbacks do
     end
 
     context 'when passed an array' do
-      before { subject.after([:callback1, :callback2]) }
+      before { subject.after(%i[callback1 callback2]) }
 
       it 'stores the array' do
-        expect(subject.afters).to eq([:callback1, :callback2])
+        expect(subject.afters).to eq(%i[callback1 callback2])
       end
     end
 

@@ -2,6 +2,7 @@
 
 class Rackr
   class Router
+    # Errors for the router
     module Errors
       class Error < StandardError; end
       class InvalidNamedRouteError < Error; end
@@ -46,7 +47,7 @@ class Rackr
 
         def check_callbacks(callbacks, path)
           check = lambda { |callback|
-            unless callback.nil? || callback.respond_to?(:call) || (callback.respond_to?(:new) && callback.instance_methods.include?(:call))
+            unless callback.nil? || callback.respond_to?(:call) || (callback.respond_to?(:new) && callback.method_defined?(:call))
               raise(InvalidCallbackError,
                     "Callbacks must respond to a `call` method or be a class with a `call` instance method, got: '#{callback.inspect}' for '#{path}'")
             end
@@ -56,9 +57,7 @@ class Rackr
         end
 
         def check_endpoint(endpoint, path)
-          if endpoint.respond_to?(:call) || (endpoint.respond_to?(:new) && endpoint.instance_methods.include?(:call))
-            return
-          end
+          return if endpoint.respond_to?(:call) || (endpoint.respond_to?(:new) && endpoint.method_defined?(:call))
 
           raise(InvalidEndpointError,
                 "Endpoints must respond to a `call` method or be a class with a `call` instance method, got: '#{endpoint.inspect}' for '#{path}'")

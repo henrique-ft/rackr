@@ -3,6 +3,7 @@
 class Rackr
   class Router
     module DevHtml
+      # This is the action that is called when an error is raised
       class Errors
         include Rackr::Action
 
@@ -45,14 +46,14 @@ class Rackr
             </body>
             </html>
           HTML
-                )
+                              )
           res.status = 500
           render res:
         end
 
         def backtrace(env)
           first, *tail = env['error'].backtrace
-          traceback = String.new('<h2>Traceback <span>(innermost first)</span></h2>')
+          traceback = +'<h2>Traceback <span>(innermost first)</span></h2>'
           traceback << "<p class=\"first-p\">#{first}</p><br/>"
 
           line_number = extract_line_number(first)
@@ -60,7 +61,7 @@ class Rackr
           file_path = (match ? match[1] : nil)
           unless file_path.nil?
             lines = File.readlines(file_path).map.with_index { |line, i| "#{i + 1}: #{line}" }
-            traceback << "<pre>#{slice_around_index(lines, line_number).join('')}</pre>"
+            traceback << "<pre>#{slice_around_index(lines, line_number).join}</pre>"
           end
 
           traceback << "<p>#{tail.join('<br>')}</p>"

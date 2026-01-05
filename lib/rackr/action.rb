@@ -6,10 +6,9 @@ require 'rack'
 require_relative 'action/callbacks'
 
 class Rackr
+  # This module provides the action functions available inside the routes context or
+  # specific action class that included the Rackr::Action.
   module Action
-    # This module provides the action functions available inside the routes context or
-    # specific action class that included the Rackr::Action.
-
     MIME_TYPES = {
       text: 'text/plain',
       html: 'text/html',
@@ -146,10 +145,12 @@ class Rackr
       base.class_eval do
         if self != Rackr
           attr_reader :routes, :config, :deps, :db, :log, :cache
-          if !self.included_modules.include?(Rackr::Callback)
-            include Callbacks
-          end
+
+          include Callbacks unless included_modules.include?(Rackr::Callback)
         end
+
+        include HtmlSlice if Object.const_defined?('HtmlSlice')
+        include Stimulux if Object.const_defined?('Stimulux')
 
         def initialize(routes: nil, config: nil)
           @routes = routes
@@ -289,16 +290,18 @@ class Rackr
         end
 
         def d(content)
-          raise Rackr::Dump.new(content)
+          raise Rackr::Dump, content
         end
 
         def not_found!
           raise Rackr::NotFound
         end
 
+        # rubocop:disable Security/Eval
         def load_erb(content, binding_context: nil)
           eval(Erubi::Engine.new(content).src, binding_context)
         end
+        # rubocop:enable Security/Eval
 
         def head(status, headers: {})
           [status, headers, []]
@@ -322,4 +325,6 @@ class Rackr
       end
     end
   end
+  # rubocop:enable Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/MethodLength
 end

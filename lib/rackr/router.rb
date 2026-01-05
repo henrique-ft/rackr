@@ -9,10 +9,9 @@ require_relative 'router/dev_html/errors'
 require_relative 'router/dev_html/dump'
 
 class Rackr
+  # This is the core class of Rackr. This class aggregate the route instance tree, callbacks (before and after) and scopes
+  # then, using the building blocks, match the request and call the endpoints
   class Router
-    # This is the core class of Rackr. This class aggregate the route instance tree, callbacks (before and after) and scopes
-    # then, using the building blocks, match the request and call the endpoints
-
     include Rackr::Utils
 
     attr_writer :default_not_found
@@ -90,11 +89,13 @@ class Rackr
         call_afters(route_instance, endpoint_result)
       rescue Rackr::NotFound
         return not_found_fallback(found_scopes, route_instance, before_result || rack_request)
-      rescue Rackr::Dump => dump
-        return Endpoint.call(DevHtml::Dump, env.merge({ 'dump' => dump }))
+      rescue Rackr::Dump => e
+        return Endpoint.call(DevHtml::Dump, env.merge({ 'dump' => e }))
+        # rubocop:disable Lint/RescueException
       rescue Exception => e
         return error_fallback(found_scopes, route_instance, before_result || rack_request, e, env)
       end
+      # rubocop:enable Lint/RescueException
 
       Errors.check_rack_response(endpoint_result, 'action')
       endpoint_result
@@ -124,9 +125,7 @@ class Rackr
         @specific_errors[error.class] || @default_error
       )
 
-      if @dev_mode && error_route == @default_error
-        return Endpoint.call(DevHtml::Errors, env.merge({ 'error' => error }))
-      end
+      return Endpoint.call(DevHtml::Errors, env.merge({ 'error' => error })) if @dev_mode && error_route == @default_error
 
       endpoint_result = Endpoint.call(error_route.endpoint, request, @routes, @config, error)
 
@@ -160,7 +159,7 @@ class Rackr
       method = :get if method == :head
 
       wildcard = path == '*'
-      path = path.is_a?(Symbol) ? path.inspect : path.sub(%r{\A/}, '')
+      path = path.is_a?(Symbol) ? path.inspect : path.delete_prefix('/')
       path_with_scopes = "/#{not_empty_scopes.join('/')}#{put_path_slash(path)}"
       add_named_route(method, path_with_scopes, as)
       action_befores, action_afters = fetch_endpoint_callbacks(endpoint)
@@ -212,9 +211,11 @@ class Rackr
 
       if error_class
         return set_to_scope(specific_error_tree[error_class] ||= {}, route_instance) if @scopes.size >= 1
+
         @specific_errors[error_class] = route_instance
       else
         return set_to_scope(error_tree, route_instance) if @scopes.size >= 1
+
         @default_error = route_instance
       end
     end
@@ -266,7 +267,7 @@ class Rackr
       return @routes.send(method.downcase)[:root] = path_with_scopes if path_with_scopes == '/'
       return @routes.send(method.downcase)[as] = path_with_scopes unless as.nil?
 
-      key = path_with_scopes.sub('/', '').gsub(':', '').gsub('/', '_')
+      key = path_with_scopes.sub('/', '').delete(':').tr('/', '_')
       @routes.send(method.downcase)[key.to_s.to_sym] = path_with_scopes
     end
 

@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 class Rackr
   module Action
+    # Callbacks for actions
     module Callbacks
       include Rackr::Utils
 
@@ -8,6 +11,7 @@ class Rackr
         base.extend(Rackr::Utils)
       end
 
+      # Class methods for callbacks
       module ClassMethods
         def before(callback)
           @befores = ensure_array(callback)
