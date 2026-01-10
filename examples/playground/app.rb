@@ -1,6 +1,7 @@
 require 'byebug'
 require 'sequel'
 require 'json'
+require 'stimulux'
 require 'html_slice'
 #require 'rackr'
 require_relative '../../lib/rackr'
