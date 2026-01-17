@@ -95,7 +95,7 @@ end)
 
       g.theme_greyscale
       g.colors = [
-        '#990000',
+        '#5b1f31',
         '#383838',
         '#989898',
         '#c8c8c8',
