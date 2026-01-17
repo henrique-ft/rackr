@@ -54,8 +54,12 @@ App =
       render res:
     end
 
+    get 'not_string_error' do
+      render 2
+    end
+
     get 'html_slice' do
-      render html: (html_slice do
+      render (html_slice do
         div "hey", **stimulus_controller(['name', { user: 3 }])
         input "hey", user: 2, **stimulus_target('name#oi')
       end)

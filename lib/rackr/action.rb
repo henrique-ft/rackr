@@ -169,7 +169,17 @@ class Rackr
           routes.send(method)&.dig(name)
         end
 
-        def render(**opts)
+        def render(content = nil, **opts)
+          if content
+            return RENDER[:html].call(
+              content.to_s,
+              opts[:status],
+              opts[:headers] || {},
+              opts[:charset] || 'utf-8',
+              content_security_policy
+            )
+          end
+
           type = opts.keys.first
           content = opts[type]
 
@@ -206,7 +216,17 @@ class Rackr
           )
         end
 
-        def build_response(**opts)
+        def build_response(content = nil, **opts)
+          if content
+            return BUILD_RESPONSE[:html].call(
+              content.to_s,
+              opts[:status] || 200,
+              opts[:headers] || {},
+              opts[:charset] || 'utf-8',
+              content_security_policy
+            )
+          end
+
           type = opts.keys.first
           content = opts[type]
 

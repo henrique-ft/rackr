@@ -7,6 +7,8 @@ require_relative 'rackr/router'
 
 # Rackr is a simple router for Rack.
 class Rackr
+  VERSION = '0.0.68'
+
   class NotFound < StandardError; end
 
   # Dump is a special error that is used to dump the content of a request.
