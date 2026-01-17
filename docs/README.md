@@ -37,7 +37,7 @@ end)
 
 ## Fast
 
-![logo](_media/rps.png)
+![logo](_media/rps_r10k.png)
 
 ## "Rack first"
 
