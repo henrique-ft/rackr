@@ -21,6 +21,52 @@ RSpec.describe Rackr::Action do
   end
   subject { SomeClass.new(routes: {}, config: config) }
   context 'rendering content' do
+    it 'defaults to html' do
+      result = subject.render('test')
+      expect(result[0]).to eq(200)
+      expect(result[1]).to include({ 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' })
+    end
+
+    context 'when receiving not string values in default param' do
+      it do
+        result = subject.render(2)
+        expect(result[0]).to eq(200)
+        expect(result[1]).to include({ 'content-length' => '1', 'content-type' => 'text/html; charset=utf-8' })
+        expect(result[2]).to eq(['2'])
+      end
+
+      it do
+        result = subject.render({})
+        expect(result[0]).to eq(200)
+        expect(result[1]).to include({ 'content-length' => '2', 'content-type' => 'text/html; charset=utf-8' })
+        expect(result[2]).to eq(['{}'])
+      end
+    end
+
+    context 'build_response' do
+      it 'defaults to html' do
+        result = subject.build_response('test').finish
+        expect(result[0]).to eq(200)
+        expect(result[1]).to include({ 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' })
+      end
+
+      context 'when receiving not string values in default param' do
+        it do
+          result = subject.build_response(2).finish
+          expect(result[0]).to eq(200)
+          expect(result[1]).to include({ 'content-length' => '1', 'content-type' => 'text/html; charset=utf-8' })
+          expect(result[2]).to eq(['2'])
+        end
+
+        it do
+          result = subject.build_response({}).finish
+          expect(result[0]).to eq(200)
+          expect(result[1]).to include({ 'content-length' => '2', 'content-type' => 'text/html; charset=utf-8' })
+          expect(result[2]).to eq(['{}'])
+        end
+      end
+    end
+
     context 'text' do
       it 'can render from string with success' do
         result = subject.render(text: 'test')
@@ -38,25 +84,25 @@ RSpec.describe Rackr::Action do
         result = subject.render(text: 'test', headers: { 'other' => 'header' })
         expect(result[1]).to include({ 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8', 'other' => 'header' })
       end
-    end
 
-    context 'html_response' do
-      it 'can render from string with success' do
-        response = subject.build_response(text: 'test')
-        expect(response.status).to eq(200)
-        expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8' })
-      end
+      context 'build_response text:' do
+        it 'can render from string with success' do
+          response = subject.build_response(text: 'test')
+          expect(response.status).to eq(200)
+          expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8' })
+        end
 
-      it 'can render text with other status' do
-        response = subject.build_response(text: 'test', status: 201)
-        expect(response.status).to eq(201)
-        expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8' })
-      end
+        it 'can render text with other status' do
+          response = subject.build_response(text: 'test', status: 201)
+          expect(response.status).to eq(201)
+          expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8' })
+        end
 
-      it 'can render text with other headers' do
-        response = subject.build_response(text: 'test', status: 201, headers: { 'other' => 'header' })
-        expect(response.status).to eq(201)
-        expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8', 'other' => 'header' })
+        it 'can render text with other headers' do
+          response = subject.build_response(text: 'test', status: 201, headers: { 'other' => 'header' })
+          expect(response.status).to eq(201)
+          expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/plain; charset=utf-8', 'other' => 'header' })
+        end
       end
     end
 
@@ -77,24 +123,24 @@ RSpec.describe Rackr::Action do
         result = subject.render(html: 'test', headers: { 'other' => 'header' })
         expect(result[1]).to include({ 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8', 'other' => 'header' })
       end
-    end
 
-    context 'html_response' do
-      it 'can render from string with success' do
-        response = subject.build_response(html: 'test')
-        expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' })
-      end
+      context 'build_response html:' do
+        it 'can render from string with success' do
+          response = subject.build_response(html: 'test')
+          expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' })
+        end
 
-      it 'can render html with other status' do
-        response = subject.build_response(html: 'test', status: 201)
-        expect(response.status).to eq(201)
-        expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' })
-      end
+        it 'can render html with other status' do
+          response = subject.build_response(html: 'test', status: 201)
+          expect(response.status).to eq(201)
+          expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8' })
+        end
 
-      it 'can render text with other headers' do
-        response = subject.build_response(html: 'test', status: 201, headers: { 'other' => 'header' })
-        expect(response.status).to eq(201)
-        expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8', 'other' => 'header' })
+        it 'can render text with other headers' do
+          response = subject.build_response(html: 'test', status: 201, headers: { 'other' => 'header' })
+          expect(response.status).to eq(201)
+          expect(response.headers).to include({ 'content-length' => '4', 'content-type' => 'text/html; charset=utf-8', 'other' => 'header' })
+        end
       end
     end
 
@@ -171,17 +217,17 @@ RSpec.describe Rackr::Action do
         result = subject.render(view: [path, path, path], status: 404)
         expect(result[1]).to include({ 'content-length' => '15', 'content-type' => 'text/html; charset=utf-8' })
       end
-    end
 
-    context 'view_response' do
-      before do
-        allow(File).to receive(:read).and_return('file.')
-      end
+      context 'build_response view:' do
+        before do
+          allow(File).to receive(:read).and_return('file.')
+        end
 
-      it 'can render with success with response_instance' do
-        path = 'test'
-        response = subject.build_response(view: path)
-        expect(response.headers).to include({ 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' })
+        it 'can render with success with response_instance' do
+          path = 'test'
+          response = subject.build_response(view: path)
+          expect(response.headers).to include({ 'content-length' => '5', 'content-type' => 'text/html; charset=utf-8' })
+        end
       end
     end
 
@@ -216,23 +262,23 @@ RSpec.describe Rackr::Action do
         result = subject.render(json: { test: 'value' }, status: 201, headers: { 'a' => 'b' })
         expect(result[1]).to include({ 'a' => 'b', 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' })
       end
-    end
 
-    context 'json_response' do
-      it 'can render from hash with success' do
-        response = subject.build_response(json: { test: 'value' })
-        expect(response.headers).to include({ 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' })
-      end
+      context 'build_response json:' do
+        it 'can render from hash with success' do
+          response = subject.build_response(json: { test: 'value' })
+          expect(response.headers).to include({ 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' })
+        end
 
-      it 'can render json with other status' do
-        response = subject.build_response(json: { test: 'value' }, status: 201)
-        expect(response.status).to eq(201)
-        expect(response.headers).to include({ 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' })
-      end
+        it 'can render json with other status' do
+          response = subject.build_response(json: { test: 'value' }, status: 201)
+          expect(response.status).to eq(201)
+          expect(response.headers).to include({ 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8' })
+        end
 
-      it 'can render text with other headers' do
-        response = subject.build_response(json: { test: 'value' }, headers: { 'a' => 'b' })
-        expect(response.headers).to include({ 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8', 'a' => 'b' })
+        it 'can render text with other headers' do
+          response = subject.build_response(json: { test: 'value' }, headers: { 'a' => 'b' })
+          expect(response.headers).to include({ 'content-length' => '16', 'content-type' => 'application/json; charset=utf-8', 'a' => 'b' })
+        end
       end
     end
   end
@@ -269,19 +315,19 @@ RSpec.describe Rackr::Action do
       result = subject.head(404, headers: { 'some' => 'header' })
       expect(result[1]).to include({ 'some' => 'header' })
     end
-  end
 
-  context 'head_response' do
-    it 'return bare status code' do
-      response = subject.build_response(head: 404)
-      expect(response).to be_a(Rack::Response)
-      expect(response.status).to eq(404)
-    end
+    context 'build_response head:' do
+      it 'return bare status code' do
+        response = subject.build_response(head: 404)
+        expect(response).to be_a(Rack::Response)
+        expect(response.status).to eq(404)
+      end
 
-    it 'can receive headers as named params' do
-      response = subject.build_response(head: 404, headers: { 'some' => 'header' })
-      expect(response).to be_a(Rack::Response)
-      expect(response.headers).to include({ 'some' => 'header' })
+      it 'can receive headers as named params' do
+        response = subject.build_response(head: 404, headers: { 'some' => 'header' })
+        expect(response).to be_a(Rack::Response)
+        expect(response.headers).to include({ 'some' => 'header' })
+      end
     end
   end
 
