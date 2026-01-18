@@ -4,7 +4,7 @@ module Actions
       def call(req)
         @foods = Food.order(:name).all
 
-        render(html: layout do
+        render(html: layout(title: 'Foods') do
           ul do
             @foods.each do |food|
               li food.inspect

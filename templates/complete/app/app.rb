@@ -1,7 +1,9 @@
 App =
   Rackr.new(Config.get).app do
+    self.class.include Views::Layout
+
     get do
-      render(html_slice {
+      render(html: layout(title: 'Home') {
         h1 'hello world'
       })
     end
