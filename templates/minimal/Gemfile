@@ -2,8 +2,12 @@
 
 source "https://rubygems.org"
 
-gem "thin"
 gem "rackr"
+gem 'rack-parser'
+
+gem "puma"
+gem 'guard-puma'
+
 gem "sequel"
 gem "sqlite3"
 

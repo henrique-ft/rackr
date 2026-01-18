@@ -9,11 +9,3 @@ require_relative 'config/config'
 
 Deps::DB::Conn.init
 
-require_relative 'app'
-
-use(
-  Rack::Parser,
-  parsers: { %r{json} => proc { |data| Oj.load(data) } }
-)
-
-run App
