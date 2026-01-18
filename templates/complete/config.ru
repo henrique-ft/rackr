@@ -3,8 +3,6 @@ require 'byebug' if ENV['RACK_ENV'] == 'development'
 require 'bundler/setup'
 Bundler.require
 
-require_relative '../../lib/rackr'
-
 require 'rack/parser'
 require_relative 'load'
 

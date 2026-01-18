@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ -z "$RACKR_WATCH" ]; then
+  RACK_ENV=development bundle exec guard
+else
+  RACK_ENV=development bundle exec puma
+fi

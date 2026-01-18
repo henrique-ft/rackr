@@ -1,17 +1,17 @@
 App =
   Rackr.new(Config.get).app do
-    get { render text: 'hello world' }
+    get do
+      render(html_slice {
+        h1 'hello world'
+      })
+    end
 
     # Beta
     resources :foods, id: :food_id do |r|
-      get 'oi' do
-        render text: 'hello'
-      end
-
       resources :inner
     end
 
     not_found do
-      render text: 'not found'
+      render 'not found'
     end
   end

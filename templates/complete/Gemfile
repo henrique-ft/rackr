@@ -2,11 +2,13 @@
 
 source "https://rubygems.org"
 
+gem 'html_slice'
+gem 'stimulux'
+
 gem 'rackr'
+
 gem 'rack-parser'
 gem 'zeitwerk'
-
-gem 'html_slice'
 
 gem 'puma'
 gem 'guard-puma'
