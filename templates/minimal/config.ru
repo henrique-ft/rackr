@@ -23,7 +23,7 @@ App = Rackr.new({
   deps: {
     db: Deps::DB::Conn.get
   }
-}).call do
+}).app do
   get do
     render text: db.inspect
   end

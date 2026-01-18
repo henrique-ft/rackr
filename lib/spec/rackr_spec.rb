@@ -79,7 +79,7 @@ RSpec.describe Rackr do
     end
 
     it 'should generate resources routes' do
-      app = Rackr.new.call do
+      app = Rackr.new.app do
         resources :foods
       end
 
@@ -90,7 +90,7 @@ RSpec.describe Rackr do
     end
 
     it 'should generate resources routes with custom id' do
-      app = Rackr.new.call do
+      app = Rackr.new.app do
         resources :foods, id: :food_id
       end
 
@@ -100,7 +100,7 @@ RSpec.describe Rackr do
     end
 
     it 'should generate resources routes with a block' do
-      app = Rackr.new.call do
+      app = Rackr.new.app do
         resources :foods do
           get 'test', -> { 'test' }
         end
@@ -111,7 +111,7 @@ RSpec.describe Rackr do
 
     context 'when nesting resources' do
       it 'should nest resources routes with a block' do
-        app = Rackr.new.call do
+        app = Rackr.new.app do
           resources :foods do
             resources :nesteds do
               resources :foos
@@ -124,7 +124,7 @@ RSpec.describe Rackr do
       end
 
       it 'should nest deeper resources routes with a block' do
-        app = Rackr.new.call do
+        app = Rackr.new.app do
           resources :foods, id: :food_id do
             resources :nesteds, id: :nested_id do
               resources :foos
@@ -138,7 +138,7 @@ RSpec.describe Rackr do
 
     context 'with new params' do
       it 'should generate resources routes with custom path' do
-        app = Rackr.new.call do
+        app = Rackr.new.app do
           resources :foods, path: 'comidas'
         end
 
@@ -149,7 +149,7 @@ RSpec.describe Rackr do
       end
 
       it 'should generate resources routes with custom paths for actions' do
-        app = Rackr.new.call do
+        app = Rackr.new.app do
           resources :foods, paths: {
             index: 'todos',
             new: 'novo',
@@ -179,7 +179,7 @@ RSpec.describe Rackr do
         end
 
         it 'should add before and after callbacks to specified actions' do
-          app = Rackr.new.call do
+          app = Rackr.new.app do
             resources :foods, callbacks: [
               { actions: :index, before: Callbacks::Foods::Cb1 },
               { actions: %i[show edit], after: [Callbacks::Foods::Cb2, Callbacks::Foods::Cb3] }
@@ -220,7 +220,7 @@ RSpec.describe Rackr do
       end
 
       it 'should infer const name from scope hierarchy' do
-        app = Rackr.new.call do
+        app = Rackr.new.app do
           scope 'api' do
             scope 'users' do
               resources :name
@@ -264,7 +264,7 @@ RSpec.describe Rackr do
       end
 
       it 'should infer assign callback ignoring the scope' do
-        app = Rackr.new.call do
+        app = Rackr.new.app do
           scope 'api' do
             resources :articles, id: :slug
           end
@@ -278,7 +278,7 @@ RSpec.describe Rackr do
       end
 
       it 'should infer nested assign callbacks ignoring the scope' do
-        app = Rackr.new.call do
+        app = Rackr.new.app do
           scope 'api' do
             resources :articles do
               scope 'another' do
@@ -313,7 +313,7 @@ RSpec.describe Rackr do
     end
 
     it 'should route to a specific action for a given error class' do
-      app = Rackr.new.call do
+      app = Rackr.new.app do
         get 'raise_custom_error' do
           raise CustomError
         end
@@ -330,7 +330,7 @@ RSpec.describe Rackr do
     end
 
     it 'should handle specific errors' do
-      app = Rackr.new.call do
+      app = Rackr.new.app do
         get 'raise_a' do
           raise CustomErrorA
         end
@@ -349,7 +349,7 @@ RSpec.describe Rackr do
     end
 
     it 'should fallback to general error if no specific handler' do
-      app = Rackr.new.call do
+      app = Rackr.new.app do
         get 'raise_b' do
           raise CustomErrorB
         end
@@ -368,7 +368,7 @@ RSpec.describe Rackr do
     end
 
     it 'should handle specific errors within scopes' do
-      app = Rackr.new.call do
+      app = Rackr.new.app do
         error do |_, e|
           [500, {}, ["General Error: #{e.class}"]]
         end

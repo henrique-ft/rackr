@@ -19,7 +19,7 @@ RSpec.describe Rackr::Callback do
   context 'not returning valid rack request' do
     it do
       app = Rack::Builder.new do
-        run(Rackr.new(before: proc { 123 }).call do
+        run(Rackr.new(before: proc { 123 }).app do
           get { render text: 'hello' }
 
           error do |_req, e|
