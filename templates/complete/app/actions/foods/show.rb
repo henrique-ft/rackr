@@ -4,7 +4,7 @@ module Actions
       def call(req)
         @food = req.food
 
-        render(layout do
+        render(html: layout do
           h3 'show'
           tag :p, @food.inspect
         end)
