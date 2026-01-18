@@ -7,7 +7,7 @@ require_relative 'rackr/router'
 
 # Rackr is a simple router for Rack.
 class Rackr
-  VERSION = '0.0.68'
+  VERSION = '0.0.69'
 
   class NotFound < StandardError; end
 
@@ -31,7 +31,7 @@ class Rackr
     @router = Router.new(config, before: before, after: after)
   end
 
-  def call(&)
+  def app(&)
     instance_eval(&)
 
     @router
