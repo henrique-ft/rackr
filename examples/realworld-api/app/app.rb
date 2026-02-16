@@ -1,5 +1,5 @@
 App =
-  Rackr.new(Config.get).call do
+  Rackr.new(Config.get).app do
     error do |req, e|
       p "Rollbar.error(#{e})"
 

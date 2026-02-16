@@ -2,16 +2,22 @@
 
 source "https://rubygems.org"
 
-gem "rackr"
-gem 'rack-parser'
+gem 'html_slice'
+gem 'stimulux'
 
-gem "puma"
+gem 'rackr'
+
+gem 'rack-parser'
+gem 'zeitwerk'
+
+gem 'puma'
 gem 'guard-puma'
 
-gem "sequel"
-gem "sqlite3"
+gem 'sequel'
+gem 'sqlite3'
 
 group :development do
-  gem 'byebug'
   gem 'rerun'
+  gem 'byebug'
+  gem 'rspec'
 end

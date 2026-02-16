@@ -41,7 +41,7 @@ class SayHeyHo
 end
 
 App =
-  Rackr.new(config).call do
+  Rackr.new(config).app do
     get do |req|
       req.session['visitas'] ||= 0
 

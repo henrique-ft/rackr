@@ -1,7 +1,7 @@
 # rackr
 ![Gem Version](https://img.shields.io/gem/v/rackr?style=social)
 
-A Ruby ​​web micro-framework made for study purposes 📖
+Rack first web framework for Ruby
 
 ## Installation:
 

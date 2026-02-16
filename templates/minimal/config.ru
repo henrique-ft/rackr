@@ -1,38 +1,19 @@
-require 'rackr'
-require 'sequel'
+require 'byebug' if ENV['RACK_ENV'] == 'development'
+require 'rack/parser'
+require 'bundler/setup'
 
-module Deps
-  module DB
-    class Conn
-      def self.init
-        @conn = Sequel.connect("sqlite://#{ENV['RACK_ENV'] || 'development'}.db")
+Bundler.require
 
-        Sequel::Model.plugin :timestamps, update_on_create: true
-      end
-
-      def self.get
-        @conn
-      end
-    end
-  end
-end
+require_relative 'config/deps/db/conn'
+require_relative 'config/config'
 
 Deps::DB::Conn.init
 
-App = Rackr.new({
-  deps: {
-    db: Deps::DB::Conn.get
-  }
-}).call do
-  get do
-    render text: db.inspect
-  end
-end
+require_relative 'app'
+
+use(
+  Rack::Parser,
+  parsers: { %r{json} => proc { |data| Oj.load(data) } }
+)
 
 run App
-
-puts "\nRoutes:"
-App.routes.each_pair { |v| p(v) }
-puts "\nConfig:"
-puts App.config
-puts "\n"
