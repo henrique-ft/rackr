@@ -1,83 +1,180 @@
 # Why
 
-## Minimalist & flexible
+Rackr is a lightweight, high-performance Ruby framework that provides a structured, action-based approach to building web applications and APIs while offering flexibility and a friendly design. It's a good choice for developers who want better performance than Rails (100x faster) or more structure than Sinatra, without the full set of conventions that come with a larger framework.
 
-Rackr is a lightweight, high-performance Ruby framework that provides a structured, action-based approach to building web applications and APIs while offering flexibility. It's a good choice for developers who want better performance than Rails (100x faster) or more structure than Sinatra, without the full set of conventions that come with a larger framework.
+## Motivations
 
-## Easy to learn
+- A framework should be easy to learn
+- Code should be easy to read and understand (not just to read)
+- Engineer should follow the project size (the code must keep good in large scale)
 
-"Easy code" is when we feel great building something, less friction. Is clear what our code does and we can easily memorize the framework. We stand in common patterns.
+## Installation:
 
-- No hidden states or too much magics, Rackr code style priorizes functional programming and explicity input / output (pipeline) flow
-
-```ruby
-run (Rackr.new({ host: 'myfreshidea.com' }).call do  # <- input: config and routes
-  get 'hello/:name' do |req| # <- input: Receiving a Rack::Request instance
-    render json: { hello: req.params[:name] } # -> output: Returning a valid Rack response
-  end
-end) # -> output: Rack application
+```bash
+gem install rackr
 ```
 
-- Simplicity over complexity: avoid overengineering and focus on productivity
-
-```ruby
-# just a hash
-config = { deps: { db: MyDb::Conn } }
-
-run (Rackr.new(config).call do
-  get do |req|
-    db # MyDb::Conn
-    # ...
-  end
-end)
-```
-
-
-- Well documented. We believe that documentation is also part of a framework. 
-
-## Fast
-
-![logo](_media/rps_r10k.png)
-
-## "Rack first"
-
-We not override the Rack classes in the framework level and also follow Rack conventions.
-
+## Quick Start
 This is a pure Rack application:
 
 ```ruby
+# config.ru
 run do |env|
-  # This is a valid Rack response
   [200, {'content-type' => 'text/html'}, ["<h1>Hello!</h1>"]]
 end
 ```
 
 This is a minimal Rackr application:
 ```ruby
+# config.ru
 require 'rackr'
 
 run (Rackr.new.call do
-  get do |req| # 'req' is just a Rack::Request.new(env) instance, without wrappers
-    # This is a valid Rack and Rackr response
+  get do |req|
     [200, {'content-type' => 'text/html'}, ["<h1>Hello!</h1>"]]
   end
 end)
 ```
+As you can imagine, there are function defined for other http methods: `get`, `post`, `delete`, `put`, `trace`, `options`, `patch` and all work in the same way. The block receives a param that is just a instance of `Rack::Request` (`Rack::Request.new(env)`). But is not obrigatory if we will not use it.
 
-We can also create **Rack::Response** instances for more control and flexibility
+This is the same Rackr application using the `render` helper:
 ```ruby
+# config.ru
 require 'rackr'
 
 run (Rackr.new.call do
-  get do
-    # Building a Rack::Response object 
-    # for a html response, using the built in helper
-    res = build_response(html: "<h1>Hello!</h1>")
-    res.status = 404
+  get do |req|
+    render html: "<h1>Hello!</h1>" # [200, {'content-type' => 'text/html'}, ["<h1>Hello!</h1>"]]
+  end
+end)
+```
+In addition to `html:`, there are other render options: `json:`, `text:` and also `view:`.
 
-    res.finish # [404, {'content-type' => 'text/html'}, ["<h1>Hello!</h1>"]]
+Now lets scope our get endpoint to a `'v1/hello'` path:
+```ruby
+# config.ru
+require 'rackr'
+
+run (Rackr.new.call do
+  scope 'v1' do
+    scope 'hello' do
+      get do |req|
+        render html: "<h1>Hello!</h1>"
+      end
+    end
   end
 end)
 ```
 
-[Get Started](/docs)
+And say hello to specific name in `'v1/hello/somename'`
+```ruby
+# config.ru
+require 'rackr'
+
+run (Rackr.new.call do
+  scope 'v1' do
+    scope 'hello' do
+      scope :name do
+        get do |req|
+          # Rackr inject request params in the Rack::Request object
+          render html: "<h1>Hello #{req.params[:name]}!</h1>"
+        end
+      end
+    end
+  end
+end)
+```
+
+Maybe we can do it with fewer lines:
+```ruby
+# config.ru
+require 'rackr'
+
+run (Rackr.new.call do
+  get 'v1/hello/:name' do |req|
+    render html: "<h1>Hello #{req.params[:name]}!</h1>"
+  end
+end)
+```
+
+If our app grows, we can create a *"rackr action"* including `Rackr::Action` module in a class and creating a `call` instance method:
+
+```ruby
+# config.ru
+require 'rackr'
+
+class HelloAction
+  include Rackr::Action
+
+  def call(req)
+    render html: "<h1>Hello #{req.params[:name]}!</h1>"
+  end
+end
+
+run (Rackr.new.call do
+  get 'v1/hello/:name', HelloAction
+end)
+```
+
+## Usefull resources
+
+#### Rack Docs
+
+- [Rack::Request](https://rubydoc.info/gems/rack/Rack/Request)
+- [Rack::Session](https://github.com/rack/rack-session)
+- [Rack::Utils](https://rubydoc.info/gems/rack/Rack/Utils)
+
+### How to
+
+#### Serve static files:
+```ruby
+# config.ru
+use Rack::Static, :urls => ["/public"] # Add paths for your public content
+```
+#### Work with sessions:
+
+```ruby
+# config.ru
+use Rack::Session::Cookie,
+    :key => 'rack.session', # Key for Rack 
+    :expire_after => 2592000, # Expiration date
+    :secret => ENV['MY_SECRET_KEY'] # Your secret key. 
+```
+
+#### Development: Auto refresh
+
+use https://github.com/alexch/rerun
+
+#### Development: Live reload
+
+use https://github.com/jaredmdobson/rack-livereload
+
+#### CRSF protection:
+
+use https://github.com/baldowl/rack_csrf
+
+#### HTTP Cache:
+
+use https://github.com/rtomayko/rack-cache
+
+#### Logs:
+
+https://www.rubydoc.info/github/rack/rack/Rack/CommonLogger
+
+We can add `use Rack::CommonLogger` in config.ru, or just use de `before` and/or `after` callbacks to collect and log info / error / warning
+
+## Benchmarks (r10k)
+
+Running in Ruby 3.3.0
+
+![r10k](_media/rps_r10k.png)
+
+## Feel free to get the idea, fork, contribute and do whatever you want!
+
+Contact me if you have any issue:
+
+hriqueft@gmail.com
+
+I will be always open for tips, improvements, new ideas and new contributors! 
+
+

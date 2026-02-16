@@ -2,11 +2,9 @@
 
 # Rackr 
 
-> Rack first web framework for Ruby
+> Friendly & fast web framework
 
-- Lightweight & Fast
-- Easy to learn
-- Flexible
+- Based on Ruby and Rack
 
 [GitHub](https://github.com/docsifyjs/docsify/)
 [Get Started](/rackr)
