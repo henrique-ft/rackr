@@ -33,7 +33,7 @@ This is a minimal Rackr application:
 # config.ru
 require 'rackr'
 
-run (Rackr.new.call do
+run (Rackr.new.app do
   get do |req|
     [200, {'content-type' => 'text/html'}, ["<h1>Hello!</h1>"]]
   end
@@ -41,29 +41,43 @@ end)
 ```
 As you can imagine, there are function defined for other http methods: `get`, `post`, `delete`, `put`, `trace`, `options`, `patch` and all work in the same way. The block receives a param that is just a instance of `Rack::Request` (`Rack::Request.new(env)`). But is not obrigatory if we will not use it.
 
-This is the same Rackr application using the `render` helper:
+This is a similar Rackr application using the `render` helper:
 ```ruby
 # config.ru
 require 'rackr'
 
-run (Rackr.new.call do
+run (Rackr.new.app do
   get do |req|
-    render html: "<h1>Hello!</h1>" # [200, {'content-type' => 'text/html'}, ["<h1>Hello!</h1>"]]
+    render html: "<h1>Hello!</h1>"
   end
 end)
 ```
-In addition to `html:`, there are other render options: `json:`, `text:` and also `view:`.
+In addition to `html:`, there render options for any mime-type, like `json:` or `text:`
+
+This is the same Rackr application using the native integration with `html_slice`:
+```ruby
+# config.ru
+require 'rackr'
+require 'html_slice'
+
+run (Rackr.new.app do
+  get do |req|
+    render(html { h1 'Hello!' })
+  end
+end)
+```
 
 Now lets scope our get endpoint to a `'v1/hello'` path:
 ```ruby
 # config.ru
 require 'rackr'
+require 'html_slice'
 
-run (Rackr.new.call do
+run (Rackr.new.app do
   scope 'v1' do
     scope 'hello' do
       get do |req|
-        render html: "<h1>Hello!</h1>"
+        render(html { h1 'Hello!' })
       end
     end
   end
@@ -74,14 +88,15 @@ And say hello to specific name in `'v1/hello/somename'`
 ```ruby
 # config.ru
 require 'rackr'
+require 'html_slice'
 
-run (Rackr.new.call do
+run (Rackr.new.app do
   scope 'v1' do
     scope 'hello' do
       scope :name do
         get do |req|
           # Rackr inject request params in the Rack::Request object
-          render html: "<h1>Hello #{req.params[:name]}!</h1>"
+          render(html { h1 "Hello #{req.params[:name]}!" })
         end
       end
     end
@@ -93,10 +108,11 @@ We also can do the same thing with fewer lines:
 ```ruby
 # config.ru
 require 'rackr'
+require 'html_slice'
 
-run (Rackr.new.call do
+run (Rackr.new.app do
   get 'v1/hello/:name' do |req|
-    render html: "<h1>Hello #{req.params[:name]}!</h1>"
+    render(html { h1 "Hello #{req.params[:name]}!" })
   end
 end)
 ```
@@ -106,16 +122,17 @@ If our app grows, we can create a *"rackr action"* including `Rackr::Action` mod
 ```ruby
 # config.ru
 require 'rackr'
+require 'html_slice'
 
 class HelloAction
   include Rackr::Action
 
   def call(req)
-    render html: "<h1>Hello #{req.params[:name]}!</h1>"
+    render(html { h1 "Hello #{req.params[:name]}!" })
   end
 end
 
-run (Rackr.new.call do
+run (Rackr.new.app do
   get 'v1/hello/:name', HelloAction
 end)
 ```
