@@ -5,13 +5,11 @@ Rackr is a lightweight, high-performance Ruby framework that provides a structur
 ```ruby
 # config.ru
 
-App = Rackr.new({ name: 'world' }).app do
+run (Rackr.new({ name: 'world' }).app do
   get do
     render(html { h1 "hello #{config[:name]}" })
   end
-end
-
-run App
+end)
 ```
 
 ## Installation:
