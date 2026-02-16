@@ -2,16 +2,6 @@
 
 Rackr is a lightweight, high-performance Ruby framework that provides a structured, action-based approach to building web applications and APIs while offering flexibility and a friendly design. It's a good choice for developers who want better performance than Rails (100x faster) or more structure than Sinatra, without the full set of conventions that come with a larger framework.
 
-```ruby
-# config.ru
-
-run (Rackr.new({ name: 'world' }).app do
-  get do
-    render(html { h1 "hello #{config[:name]}" })
-  end
-end)
-```
-
 ## Installation:
 
 ```bash
@@ -54,30 +44,16 @@ end)
 ```
 In addition to `html:`, there render options for any mime-type, like `json:` or `text:`
 
-This is the same Rackr application using the native integration with `html_slice`:
-```ruby
-# config.ru
-require 'rackr'
-require 'html_slice'
-
-run (Rackr.new.app do
-  get do |req|
-    render(html { h1 'Hello!' })
-  end
-end)
-```
-
 Now lets scope our get endpoint to a `'v1/hello'` path:
 ```ruby
 # config.ru
 require 'rackr'
-require 'html_slice'
 
 run (Rackr.new.app do
   scope 'v1' do
     scope 'hello' do
       get do |req|
-        render(html { h1 'Hello!' })
+        render html: "<h1>Hello!</h1>"
       end
     end
   end
@@ -88,7 +64,6 @@ And say hello to specific name in `'v1/hello/somename'`
 ```ruby
 # config.ru
 require 'rackr'
-require 'html_slice'
 
 run (Rackr.new.app do
   scope 'v1' do
@@ -96,7 +71,7 @@ run (Rackr.new.app do
       scope :name do
         get do |req|
           # Rackr inject request params in the Rack::Request object
-          render(html { h1 "Hello #{req.params[:name]}!" })
+          render html: "<h1>Hello #{req.params[:name]}!</h1>"
         end
       end
     end
@@ -108,11 +83,10 @@ We also can do the same thing with fewer lines:
 ```ruby
 # config.ru
 require 'rackr'
-require 'html_slice'
 
 run (Rackr.new.app do
   get 'v1/hello/:name' do |req|
-    render(html { h1 "Hello #{req.params[:name]}!" })
+    render html: "<h1>Hello #{req.params[:name]}!</h1>"
   end
 end)
 ```
@@ -122,13 +96,12 @@ If our app grows, we can create a *"rackr action"* including `Rackr::Action` mod
 ```ruby
 # config.ru
 require 'rackr'
-require 'html_slice'
 
 class HelloAction
   include Rackr::Action
 
   def call(req)
-    render(html { h1 "Hello #{req.params[:name]}!" })
+    render html: "<h1>Hello #{req.params[:name]}!</h1>"
   end
 end
 
