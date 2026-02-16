@@ -2,11 +2,17 @@
 
 Rackr is a lightweight, high-performance Ruby framework that provides a structured, action-based approach to building web applications and APIs while offering flexibility and a friendly design. It's a good choice for developers who want better performance than Rails (100x faster) or more structure than Sinatra, without the full set of conventions that come with a larger framework.
 
-## Motivations
+```ruby
+# config.ru
 
-- A framework should be easy to learn
-- Code should be easy to read and understand (not just to read)
-- Engineer should follow the project size (the code must keep good in large scale)
+App = Rackr.new({ name: 'world' }).app do
+  get do
+    render(html { h1 "hello #{config[:name]}" })
+  end
+end
+
+run App
+```
 
 ## Installation:
 
@@ -85,7 +91,7 @@ run (Rackr.new.call do
 end)
 ```
 
-Maybe we can do it with fewer lines:
+We also can do the same thing with fewer lines:
 ```ruby
 # config.ru
 require 'rackr'
