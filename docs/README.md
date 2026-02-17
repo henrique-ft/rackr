@@ -117,37 +117,15 @@ run (Rackr.new({ greetings: 'Hello' }).app do
 end)
 ```
 
-If we need protected routes we can easily do it with callbacks, like the `before:` callback, that can be used in scopes, pure routes or inside actions
-
-```ruby
-# config.ru
-require 'rackr'
-
-class CheckName 
-  include Rackr::Callback
-
-  def call(req)
-    # stop the execution given a condition
-    return head(404) if req.params[:name] != 'henrique'
-
-    req # returns the request for the next action (or callback)
-  end
-end
-
-class HelloAction
-  include Rackr::Action
-
-  def call(req)
-    render html: "<h1>#{config[:greetings]} #{req.params[:name]}!</h1>"
-  end
-end
-
-run (Rackr.new({ greetings: 'Hello' }).app do
-  scope before: CheckName do
-    get 'v1/hello/:name', HelloAction
-  end
-end)
-```
+This is only the tip of the iceberg. There are some other features that ship with Rackr: 
+- A powerfull callback pipeline feature (`before:` and `after:`) for pre and post processing the request / response, that can be declared in route, scope or action.
+- Named routes, and helpers like `url_for` and `path_for`
+- Easy dependency injection using the `{ deps: }` key in config
+- `resources` method for declare repetitive CRUD routes
+- Content Security Policy out of the box
+- Native integration with `html_slice` for html generation
+- Render `.erb` views with `layout`
+- Per scope `error` and `not_found` fallback in routes
 
 ## Usefull resources
 
