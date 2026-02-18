@@ -126,6 +126,7 @@ This is only the tip of the iceberg. There are some other features that ship wit
 - Native integration with `html_slice` for html generation
 - Render `.erb` views with `layout`
 - Per scope `error` and `not_found` fallback in routes
+- Wildcard routes (`'*'`)
 
 ## Usefull resources
 
