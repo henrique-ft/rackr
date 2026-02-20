@@ -1,6 +1,6 @@
 # Why
 
-Rackr is a small-core, high-performance Ruby framework that provides an action-based, functional approach to building web applications and APIs while offering flexibility and a friendly design. It's a good choice for developers who want better performance than Rails (100x faster) or more structure than Sinatra, without the full set of conventions that come with a larger framework.
+Rackr is a small-core, high-performance Ruby framework that provides a action-based, functional approach to building web applications and APIs while offering flexibility and a friendly design. It's a good choice for developers who want better performance than Rails (100x faster) or more structure than Sinatra, without the full set of conventions that come with a larger framework.
 
 ## Installation:
 
@@ -98,7 +98,34 @@ run (Rackr.new({ greetings: 'Hello' }).app do
 end)
 ```
 
-If our app grows, we can create a *"rackr action"* including `Rackr::Action` module in a class and creating a `call` instance method:
+Also, the default render mime type is html, so we can hide the `html:` keyword argument
+```ruby
+# config.ru
+require 'rackr'
+
+run (Rackr.new({ greetings: 'Hello' }).app do
+  get 'v1/hello/:name' do |req|
+    render "<h1>#{config[:greetings]} #{req.params[:name]}!</h1>"
+  end
+end)
+```
+
+Now, lets customize our not found and error fallback pages:
+```ruby
+# config.ru
+require 'rackr'
+
+run (Rackr.new({ greetings: 'Hello' }).app do
+  not_found { render('<h1> Custom page not found </h1>') }
+  error { render('<h1> Custom internal error page </h1>') }
+
+  get 'v1/hello/:name' do |req|
+    render "<h1>#{config[:greetings]} #{req.params[:name]}!</h1>"
+  end
+end)
+```
+
+Our app is growing, lets create a *"rackr action"* including `Rackr::Action` module in a class and using a `call` instance method:
 
 ```ruby
 # config.ru
@@ -108,25 +135,24 @@ class HelloAction
   include Rackr::Action
 
   def call(req)
-    render html: "<h1>#{config[:greetings]} #{req.params[:name]}!</h1>"
+    render "<h1>#{config[:greetings]} #{req.params[:name]}!</h1>"
   end
 end
 
 run (Rackr.new({ greetings: 'Hello' }).app do
+  not_found { render('<h1> Custom page not found </h1>') }
+  error { render('<h1> Custom internal error page </h1>') }
+
   get 'v1/hello/:name', HelloAction
 end)
 ```
 
-This is only the tip of the iceberg. There are some other features that ship with Rackr: 
+This is only the tip of the iceberg. There are some other features that ship with Rackr, like: 
 - A powerfull callback pipeline feature (`before:` and `after:`) for pre and post processing the request / response, that can be declared in route, scope or action.
 - Named routes, and helpers like `url_for` and `path_for`
-- Easy dependency injection using the `{ deps: }` key in config
 - `resources` method for declare repetitive CRUD routes
-- Content Security Policy out of the box
-- Native integration with `html_slice` for html generation
-- Render `.erb` views with `layout`
-- Per scope `error` and `not_found` fallback in routes
-- Wildcard routes (`'*'`)
+
+and more...
 
 ## Usefull resources
 
