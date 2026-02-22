@@ -6,12 +6,13 @@ gem "rackr"
 gem 'rack-parser'
 
 gem "puma"
-gem 'guard-puma'
+#gem 'iodine'
 
 gem "sequel"
 gem "sqlite3"
 
 group :development do
+  gem 'guard-puma'
   gem 'byebug'
   gem 'rerun'
 end

@@ -9,12 +9,13 @@ gem 'erubi'
 gem 'oj'
 
 gem 'puma'
-gem 'guard-puma'
+#gem 'iodine'
 
 gem 'sequel'
 gem 'sqlite3'
 
 group :development do
+  gem 'guard-puma'
   gem 'rerun'
   gem 'byebug'
   gem 'rspec'
