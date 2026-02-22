@@ -31,6 +31,14 @@ class Rackr
     @router = Router.new(config, before: before, after: after)
   end
 
+  def include(mod)
+    self.class.include(mod)
+  end
+
+  def extend(mod)
+    self.class.extend(mod)
+  end
+
   def app(&)
     instance_eval(&)
 

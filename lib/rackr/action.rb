@@ -143,16 +143,19 @@ class Rackr
 
     def self.included(base)
       base.class_eval do
-        if self != Rackr
+        if self == Rackr
+          include HtmlSlice  if Object.const_defined?('HtmlSlice')
+          include Stimulux  if Object.const_defined?('Stimulux')
+        else
           attr_reader :routes, :config, :deps, :db, :log, :cache
 
           include Callbacks unless included_modules.include?(Rackr::Callback)
         end
 
-        include HtmlSlice if Object.const_defined?('HtmlSlice')
-        include Stimulux if Object.const_defined?('Stimulux')
-
         def initialize(routes: nil, config: nil)
+          self.class.include(HtmlSlice) if Object.const_defined?('HtmlSlice')
+          self.class.include(Stimulux) if Object.const_defined?('Stimulux')
+
           @routes = routes
           @config = config
           @deps = config&.dig(:deps)
