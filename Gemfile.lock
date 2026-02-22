@@ -112,7 +112,10 @@ PLATFORMS
 
 DEPENDENCIES
   byebug
+  erubi
+  oj
   pry (~> 0.12.2)
+  rack
   rackr!
   rake
   rerun

@@ -606,13 +606,13 @@ RSpec.describe Rackr::Action do
 
     context 'when HtmlSlice is defined' do
       it 'includes HtmlSlice' do
-          module ::HtmlSlice; end
-          require_relative action_file_path
+        module ::HtmlSlice; end
+        require_relative action_file_path
 
-          action_class = Class.new { include Rackr::Action }
-          action_class.new # Create an instance to trigger the initialize method
-          expect(action_class.included_modules).to include(HtmlSlice)
-        end
+        action_class = Class.new { include Rackr::Action }
+        action_class.new # Create an instance to trigger the initialize method
+        expect(action_class.included_modules).to include(HtmlSlice)
+      end
     end
 
     context 'when HtmlSlice is not defined' do
@@ -627,13 +627,13 @@ RSpec.describe Rackr::Action do
 
     context 'when Stimulux is defined' do
       it 'includes Stimulux' do
-          module ::Stimulux; end
-          require_relative action_file_path
+        module ::Stimulux; end
+        require_relative action_file_path
 
-          action_class = Class.new { include Rackr::Action }
-          action_class.new # Create an instance to trigger the initialize method
-          expect(action_class.included_modules).to include(Stimulux)
-        end
+        action_class = Class.new { include Rackr::Action }
+        action_class.new # Create an instance to trigger the initialize method
+        expect(action_class.included_modules).to include(Stimulux)
+      end
     end
 
     context 'when Stimulux is not defined' do
