@@ -40,8 +40,16 @@ class SayHeyHo
   end
 end
 
+module IncludeExample
+  def say_foo
+    'foo'
+  end
+end
+
 App =
   Rackr.new(config).app do
+    include IncludeExample
+
     get do |req|
       req.session['visitas'] ||= 0
 
@@ -52,6 +60,12 @@ App =
       res.set_cookie('x', cookies += 'a')
 
       render res:
+    end
+
+    get 'include_example' do
+      render (html_slice do
+        h1 say_foo
+      end)
     end
 
     get 'not_string_error' do

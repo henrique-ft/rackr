@@ -13,7 +13,7 @@ end
 
 RSpec.describe Rackr::Callback do
   it 'includes http router action' do
-    expect(SomeClass3.included_modules.include?(Rackr::Action)).to be_truthy
+    expect(SomeClass3.include?(Rackr::Action)).to be_truthy
   end
 
   context 'not returning valid rack request' do
