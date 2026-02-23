@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'lib/rackr'
-
 Gem::Specification.new do |s|
   s.name        = 'rackr'
-  s.version     = Rackr::VERSION
+  s.version = File.read(File.expand_path("../lib/rackr.rb", __FILE__))[/VERSION = ['"](.+)['"]/, 1]
   s.summary     = 'Rack first web framework.'
   s.description = 'Rack first web framework.'
   s.authors     = ['Henrique F. Teixeira']

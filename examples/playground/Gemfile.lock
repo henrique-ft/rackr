@@ -92,6 +92,7 @@ GEM
     sequel (5.87.0)
       bigdecimal
     sqlite3 (2.8.1-x86_64-linux-gnu)
+    stimulux (1.0.0)
     thin (1.8.2)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
@@ -118,6 +119,7 @@ DEPENDENCIES
   rubocop
   sequel
   sqlite3
+  stimulux
   thin
 
 BUNDLED WITH

@@ -610,6 +610,7 @@ RSpec.describe Rackr::Action do
         require_relative action_file_path
 
         action_class = Class.new { include Rackr::Action }
+        action_class.new # Create an instance to trigger the initialize method
         expect(action_class.included_modules).to include(HtmlSlice)
       end
     end
@@ -630,6 +631,7 @@ RSpec.describe Rackr::Action do
         require_relative action_file_path
 
         action_class = Class.new { include Rackr::Action }
+        action_class.new # Create an instance to trigger the initialize method
         expect(action_class.included_modules).to include(Stimulux)
       end
     end
