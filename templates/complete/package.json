@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "esbuild app/assets/js/app.js --bundle --minify --sourcemap --outfile=public/js/app.js && esbuild app/assets/css/app.css --bundle --minify --outfile=public/css/app.min.css",
-    "build:watch": "esbuild app/assets/js/app.js --bundle --minify --sourcemap --outfile=public/js/app.js --watch & esbuild app/assets/css/app.css --bundle --minify --outfile=public/css/app.min.css --watch"
+    "build:watch": "esbuild app/assets/js/app.js --bundle --minify --sourcemap --outfile=public/js/app.js --watch=forever & esbuild app/assets/css/app.css --bundle --minify --outfile=public/css/app.min.css --watch=forever"
   },
   "author": "",
   "license": "ISC",

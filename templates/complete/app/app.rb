@@ -1,6 +1,6 @@
 App =
   Rackr.new(Config.get).app do
-    self.class.include Views::Layout
+    include Views::Layout
 
     get do
       render(html: layout(title: 'Home') {
