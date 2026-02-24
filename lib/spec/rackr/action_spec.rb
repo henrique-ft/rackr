@@ -510,6 +510,32 @@ RSpec.describe Rackr::Action do
       end
     end
 
+    context 'when removing csp_headers' do
+      let(:config) do
+        {
+          csp_headers: {
+            style_src: nil,
+          }
+        }
+      end
+
+      let(:expected_csp) do
+        default = {
+          base_uri: "'self'", child_src: "'self'", connect_src: "'self'",
+          default_src: "'none'", font_src: "'self'", form_action: "'self'",
+          frame_ancestors: "'self'", frame_src: "'self'",
+          img_src: "'self' https: data:", media_src: "'self'",
+          object_src: "'none'", script_src: "'self'",
+        }
+        default.map { |k, v| "#{k.to_s.tr('_', '-')} #{v}" }.join('; ')
+      end
+
+      it 'merges and overrides the default csp' do
+        result = subject.render(html: 'test')
+        expect(result[1]['content-security-policy']).to eq(expected_csp)
+      end
+    end
+
     context 'with user-defined csp_headers' do
       let(:config) do
         {
