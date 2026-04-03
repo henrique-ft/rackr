@@ -1,6 +1,6 @@
 # Why
 
-Rackr is a small-core, high-performance Ruby framework that provides a action-based, functional approach to building web applications and APIs while offering flexibility and a friendly design. It's a good choice for developers who want better performance than Rails (100x faster) or more structure than Sinatra, without the full set of conventions that come with a larger framework.
+Rackr is a small-core, high-performance Ruby framework that provides a action-based, functional approach to building web applications and APIs while offering flexibility and a friendly design. It's a good choice for developers who want better performance than Rails (100x faster) or small/medium projects.
 
 ## Installation:
 
