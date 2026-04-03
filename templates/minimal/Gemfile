@@ -5,13 +5,17 @@ source "https://rubygems.org"
 gem "rackr"
 gem 'rack-parser'
 
-gem "puma"
-gem 'guard-puma'
+#gem "falcon"
+#gem "puma"
+#gem 'iodine'
+#gem 'thin'
+gem "passenger", ">= 5.3.2", require: "phusion_passenger/rack_handler"
 
 gem "sequel"
 gem "sqlite3"
 
 group :development do
+  gem 'guard-puma'
   gem 'byebug'
   gem 'rerun'
 end
