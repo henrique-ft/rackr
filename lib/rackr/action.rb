@@ -4,6 +4,7 @@ require 'erubi'
 require 'oj'
 require 'rack'
 require_relative 'action/callbacks'
+require_relative 'callback'
 
 class Rackr
   # This module provides the action functions available inside the routes context or
@@ -149,12 +150,14 @@ class Rackr
         else
           attr_reader :routes, :config, :deps, :db, :log, :cache
 
-          include Callbacks unless include?(Rackr::Callback)
+          include Callbacks unless include?(Rackr::Action::Callbacks)
+          include HtmlSlice if Object.const_defined?('HtmlSlice')
+          include Stimulux if Object.const_defined?('Stimulux')
         end
 
         def initialize(routes: nil, config: nil)
-          self.class.include(HtmlSlice) if Object.const_defined?('HtmlSlice')
-          self.class.include(Stimulux) if Object.const_defined?('Stimulux')
+          # self.class.include(HtmlSlice) if Object.const_defined?('HtmlSlice')
+          # self.class.include(Stimulux) if Object.const_defined?('Stimulux')
 
           @routes = routes
           @config = config

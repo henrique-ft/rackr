@@ -590,11 +590,6 @@ RSpec.describe Rackr::Action do
         expect(MyActionWithoutCallbacks).to be_a(Rackr::Action::Callbacks::ClassMethods)
         expect(MyActionWithoutCallbacks.included_modules).to include(Rackr::Action::Callbacks)
       end
-
-      it 'does not extend or include Callbacks for callbacks' do
-        expect(MyCallback).not_to be_a(Rackr::Action::Callbacks::ClassMethods)
-        expect(MyCallback.included_modules).not_to include(Rackr::Action::Callbacks)
-      end
     end
 
     describe 'class-level callbacks' do

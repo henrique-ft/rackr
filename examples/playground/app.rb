@@ -46,9 +46,33 @@ module IncludeExample
   end
 end
 
+class MotherAction
+  include Rackr::Action
+
+  before(->(req) {
+    p "mother"
+
+    req
+  })
+end
+
+class ChildAction < MotherAction
+  before(->(req) {
+    p "child"
+
+    req
+  })
+
+  def call(req)
+    render 'hello'
+  end
+end
+
 App =
   Rackr.new(config).app do
     include IncludeExample
+
+    get 'test-mother', ChildAction
 
     get do |req|
       req.session['visitas'] ||= 0
