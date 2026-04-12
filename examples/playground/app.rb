@@ -72,6 +72,32 @@ App =
   Rackr.new(config).app do
     include IncludeExample
 
+    # empty scopes
+    scope before: (lambda { |req|
+      p("empty scope")
+      req
+    }) do
+      scope "oi" do
+        scope before: (lambda { |req|
+          p("empty scope 2")
+          req
+        }) do
+          scope before: (lambda { |req|
+            p("empty scope 3")
+            req
+          }) do
+            get 'something' do
+              head 200
+            end
+          end
+        end
+      end
+
+      get '/something2' do
+        render text: "ma oe"
+      end
+    end
+
     get 'test-mother', ChildAction
 
     get do |req|
@@ -206,32 +232,6 @@ App =
 
     get 'action', Actions::Home::Index
     get 'action2', Actions::Home::Index2
-
-    # empty scopes
-    scope before: (lambda { |req|
-      p("empty scope")
-      req
-    }) do
-      scope "oi" do
-        scope before: (lambda { |req|
-          p("empty scope 2")
-          req
-        }) do
-          scope before: (lambda { |req|
-            p("empty scope 3")
-            req
-          }) do
-            get 'something' do
-              head 200
-            end
-          end
-        end
-      end
-
-      get '/something2' do
-        render text: "ma oe"
-      end
-    end
 
     not_found do
       render html: "Are you lost?"
