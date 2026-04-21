@@ -14,15 +14,28 @@ RSpec.describe Rackr::Action::Callbacks do
   let(:mother_action_class) do
     Class.new do
       include Rackr::Action
-      before(->(req) { req << 'mother_before'; req })
-      after(->(req) { req << 'mother_after'; req })
+
+      before(lambda { |req|
+        req << 'mother_before'
+        req
+      })
+      after(lambda { |req|
+        req << 'mother_after'
+        req
+      })
     end
   end
 
   let(:child_action_class) do
     Class.new(mother_action_class) do
-      before(->(req) { req << 'child_before'; req })
-      after(->(req) { req << 'child_after'; req })
+      before(lambda { |req|
+        req << 'child_before'
+        req
+      })
+      after(lambda { |req|
+        req << 'child_after'
+        req
+      })
 
       def call(req)
         req << 'action_call'
@@ -36,13 +49,13 @@ RSpec.describe Rackr::Action::Callbacks do
       it 'appends callbacks to the list' do
         direct_test_class.before(:callback1)
         direct_test_class.before(:callback2)
-        expect(direct_test_class.befores).to eq([:callback1, :callback2])
+        expect(direct_test_class.befores).to eq(%i[callback1 callback2])
       end
 
       it 'handles single items and arrays correctly via ensure_array' do
         direct_test_class.before(:single_callback)
-        direct_test_class.before([:array_callback1, :array_callback2])
-        expect(direct_test_class.befores).to eq([:single_callback, :array_callback1, :array_callback2])
+        direct_test_class.before(%i[array_callback1 array_callback2])
+        expect(direct_test_class.befores).to eq(%i[single_callback array_callback1 array_callback2])
       end
     end
 
@@ -50,13 +63,13 @@ RSpec.describe Rackr::Action::Callbacks do
       it 'appends callbacks to the list' do
         direct_test_class.after(:callback1)
         direct_test_class.after(:callback2)
-        expect(direct_test_class.afters).to eq([:callback1, :callback2])
+        expect(direct_test_class.afters).to eq(%i[callback1 callback2])
       end
 
       it 'handles single items and arrays correctly via ensure_array' do
         direct_test_class.after(:single_callback)
-        direct_test_class.after([:array_callback1, :array_callback2])
-        expect(direct_test_class.afters).to eq([:single_callback, :array_callback1, :array_callback2])
+        direct_test_class.after(%i[array_callback1 array_callback2])
+        expect(direct_test_class.afters).to eq(%i[single_callback array_callback1 array_callback2])
       end
     end
 
@@ -95,7 +108,7 @@ RSpec.describe Rackr::Action::Callbacks do
     end
 
     context 'executing callbacks' do
-      def execute_callbacks(instance, callbacks, initial_req)
+      def execute_callbacks(_instance, callbacks, initial_req)
         callbacks.reduce(initial_req) do |req, callback|
           callback.call(req)
         end
@@ -108,7 +121,7 @@ RSpec.describe Rackr::Action::Callbacks do
         child_instance.call(final_req_log)
         execute_callbacks(child_instance, child_instance.afters, final_req_log)
 
-        expect(req_log).to eq(['mother_before', 'child_before', 'action_call', 'mother_after', 'child_after'])
+        expect(req_log).to eq(%w[mother_before child_before action_call mother_after child_after])
       end
     end
   end

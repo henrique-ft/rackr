@@ -403,6 +403,7 @@ RSpec.describe Rackr do
     let(:test_action_module) do
       module TestAction
         include Rackr::Action
+
         def self.call; end
       end
       TestAction
@@ -418,7 +419,7 @@ RSpec.describe Rackr do
       method_name = http_method.downcase.to_sym
 
       context "##{method_name}" do
-        it "adds a route with a block endpoint" do
+        it 'adds a route with a block endpoint' do
           path = "/test_#{method_name}_block"
           options = { as: nil, route_befores: [], route_afters: [] }
 
@@ -432,7 +433,7 @@ RSpec.describe Rackr do
           app.send(method_name, path, &test_block)
         end
 
-        it "adds a route with an Action module endpoint" do
+        it 'adds a route with an Action module endpoint' do
           path = "/test_#{method_name}_action"
           options = { as: nil, route_befores: [], route_afters: [] }
 
@@ -446,7 +447,7 @@ RSpec.describe Rackr do
           app.send(method_name, path, test_action_module)
         end
 
-        it "adds a route with custom before and after callbacks" do
+        it 'adds a route with custom before and after callbacks' do
           path = "/test_#{method_name}_callbacks"
           before_callback = -> {}
           after_callback = -> {}
@@ -477,7 +478,7 @@ RSpec.describe Rackr do
           app.send(method_name, path, as: as_name, &test_block)
         end
 
-        it "handles paths with leading slashes correctly" do
+        it 'handles paths with leading slashes correctly' do
           path = "/another_#{method_name}_path"
           options = { as: nil, route_befores: [], route_afters: [] }
 
@@ -491,7 +492,7 @@ RSpec.describe Rackr do
           app.send(method_name, path, &test_block)
         end
 
-        it "handles paths without leading slashes correctly" do
+        it 'handles paths without leading slashes correctly' do
           path = "yet_another_#{method_name}_path"
           options = { as: nil, route_befores: [], route_afters: [] }
 
@@ -505,7 +506,7 @@ RSpec.describe Rackr do
           app.send(method_name, path, &test_block)
         end
 
-        it "handles paths with multiple segments and scopes them" do
+        it 'handles paths with multiple segments and scopes them' do
           path = "api/v1/users_#{method_name}"
           options = { as: nil, route_befores: [], route_afters: [] }
 

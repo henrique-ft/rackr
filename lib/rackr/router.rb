@@ -229,7 +229,7 @@ class Rackr
 
       name = ":#{name}" if name.is_a? Symbol
       if name == ''
-        @empty_scopes_ids = @empty_scopes_ids + 1
+        @empty_scopes_ids += 1
         name = @empty_scopes_ids
       end
 
