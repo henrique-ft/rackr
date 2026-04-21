@@ -1,21 +1,19 @@
 # frozen_string_literal: true
 
 require_relative '../../../rackr/utils'
-require_relative '../../../rackr/action' # Require the actual Rackr::Action
+require_relative '../../../rackr/action'
 
 RSpec.describe Rackr::Action::Callbacks do
-  # Test class to include Callbacks directly for basic functionality
   let(:direct_test_class) do
     Class.new do
       include Rackr::Action::Callbacks
-      include Rackr::Utils # For ensure_array
+      include Rackr::Utils
     end
   end
 
-  # Test classes for inheritance scenario, mimicking Rackr::Action
   let(:mother_action_class) do
     Class.new do
-      include Rackr::Action # Use the actual Rackr::Action
+      include Rackr::Action
       before(->(req) { req << 'mother_before'; req })
       after(->(req) { req << 'mother_after'; req })
     end
@@ -65,7 +63,6 @@ RSpec.describe Rackr::Action::Callbacks do
     describe 'inheritance of callbacks' do
       it 'child class inherits and concatenates before callbacks from parent' do
         expect(child_action_class.befores.size).to eq(2)
-        # Check if the callbacks are distinct procs, not just symbols
         expect(child_action_class.befores[0]).to be_a(Proc)
         expect(child_action_class.befores[1]).to be_a(Proc)
       end
@@ -77,7 +74,6 @@ RSpec.describe Rackr::Action::Callbacks do
       end
 
       it 'parent class callbacks are not affected by child class additions' do
-        # Ensure child_action_class.before doesn't modify mother_action_class.befores
         expect(mother_action_class.befores.size).to eq(1)
         expect(mother_action_class.afters.size).to eq(1)
       end
@@ -99,8 +95,6 @@ RSpec.describe Rackr::Action::Callbacks do
     end
 
     context 'executing callbacks' do
-      # This requires a mechanism to run the callbacks, which is usually part of the router or action dispatcher.
-      # For this test, we'll simulate the execution.
       def execute_callbacks(instance, callbacks, initial_req)
         callbacks.reduce(initial_req) do |req, callback|
           callback.call(req)
@@ -108,16 +102,10 @@ RSpec.describe Rackr::Action::Callbacks do
       end
 
       it 'executes mother before callback then child before callback' do
-        # Simulate the request object as an array to track calls
         req_log = []
-        
-        # Execute before callbacks
-        final_req_log = execute_callbacks(child_instance, child_instance.befores, req_log)
-        
-        # Simulate the call method
-        child_instance.call(final_req_log)
 
-        # Execute after callbacks
+        final_req_log = execute_callbacks(child_instance, child_instance.befores, req_log)
+        child_instance.call(final_req_log)
         execute_callbacks(child_instance, child_instance.afters, final_req_log)
 
         expect(req_log).to eq(['mother_before', 'child_before', 'action_call', 'mother_after', 'child_after'])

@@ -15,9 +15,6 @@ class Rackr
       module ClassMethods
         def inherited(subclass)
           super
-          # When a class inherits, it should get a copy of the parent's callbacks
-          # so that its own additions don't modify the parent's list.
-          # Using .dup to ensure a new array object is created for the subclass.
           subclass.instance_variable_set(:@befores, befores.dup) if instance_variable_defined?(:@befores)
           subclass.instance_variable_set(:@afters, afters.dup) if instance_variable_defined?(:@afters)
         end

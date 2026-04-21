@@ -156,9 +156,6 @@ class Rackr
         end
 
         def initialize(routes: nil, config: nil)
-          # self.class.include(HtmlSlice) if Object.const_defined?('HtmlSlice')
-          # self.class.include(Stimulux) if Object.const_defined?('Stimulux')
-
           @routes = routes
           @config = config
           @deps = config&.dig(:deps)
