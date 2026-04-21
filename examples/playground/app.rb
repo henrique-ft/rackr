@@ -114,126 +114,126 @@ App =
       render res:
     end
 
-    #get 'test-mother', ChildAction
+    get 'test-mother', ChildAction
 
-    #get 'include_example' do
-      #render (html_slice do
-        #h1 say_foo
-      #end)
-    #end
+    get 'include_example' do
+      render (html_slice do
+        h1 say_foo
+      end)
+    end
 
-    #get 'not_string_error' do
-      #render 2
-    #end
+    get 'not_string_error' do
+      render 2
+    end
 
-    #get 'html_slice' do
-      #render (html_slice do
-        #div "hey", **stimulus_controller(['name', { user: 3 }])
-        #input "hey", user: 2, **stimulus_target('name#oi')
-      #end)
-    #end
+    get 'html_slice' do
+      render (html_slice do
+        div "hey", **stimulus_controller(['name', { user: 3 }])
+        input "hey", user: 2, **stimulus_target('name#oi')
+      end)
+    end
 
-    #get 'dump' do |req|
-      #d(req)
-    #end
+    get 'dump' do |req|
+      d(req)
+    end
 
-    #scope 'some-form' do
-      #get do
-        #render(html: """
-             ##{url_for(:get, :'some-form')}
-             #<form method='POST'>
-              #<input type='text' name='some'/>
+    scope 'some-form' do
+      get do
+        render(html: """
+             #{url_for(:get, :'some-form')}
+             <form method='POST'>
+              <input type='text' name='some'/>
 
-              #<button type='submit'> submit </button>
-             #</form>
-               #""")
-      #end
+              <button type='submit'> submit </button>
+             </form>
+               """)
+      end
 
-      #post do |req|
-        #render(html: "#{req.params.inspect}")
-      #end
-    #end
+      post do |req|
+        render(html: "#{req.params.inspect}")
+      end
+    end
 
-    #post 'post/:foo' do |req|
-      #render(json: {
-        #foo: {
-          #symbol: req.params[:foo], # params from path
-          #string: req.params['foo'] # query string and body
-        #}
-      #})
-    #end
+    post 'post/:foo' do |req|
+      render(json: {
+        foo: {
+          symbol: req.params[:foo], # params from path
+          string: req.params['foo'] # query string and body
+        }
+      })
+    end
 
-    #get 'view_response' do |request|
-      #response = build_response(view: 'index', headers: {})
-      #render response:
-    #end
+    get 'view_response' do |request|
+      response = build_response(view: 'index', headers: {})
+      render response:
+    end
 
-    #get 'error' do
-    #end
+    get 'error' do
+    end
 
-    #get 'error2' do
-      #x = y
-      #render view: 'index'
-    #end
+    get 'error2' do
+      x = y
+      render view: 'index'
+    end
 
-    #get 'view' do
-      #@title = "Albert"
-      #@name = "Einstein"
+    get 'view' do
+      @title = "Albert"
+      @name = "Einstein"
 
-      #render view: 'index'
-    #end
+      render view: 'index'
+    end
 
-    #scope 'wildcard' do
-      #get '*', Actions::Home::Wildcard
-    #end
+    scope 'wildcard' do
+      get '*', Actions::Home::Wildcard
+    end
 
-    #get 'show', Actions::Home::Show
-    #get 'show/:name', Actions::Home::Show
+    get 'show', Actions::Home::Show
+    get 'show/:name', Actions::Home::Show
 
-    #get 'where-i-go', before: [SayHeyHo] do
-      #render text: '?'
-    #end
+    get 'where-i-go', before: [SayHeyHo] do
+      render text: '?'
+    end
 
-    #scope 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
-      #scope 'oi'do
-        #get do
-          #not_found!
+    scope 'v2', before: [PutsRequest, PutsRequest, Middlewares::SomeAssign] do
+      scope 'oi'do
+        get do
+          not_found!
 
-          #render html: '<h1> rack http_router </h1>'
-        #end
+          render html: '<h1> rack http_router </h1>'
+        end
 
-        #get 'bla', as: :bla do
-          #render html: "<h1> #{routes.get[:bla]} </h1>"
-        #end
-      #end
+        get 'bla', as: :bla do
+          render html: "<h1> #{routes.get[:bla]} </h1>"
+        end
+      end
 
-      #not_found do |req|
-        #render html: "not found inside v2"
-      #end
-    #end
+      not_found do |req|
+        render html: "not found inside v2"
+      end
+    end
 
-    #scope 'v3', before: lambda { |req|
-      #p 'before'
+    scope 'v3', before: lambda { |req|
+      p 'before'
 
-      #req
-    #} do
+      req
+    } do
 
-      #get ':name/hello', before: lambda { |req|
-        #p 'ROUTE BEFORE'
-        #req
-      #} do |req|
-        #render(json: { name: req.params[:name] }) # routes[:v2_hello]
-      #end
+      get ':name/hello', before: lambda { |req|
+        p 'ROUTE BEFORE'
+        req
+      } do |req|
+        render(json: { name: req.params[:name] }) # routes[:v2_hello]
+      end
 
-      #get 'big_json' do
-        #render json: BigJson
-      #end
+      get 'big_json' do
+        render json: BigJson
+      end
 
-      #get 'big_json2' do
-        #render json: BigJson2
-      #end
-    #end
+      get 'big_json2' do
+        render json: BigJson2
+      end
+    end
 
-    #get 'action', Actions::Home::Index
-    #get 'action2', Actions::Home::Index2
+    get 'action', Actions::Home::Index
+    get 'action2', Actions::Home::Index2
   end
