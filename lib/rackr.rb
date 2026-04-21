@@ -78,6 +78,7 @@ class Rackr
     instance_eval(&block)
 
     @router.clear_last_scope
+    @router
   end
 
   def not_found(endpoint = -> {}, &block)

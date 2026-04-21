@@ -69,7 +69,7 @@ class ChildAction < MotherAction
 end
 
 App =
-  Rackr.new(config).app do
+  Rackr.new(config).scope('bb') do
     include IncludeExample
 
     not_found do

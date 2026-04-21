@@ -22,7 +22,10 @@ class Rackr
       @routes = Struct.new(*http_methods).new
       http_methods.each do |method|
         @routes.send("#{method}=", Hash.new do |_hash, key|
-          raise(Errors::UndefinedNamedRouteError, "Undefined named route: '#{key}'")
+          raise(
+            Errors::UndefinedNamedRouteError,
+            "Undefined named route: '#{key}', current named routes: #{@routes}"
+          )
         end)
       end
       @dev_mode = ENV['RACK_ENV'] == 'development'
