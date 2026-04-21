@@ -45,6 +45,10 @@ class Rackr
     @router
   end
 
+  def call(env)
+    @router.call(env)
+  end
+
   def routes
     @router.routes
   end

@@ -68,8 +68,8 @@ class ChildAction < MotherAction
   end
 end
 
-App =
-  Rackr.new(config).scope('bb') do
+App = Rackr.new(config)
+App.scope do
     include IncludeExample
 
     not_found do
@@ -212,28 +212,29 @@ App =
       end
     end
 
-    scope 'v3', before: lambda { |req|
-      p 'before'
-
-      req
-    } do
-
-      get ':name/hello', before: lambda { |req|
-        p 'ROUTE BEFORE'
-        req
-      } do |req|
-        render(json: { name: req.params[:name] }) # routes[:v2_hello]
-      end
-
-      get 'big_json' do
-        render json: BigJson
-      end
-
-      get 'big_json2' do
-        render json: BigJson2
-      end
-    end
-
     get 'action', Actions::Home::Index
     get 'action2', Actions::Home::Index2
   end
+
+App.scope('v3', before: lambda { |req|
+  p 'before'
+
+  req
+}) do
+  get ':name/hello', before: lambda { |req|
+    p 'ROUTE BEFORE'
+    req
+  } do |req|
+    render(json: { name: req.params[:name] }) # routes[:v2_hello]
+  end
+
+  get 'big_json' do
+    render json: BigJson
+  end
+
+  get 'big_json2' do
+    render json: BigJson2
+  end
+end
+
+p App.inspect
