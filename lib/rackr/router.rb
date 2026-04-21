@@ -251,7 +251,7 @@ class Rackr
     end
 
     def not_empty_scopes
-      @scopes.reject { |s| s.is_a?(Integer) }
+      @scopes.grep_v(Integer)
     end
 
     private
