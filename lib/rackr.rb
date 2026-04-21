@@ -7,7 +7,7 @@ require_relative 'rackr/router'
 
 # Rackr is a simple router for Rack.
 class Rackr
-  VERSION = '0.0.71'
+  VERSION = '0.0.72'
 
   class NotFound < StandardError; end
 
@@ -202,9 +202,13 @@ class Rackr
       path = params[0] || ''
       endpoint = params[1] || ''
       scopes = []
-      if path.is_a?(String) && path.include?('/')
-        scopes = path.split('/')[0...-1]
-        path = path.split('/').pop
+      if path.is_a?(String)
+        path = path.delete_prefix('/')
+
+        if path.include?('/')
+          scopes = path.split('/')[0...-1]
+          path = path.split('/').pop
+        end
       end
       scopes.each { |scope_name| @router.append_scope(scope_name) }
 

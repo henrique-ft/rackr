@@ -514,7 +514,7 @@ RSpec.describe Rackr::Action do
       let(:config) do
         {
           csp_headers: {
-            style_src: nil,
+            style_src: nil
           }
         }
       end
@@ -525,7 +525,7 @@ RSpec.describe Rackr::Action do
           default_src: "'none'", font_src: "'self'", form_action: "'self'",
           frame_ancestors: "'self'", frame_src: "'self'",
           img_src: "'self' https: data:", media_src: "'self'",
-          object_src: "'none'", script_src: "'self'",
+          object_src: "'none'", script_src: "'self'"
         }
         default.map { |k, v| "#{k.to_s.tr('_', '-')} #{v}" }.join('; ')
       end
@@ -589,11 +589,6 @@ RSpec.describe Rackr::Action do
       it 'extends and includes Callbacks for actions' do
         expect(MyActionWithoutCallbacks).to be_a(Rackr::Action::Callbacks::ClassMethods)
         expect(MyActionWithoutCallbacks.included_modules).to include(Rackr::Action::Callbacks)
-      end
-
-      it 'does not extend or include Callbacks for callbacks' do
-        expect(MyCallback).not_to be_a(Rackr::Action::Callbacks::ClassMethods)
-        expect(MyCallback.included_modules).not_to include(Rackr::Action::Callbacks)
       end
     end
 

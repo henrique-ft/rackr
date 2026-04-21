@@ -30,6 +30,7 @@ class Rackr
       @scopes = []
       @befores = ensure_array(before)
       @scopes_befores = {}
+      @empty_scopes_ids = 0
       @afters = ensure_array(after)
       @scopes_afters = {}
       @path_routes_tree = {}
@@ -227,6 +228,10 @@ class Rackr
       Errors.check_callbacks(scope_afters, name)
 
       name = ":#{name}" if name.is_a? Symbol
+      if name == ''
+        @empty_scopes_ids += 1
+        name = @empty_scopes_ids
+      end
 
       @scopes.push(name)
 
@@ -246,7 +251,7 @@ class Rackr
     end
 
     def not_empty_scopes
-      @scopes.reject { |v| (v == '') }
+      @scopes.grep_v(Integer)
     end
 
     private
