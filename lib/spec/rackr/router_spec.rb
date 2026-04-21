@@ -646,6 +646,27 @@ RSpec.describe Rackr::Router do
         expect(router.call(request)).to eq([200, {}, ['success']])
       end
 
+      it 'can append and clear multiple empty scopes' do
+        router = Rackr::Router.new
+        error = ->(_req) { [500, {}, ['error']] }
+
+        router.append_scope '', scope_befores: error
+        router.append_scope '', scope_befores: error
+        router.append_scope '', scope_befores: error
+        router.clear_last_scope
+        router.clear_last_scope
+        router.clear_last_scope
+        router.add :get, 'teste', ->(_req) { [200, {}, ['success']] }
+
+        request =
+          {
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => '/teste'
+          }
+
+        expect(router.call(request)).to eq([200, {}, ['success']])
+      end
+
       it 'dont conflict with root path inside scopes' do
         router = Rackr::Router.new
 
