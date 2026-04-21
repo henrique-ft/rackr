@@ -7,7 +7,7 @@ require_relative 'rackr/router'
 
 # Rackr is a simple router for Rack.
 class Rackr
-  VERSION = '0.0.71'
+  VERSION = '0.0.72'
 
   class NotFound < StandardError; end
 
